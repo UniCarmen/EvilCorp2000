@@ -8,15 +8,16 @@ namespace RazorPagesSpielwiese.Pages
     public class IndexModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;
-        //private readonly ProductForSaleManager _productForSaleManager;
+        private readonly IProductForSaleManager _productForSaleManager;
+
+        public List<ProductForSaleDTO> ProductForSale { get; set; }
 
 
-        public List<ProductForSaleDTO> ProductForSaleDTOs { get; set; }
-
-        public IndexModel(ProductForSaleManager productForSaleManager, ILogger<IndexModel> logger)
+        public IndexModel(IProductForSaleManager productForSaleManager, ILogger<IndexModel> logger)
         {
             //_productForSaleManager = productForSaleManager;
             _logger = logger;
+            _productForSaleManager = productForSaleManager;
         }
 
         
@@ -24,11 +25,12 @@ namespace RazorPagesSpielwiese.Pages
         {
             try
             {
-                ProductForSaleManager productForSaleManager = ProductForSaleManager.Create();
-                ProductForSaleDTOs = await productForSaleManager.GetProductsForSale();
+                ProductForSale = await _productForSaleManager.GetProductsForSale();
             }
-            catch (Exception ex) {_logger.LogError("kein manager", ex);}
+            catch (Exception ex) {_logger.LogError("Fehler beim Abrufen der Produkte", ex);}
             
         }
+
+
     }
 }

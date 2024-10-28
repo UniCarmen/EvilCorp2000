@@ -35,5 +35,7 @@ namespace RazorPagesSpielwiese.Mappings
                 Rating = productEntity.Rating
             };
         }
+
+        //ProductToProductForInternalUse
     }
 }
