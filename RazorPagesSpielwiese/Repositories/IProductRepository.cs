@@ -7,7 +7,8 @@ namespace RazorPagesSpielwiese.Repositories
         Task AddProduct(Product product);
         Task DeleteProduct(Product product);
         Task<List<Product>> GetAllProductsAsync();
-        Task<Product?> GetProductById(int id);
+        Task<Product?> GetProductById(Guid id);
         Task UpdateProduct(Product product);
+        Task<List<Category>> GetCategoriesForProduct(Product product);
     }
 }

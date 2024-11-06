@@ -1,0 +1,78 @@
+﻿@model ModalPartialModel
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+<div class="modal fade" id="modal-@Model.Product.ProductId" tabindex="-1" aria-labelledby="productDetail" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalLabel">Product details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                
+
+                <div class="container">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <img src="@Model.Product.ProductPicture" alt="Produktbild" class="img-fluid rounded" />
+                        </div>
+                        <div class="col-md-8">
+                            <h2>@Model.Product.ProductName</h2>
+                            <p>@Model.Product.Description</p>
+                            <p><strong>Price:</strong> @Model.Product.Price.ToString("C")</p>
+                            <p><strong>Rating:</strong> @(Model.Product.Rating.HasValue ? Model.Product.Rating.Value.ToString("N1") + " Sterne" : "No Rating")</p>
+                            <p><strong>On Stock:</strong> @Model.Product.AmountOnStock Pieces</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h4>Categories</h4>
+                            <ul class="list-group">
+                                @foreach (var category in Model.Product.Categories)
+                                {
+                                    <li class="list-group-item">@category.CategoryName</li>
+                                }
+                            </ul>
+                        </div>
+                        <div class="col-md-8">
+                            <h4>Discounts</h4>
+                            @if (Model.Product.Discounts.Any())
+                            {
+                                <ul class="list-group">
+                                    @foreach (var discount in Model.Product.Discounts)
+                                    {
+                                        <li class="list-group-item">
+                                            <strong>@discount.StartDate.ToShortDateString() - @discount.EndDate.ToShortDateString():</strong>
+                                            @((@Model.Product.Price / 100.0m * (100.0m - ((decimal)discount.DiscountPercentage))).ToString("C")) (@discount.DiscountPercentage.ToString()%)
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p>Keine Rabatte verfügbar.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+                @*
+                <form method="post" asp-page-handler="Save">
+                    <div class="mb-3">
+                        <label asp-for="InputField" class="form-label">Neuer Wert</label>
+                        <input asp-for="InputField" class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Speichern</button>
+                </form>
+                *@
+            </div>
+        </div>
+    </div>
+</div>
+

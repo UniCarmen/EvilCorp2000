@@ -1,0 +1,50 @@
+﻿@page
+@using RazorPagesSpielwiese.Models
+@model NewProductModel
+@{
+    ViewData["Title"] = "New Product";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>Use this page to detail your site's privacy policy.</p>
+
+<h3>New Product</h3>
+
+<form method="post">
+    <div>
+        <label asp-for="NewProduct.ProductName"></label>
+        <input asp-for="NewProduct.ProductName" />
+        <span asp-validation-for="NewProduct.ProductName" class="text-danger"></span>
+    </div>
+    <div>
+        <label asp-for="NewProduct.Description"></label>
+        <input asp-for="NewProduct.Description" />
+    </div>
+    <div>
+        <label asp-for="NewProduct.CategoryFromSelect">Choose a category:</label>
+        <select asp-for="NewProduct.CategoryFromSelect" asp-items="@Model.CategoriesForSelect" class="form-control">
+            <option value="">-- Select a Category --</option>
+        </select>        
+        <span asp-validation-for="NewProduct.CategoryFromSelect" class="text-danger"></span>
+    </div>
+    <div>
+        <label asp-for="NewProduct.ProductPicture"></label>
+        <input asp-for="NewProduct.ProductPicture" />
+    </div>
+
+    @* Warum werden die letzten beiden Validation Error nicht mit dem Text aus dem ViewModel angezeigt? *@
+    <div>
+        <label asp-for="NewProduct.Price"></label>
+        <input asp-for="NewProduct.Price" />
+        <span asp-validation-for="NewProduct.Price" class="text-danger"></span>
+    </div>
+    <div>
+        <label asp-for="NewProduct.AmountOnStock"></label>
+        <input asp-for="NewProduct.AmountOnStock" />
+        <span asp-validation-for="NewProduct.AmountOnStock" class="text-danger"></span>
+    </div>
+
+    <button type="submit">Add new Product</button>
+    @*Anti CSRF Token explizit bei Formularsubmits*@
+    @Html.AntiForgeryToken()
+</form>

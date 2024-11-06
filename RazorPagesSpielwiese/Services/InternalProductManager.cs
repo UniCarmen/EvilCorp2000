@@ -1,86 +1,82 @@
 ﻿using RazorPagesSpielwiese.Entities;
-using RazorPagesSpielwiese.Mappings;
 using RazorPagesSpielwiese.Models;
 using RazorPagesSpielwiese.Repositories;
 
 namespace RazorPagesSpielwiese.Services
 {
-    public class InternalProductManager
+    public class InternalProductManager : IInternalProductManager
     {
         private readonly IDiscountRepository _discoutRepository;
         private readonly IProductRepository _productRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public InternalProductManager(IDiscountRepository discoutRepository, IProductRepository productRepository)
+        public InternalProductManager(IDiscountRepository discoutRepository, IProductRepository productRepository, ICategoryRepository categoryRepository)
         {
             _discoutRepository = discoutRepository ?? throw new ArgumentNullException(nameof(discoutRepository));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+            _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
-        public async Task<List<ProductForSaleDTO>> GetProductsForInternalUse()
+        public async Task<List<ProductForInternalUseDTO>> GetProductsForInternalUse()
         {
             var products = await _productRepository.GetAllProductsAsync();
 
-            List<ProductForSaleDTO> productsForInternalUse = [];
+            List<ProductForInternalUseDTO> productsForInternalUse = [];
 
             foreach (Product product in products)
             {
-                var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(product.ProductId);
+                var currentDiscountEntities = await _discoutRepository.GetDiscountsByProductId(product.ProductId);
 
-                var productMapper = new ProductMappings();
+                var discountMapper = new Mappings.DiscountMappings();
+                var currentDiscounts = currentDiscountEntities.Select(de => discountMapper.DiscountToDiscountDTO(de)).ToList();
 
-                productsForInternalUse.Add(productMapper.ProductToProductForInternalUse(product, currentDiscount));
+                var categories = product.ProductCategoryMappings
+                    .Select(mapping => new CategoryDTO { CategoryName = mapping.Category.CategoryName, CategoryId = mapping.Category.CategoryId})
+                    .ToList();
+
+                var productMapper = new Mappings.ProductMappings();
+
+                productsForInternalUse.Add(productMapper.ProductToProductForInternalUse(product, currentDiscounts, categories));
             }
 
             return productsForInternalUse;
         }
 
-        public async Task<ProductForSaleDTO> GetProductForInternalUse(int id)
-        {
-            var productEntity = await _productRepository.GetProductById(id);
-
-            if (productEntity == null)
-            {
-                throw new ArgumentNullException(nameof(productEntity));
-            }
-
-            var currentDiscounts = await _discoutRepository.GetDiscountsByProductId(id);
-
-            var productMapper = new ProductMappings();
-
-            return productMapper.ProductToProductForInternalUse(productEntity, currentDiscounts);
-        }
-
-        //public static ProductForSaleManager Create()
+        //public async Task<ProductForSaleDTO> GetProductForInternalUse(int id)
         //{
-        //    var dbContext = new EvilCorp2000ShopContext();
-        //    return new ProductForSaleManager(new DiscountRepository(dbContext), new ProductRepository(dbContext));
+        //    var productEntity = await _productRepository.GetProductById(id);
+
+        //    if (productEntity == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(productEntity));
+        //    }
+
+        //    var currentDiscounts = await _discoutRepository.GetDiscountsByProductId(id);
+
+        //    var productMapper = new ProductMappings();
+
+        //    return productMapper.ProductToProductForInternalUse(productEntity, currentDiscounts);
         //}
 
-        public async Task<List<ProductForSaleDTO>> GetCategories()
+        public async Task<List<Models.CategoryDTO>> GetCategories()
         {
             //get all categories
-            var products = await _productRepository.GetAllProductsAsync();
+            var categoryEntities = await _categoryRepository.GetAllCategories();
 
-            List<ProductForSaleDTO> productsForSale = [];
+            //if (categoryEntities.Count == 0)
+            //{ throw new ArgumentNullException(nameof(categoryEntities)); }
 
-            foreach (Product product in products)
-            {
-                var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(product.ProductId);
-
-                var productMapper = new ProductMappings();
-
-                productsForSale.Add(productMapper.ProductToProductForInternalUse(product, currentDiscount));
-            }
-
-            return productsForSale;
+            var Mapping = new Mappings.CategoryMapping();
+            return categoryEntities.Select(c => Mapping.CategoryEntityToCategoryModel(c)).ToList();
         }
 
-        public async Task SaveProductToStore (ProductToStoreDTO)
+        //TODO
+        public async Task SaveProductToStore(ProductToStoreDTO productToStore)
         {
-            var productMapper = new ProductMappings();
+            var productMapper = new Mappings.ProductMappings();
 
-            await _productRepository.AddProduct(productMapper.ProductToProductForInternalUse(product, currentDiscount));
+
+            await _productRepository.AddProduct(productMapper.ProductToStoreToProductEntity(productToStore, [productToStore.Category]));
         }
-
     }
 }

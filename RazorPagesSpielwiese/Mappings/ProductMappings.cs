@@ -5,7 +5,7 @@ namespace RazorPagesSpielwiese.Mappings
 {
     public class ProductMappings
     {
-        public ProductForSaleDTO ProductToProductForSale (Product productEntity, Discount currentDiscount)
+        public ProductForSaleDTO ProductToProductForSale (Product productEntity, Discount currentDiscount, List<string> categories)
         {
             decimal discountedPrice = 0.0m;
             double discountedPercentage;
@@ -27,8 +27,8 @@ namespace RazorPagesSpielwiese.Mappings
                 ProductName = productEntity.ProductName,
                 ProductPicture = productEntity.ProductPicture,
                 AmountOnStock = productEntity.AmountOnStock,
-                Category = productEntity.ProductClass,
-                Description = productEntity.ProductDescription,
+                Categories = categories,
+                Description = productEntity.ProductDescription ?? "",
                 Discount = discountedPercentage,
                 DiscountedPrice = discountedPrice,
                 Price = productEntity.ProductPrice,
@@ -36,6 +36,36 @@ namespace RazorPagesSpielwiese.Mappings
             };
         }
 
-        //ProductToProductForInternalUse
+        public Product ProductToStoreToProductEntity(ProductToStoreDTO productToStore, List<Models.CategoryDTO> categories)
+        {
+            var newProductId = Guid.NewGuid();
+            var productCategoryMapping = categories.Select(c => new ProductCategoryMapping { ProductId = newProductId, CategoryId = c.CategoryId });
+            return new Product
+            {
+                ProductId = newProductId,
+                ProductName = productToStore.ProductName,
+                ProductPicture = productToStore.ProductPicture,
+                ProductCategoryMappings = productCategoryMapping.ToList(),
+                ProductDescription = productToStore.Description,
+                ProductPrice = productToStore.Price,
+                //noch kein Discount und Rating
+            };
+        }
+
+
+        public ProductForInternalUseDTO ProductToProductForInternalUse(Product product, List<DiscountDTO> currentDiscounts, List<CategoryDTO>categories)
+        {
+            return new ProductForInternalUseDTO { 
+                ProductId = product.ProductId,
+                ProductName = product.ProductName,
+                ProductPicture = product.ProductPicture,
+                Price = product.ProductPrice,
+                AmountOnStock = product.AmountOnStock,
+                Categories = categories,
+                Description = product.ProductDescription ?? "",
+                Discounts = currentDiscounts,
+                Rating = product.Rating
+            };
+        }
     }
 }

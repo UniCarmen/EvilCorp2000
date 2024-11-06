@@ -3,22 +3,29 @@ using RazorPagesSpielwiese.Models;
 using RazorPagesSpielwiese.Repositories;
 using RazorPagesSpielwiese.Mappings;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.EntityFrameworkCore;
 namespace RazorPagesSpielwiese.Services
 {
     public class ProductForSaleManager : IProductForSaleManager
     {
         private readonly IDiscountRepository _discoutRepository;
         private readonly IProductRepository _productRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public ProductForSaleManager(IDiscountRepository discoutRepository, IProductRepository productRepository)
+        public ProductForSaleManager(IDiscountRepository discoutRepository, IProductRepository productRepository, ICategoryRepository categoryRepository)
         {
             _discoutRepository = discoutRepository ?? throw new ArgumentNullException(nameof(discoutRepository));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+            _categoryRepository = categoryRepository ?? throw new ArgumentNullException( nameof(categoryRepository));
         }
 
         public async Task<List<ProductForSaleDTO>> GetProductsForSale()
         {
-            var products = await _productRepository.GetAllProductsAsync();
+            var products = await _productRepository
+            .GetAllProductsAsync();
+
+            //categirien abrufen
+            //mit jointabelle abgleichen, welche Kategorie zu welchem mprodukgt
 
             List<ProductForSaleDTO> productsForSale = [];
 
@@ -26,15 +33,24 @@ namespace RazorPagesSpielwiese.Services
             {
                 var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(product.ProductId);
 
-                var productMapper = new ProductMappings();
+                var categories = product.ProductCategoryMappings
+                    .Select(mapping => mapping.Category.CategoryName)
+                    .ToList();
 
-                productsForSale.Add(productMapper.ProductToProductForSale(product, currentDiscount));
+                //if (categories.Count == 0)
+                //{
+                //    throw new ArgumentNullException(nameof(categories));
+                //}
+
+                var productMapper = new Mappings.ProductMappings();
+
+                productsForSale.Add(productMapper.ProductToProductForSale(product, currentDiscount, categories));
             }
 
             return productsForSale;
         }
 
-        public async Task<ProductForSaleDTO> GetProductForSale(int id)
+        public async Task<ProductForSaleDTO> GetProductForSale(Guid id)
         {
             var productEntity = await _productRepository.GetProductById(id);
 
@@ -45,34 +61,13 @@ namespace RazorPagesSpielwiese.Services
 
             var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(id);
 
-            var productMapper = new ProductMappings();
+            var categories = productEntity.ProductCategoryMappings
+                    .Select(mapping => mapping.Category.CategoryName)
+                    .ToList();
 
-            return productMapper.ProductToProductForSale(productEntity, currentDiscount);
-        }
+            var productMapper = new Mappings.ProductMappings();
 
-        //public static ProductForSaleManager Create()
-        //{
-        //    var dbContext = new EvilCorp2000ShopContext();
-        //    return new ProductForSaleManager(new DiscountRepository(dbContext), new ProductRepository(dbContext));
-        //}
-
-        public async Task<List<ProductForSaleDTO>> GetCategories()
-        {
-            //get all categories
-            var products = await _productRepository.GetAllProductsAsync();
-
-            List<ProductForSaleDTO> productsForSale = [];
-
-            foreach (Product product in products)
-            {
-                var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(product.ProductId);
-
-                var productMapper = new ProductMappings();
-
-                productsForSale.Add(productMapper.ProductToProductForSale(product, currentDiscount));
-            }
-
-            return productsForSale;
+            return productMapper.ProductToProductForSale(productEntity, currentDiscount, categories);
         }
     }
 }

@@ -16,11 +16,24 @@
 
 
 
-<h3>Products</h3>
+<h2>Products</h2>
 
-@foreach (ProductForSaleDTO product in Model.ProductForSale)
+@foreach (ProductForSaleDTO product in Model.ProductsForSale)
 {
-    <p>@product.ProductName.Trim(), @product.Price</p>
+    <div>
+        <p>
+            <h5>@product.ProductName.Trim()</h5>
+            @{
+                var categoryLine = @product.Categories.Aggregate((c1, c2) => c1 + ", " + c2);
+                <b>@categoryLine</b>
+            }
+            
+        </p>
+        <p>@product.Price</p>
+        <p>@product.Description</p>
+    </div>
+    
+
 }
 
 

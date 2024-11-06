@@ -1,8 +1,30 @@
-﻿@page
+﻿@*Generische Fehlerseite, separat für Deployment machen*@
+@page "{code?}"
+@{
+    var errorCode = RouteData.Values["code"]?.ToString();
+}
 @model ErrorModel
 @{
     ViewData["Title"] = "Error";
 }
+
+<h1>Oops! Something went wrong.</h1>
+<p>
+    @if (!string.IsNullOrEmpty(errorCode))
+    {
+        <span>Error code: @errorCode</span>
+    }
+    else
+    {
+        <span>An unexpected error occurred.</span>
+    }
+</p>
+
+
+
+
+
+@*Das unten ist für Dev*@
 
 <h1 class="text-danger">Error.</h1>
 <h2 class="text-danger">An error occurred while processing your request.</h2>

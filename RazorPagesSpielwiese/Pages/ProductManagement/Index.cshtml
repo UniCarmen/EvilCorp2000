@@ -1,0 +1,70 @@
+﻿@page
+@model ProductManagementModel
+@using RazorPagesSpielwiese.Models
+@using RazorPagesSpielwiese.Pages.Shared
+@*@using static RazorPagesSpielwiese.Pages.ProductManagement.Index*@
+
+@{
+    ViewData["Title"] = "Product Management";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>Mange, manage, manage</p>
+
+<h3>Product Management</h3>
+
+
+<table class="table">
+    <thead >
+        <tr>
+            <th>Name</th>
+            <th></th>
+            <th class="descriptionTh">Description</th>
+            <th>Price</th>
+            <th>Discounts</th>
+            <th>Rating</th>
+            <th>Amount on Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(ProductForInternalUseDTO product in Model.Products)
+        {
+            <tr>
+                <td>
+                    <p>@product.ProductName</p>
+                    
+                    @if (product != null)
+                    {
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#modal-@product.ProductId">Details anzeigen</a>
+                        @await Html.PartialAsync("Shared/ModalPartial", new ModalPartialModel { Product = product })
+                    }
+                </td>
+                <td>
+                    <p>@product.ProductPicture</p>
+                </td>
+                <td>
+                    <p>@product.Description</p>
+                </td>
+                <td>
+                    <p>@product.Price</p>
+                </td>
+                <td>
+                    @foreach (DiscountDTO discount in @product.Discounts)
+                    {
+                        //TODO: price in euro oder so
+                        <p>@discount.StartDate.ToShortDateString() - @discount.EndDate.ToShortDateString() -@discount.DiscountPercentage%</p>
+                        <p>Discounted Price: @(@product.Price / 100.0m * (100.0m - ((decimal)discount.DiscountPercentage)))</p>
+                    }
+                </td>
+                <td>
+                    <p>@product.Rating</p>
+                    @*<i class="bi bi-star-fill"></i>*@
+                </td>
+                <td>
+                    <p>@product.AmountOnStock</p>
+                </td>
+            </tr>  
+        }
+    </tbody>
+</table>
+

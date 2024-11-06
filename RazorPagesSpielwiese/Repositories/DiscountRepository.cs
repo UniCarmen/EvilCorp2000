@@ -1,14 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using RazorPagesSpielwiese.DBContexts;
 using RazorPagesSpielwiese.Entities;
 
 namespace RazorPagesSpielwiese.Repositories
 {
     public class DiscountRepository : IDiscountRepository
     {
-        private readonly EvilCorp2000ShopContext _context;
+        private readonly EvilCorp2000Context _context;
 
-        public DiscountRepository(EvilCorp2000ShopContext context)
+        public DiscountRepository(EvilCorp2000Context context)
         {
             _context = context;
         }
@@ -18,15 +19,15 @@ namespace RazorPagesSpielwiese.Repositories
             return await _context.Discounts.ToListAsync();
         }
 
-        public async Task<List<Discount>> GetDiscountsByProductId(int productId)
+        public async Task<List<Discount>> GetDiscountsByProductId(Guid productId)
         {
-            if (productId == 0) { throw new ArgumentNullException("id = 0, kein Eintrag"); }
+            if (productId == Guid.Empty) { throw new ArgumentNullException("Invalid Guid"); }
             return await _context.Discounts.Where(p => p.ProductId == productId).ToListAsync();
         }
 
-        public async Task<Discount> GetCurrentDiscountByProductId(int productId)
+        public async Task<Discount> GetCurrentDiscountByProductId(Guid productId)
         {
-            if (productId == 0) { throw new ArgumentNullException("id = 0, kein Eintrag"); }
+            if (productId == Guid.Empty) { throw new ArgumentNullException("Invalid Guid"); }
             return await _context.Discounts.
                 Where(p => 
                 p.ProductId == productId && 

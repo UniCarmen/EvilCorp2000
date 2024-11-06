@@ -1,15 +1,14 @@
 ﻿namespace RazorPagesSpielwiese.Models
 {
-    public class ProductForSaleDTO
+    public class ProductForInternalUseDTO
     {
         public string ProductName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public List<string> Categories { get; set; } = new  List<string>();
+        public List<CategoryDTO> Categories { get; set; } = new List<CategoryDTO>();
         public Guid ProductId { get; set; }
         public string? ProductPicture { get; set; }
-        public decimal Price { get; set; } 
-        public double? Discount { get; set; }
-        public decimal? DiscountedPrice { get; set; }
+        public decimal Price { get; set; }
+        public List<DiscountDTO> Discounts { get; set; } = new List<DiscountDTO>();
         public double? Rating { get; set; }
         public int AmountOnStock { get; set; }
     }

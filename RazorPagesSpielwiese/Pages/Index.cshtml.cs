@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorPagesSpielwiese.Models;
+using RazorPagesSpielwiese.Repositories;
 using RazorPagesSpielwiese.Services;
 
 namespace RazorPagesSpielwiese.Pages
@@ -10,25 +11,25 @@ namespace RazorPagesSpielwiese.Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly IProductForSaleManager _productForSaleManager;
 
-        public List<ProductForSaleDTO> ProductForSale { get; set; }
+
+        public List<ProductForSaleDTO> ProductsForSale { get; set; }
 
 
         public IndexModel(IProductForSaleManager productForSaleManager, ILogger<IndexModel> logger)
         {
-            //_productForSaleManager = productForSaleManager;
             _logger = logger;
             _productForSaleManager = productForSaleManager;
         }
 
-        
+
         public async Task OnGet()
         {
             try
             {
-                ProductForSale = await _productForSaleManager.GetProductsForSale();
+                ProductsForSale = await _productForSaleManager.GetProductsForSale();
             }
-            catch (Exception ex) {_logger.LogError("Fehler beim Abrufen der Produkte", ex);}
-            
+            catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte", ex); }
+
         }
 
 
