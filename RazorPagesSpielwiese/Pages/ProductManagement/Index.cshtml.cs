@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorPagesSpielwiese.Models;
+using RazorPagesSpielwiese.Pages.Shared;
 using RazorPagesSpielwiese.Services;
 
 namespace RazorPagesSpielwiese.Pages.ProductManagement
@@ -13,7 +15,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
         //Produkte prop
         public List<ProductForInternalUseDTO> Products;
-        //public ProductForInternalUseDTO ProductForModal { get; set; }
+        public List<CategoryDTO> Categories { get; set; }
 
         public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger)
         {
@@ -35,7 +37,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 //InterneProdukte abrufen, anzeigen als Liste, mit Discount Infos (Datum)
 
                 Products = await _internalProductManager.GetProductsForInternalUse();
-
+                Categories = await _internalProductManager.GetCategories();
 
 
                 //VERÄNDERN
@@ -44,14 +46,6 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
             catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }
 
         }
-
-        //public IActionResult OnPostToggleEditMode()
-        //{
-        //    // Schalte den Bearbeitungsmodus um
-        //    IsEditingMode = !IsEditingMode;
-
-        //    return Page(); // Bleibe auf der aktuellen Seite und lade sie neu
-        //}
 
 
     }

@@ -15,5 +15,23 @@ namespace RazorPagesSpielwiese.Mappings
                 StartDate = discount.StartDate,
             };
         }
+
+        public Discount DiscountDTOToDiscount (DiscountDTO discountDTO, Guid productId)
+        {
+            Guid discountId = discountDTO.DiscountId;
+            if (discountDTO.DiscountId == Guid.Empty)
+            { 
+                discountDTO.DiscountId = Guid.NewGuid ();
+            }
+
+            return new Discount
+            {
+                ProductId = productId,
+                DiscountId = discountId,
+                DiscountPercentage = discountDTO.DiscountPercentage,
+                EndDate = discountDTO.EndDate,
+                StartDate = discountDTO.StartDate, 
+            };
+        }
     }
 }

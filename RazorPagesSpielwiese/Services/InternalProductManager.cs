@@ -1,6 +1,7 @@
 ﻿using RazorPagesSpielwiese.Entities;
 using RazorPagesSpielwiese.Models;
 using RazorPagesSpielwiese.Repositories;
+using System.Collections;
 
 namespace RazorPagesSpielwiese.Services
 {
@@ -66,7 +67,7 @@ namespace RazorPagesSpielwiese.Services
             //if (categoryEntities.Count == 0)
             //{ throw new ArgumentNullException(nameof(categoryEntities)); }
 
-            var Mapping = new Mappings.CategoryMapping();
+            var Mapping = new Mappings.CategoryMappings();
             return categoryEntities.Select(c => Mapping.CategoryEntityToCategoryModel(c)).ToList();
         }
 
@@ -74,9 +75,15 @@ namespace RazorPagesSpielwiese.Services
         public async Task SaveProductToStore(ProductToStoreDTO productToStore)
         {
             var productMapper = new Mappings.ProductMappings();
+            var discountMapper = new Mappings.DiscountMappings();
+            var categoryMapper = new Mappings.CategoryMappings();
 
+            var discounts = productToStore.Discounts.Select(d => discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
+             
 
-            await _productRepository.AddProduct(productMapper.ProductToStoreToProductEntity(productToStore, [productToStore.Category]));
+            var productCategoryMapping = productToStore.Categories.Select(c => new ProductCategoryMapping { ProductId = productToStore.ProductId, CategoryId = c.CategoryId }).ToList();
+
+            await _productRepository.AddProduct(productMapper.ProductToStoreToProductEntity(productToStore, productCategoryMapping, discounts));
         }
     }
 }

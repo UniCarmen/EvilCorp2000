@@ -1,6 +1,6 @@
 ﻿namespace RazorPagesSpielwiese.Mappings
 {
-    public class CategoryMapping
+    public class CategoryMappings
     {
         public Models.CategoryDTO CategoryEntityToCategoryModel (Entities.Category category)
         {

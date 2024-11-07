@@ -21,6 +21,7 @@
         <input asp-for="NewProduct.Description" />
     </div>
     <div>
+        @* Hier mehrere Kategorien *@
         <label asp-for="NewProduct.CategoryFromSelect">Choose a category:</label>
         <select asp-for="NewProduct.CategoryFromSelect" asp-items="@Model.CategoriesForSelect" class="form-control">
             <option value="">-- Select a Category --</option>

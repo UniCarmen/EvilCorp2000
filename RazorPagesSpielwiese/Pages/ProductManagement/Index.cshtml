@@ -22,6 +22,7 @@
             <th class="descriptionTh">Description</th>
             <th>Price</th>
             <th>Discounts</th>
+            <th>Categories</th>
             <th>Rating</th>
             <th>Amount on Stock</th>
         </tr>
@@ -31,13 +32,13 @@
         {
             <tr>
                 <td>
-                    <p>@product.ProductName</p>
-                    
-                    @if (product != null)
-                    {
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#modal-@product.ProductId">Details anzeigen</a>
-                        @await Html.PartialAsync("Shared/ModalPartial", new ModalPartialModel { Product = product })
-                    }
+                    <p>
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#productDetailsModal-@product.ProductId">@product.ProductName</a>
+                        @await Html.PartialAsync("Shared/ProductDetailsModalPartial", new ProductDetailsModalPartialModel { Product = product })
+                    </p>
+
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#alterProductsModal-@product.ProductId">Alter Product</a>
+                    @await Html.PartialAsync("Shared/AlterProductModalPartial", new AlterProductModalPartialModel { Product = product, Categories = Model.Categories })
                 </td>
                 <td>
                     <p>@product.ProductPicture</p>
@@ -54,6 +55,12 @@
                         //TODO: price in euro oder so
                         <p>@discount.StartDate.ToShortDateString() - @discount.EndDate.ToShortDateString() -@discount.DiscountPercentage%</p>
                         <p>Discounted Price: @(@product.Price / 100.0m * (100.0m - ((decimal)discount.DiscountPercentage)))</p>
+                    }
+                </td>
+                <td>
+                    @foreach (CategoryDTO category in product.Categories)
+                    {
+                        <p>@category.CategoryName</p>
                     }
                 </td>
                 <td>

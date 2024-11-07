@@ -75,9 +75,12 @@ namespace RazorPagesSpielwiese.Pages.NewProduct
                     Price = NewProduct.Price,
                     ProductName = NewProduct.ProductName,
                     AmountOnStock = NewProduct.AmountOnStock,
-                    Category = category,
+                    //TODO: hier eine Liste
+                    Categories = [category],
                     Description = NewProduct.Description,
                     ProductPicture = NewProduct.ProductPicture,
+                    //TODO: noch füllen bzw von Oberfläche übergeben
+                    Discounts = []
                 };
 
 

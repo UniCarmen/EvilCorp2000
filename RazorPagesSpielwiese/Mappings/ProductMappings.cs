@@ -36,18 +36,23 @@ namespace RazorPagesSpielwiese.Mappings
             };
         }
 
-        public Product ProductToStoreToProductEntity(ProductToStoreDTO productToStore, List<Models.CategoryDTO> categories)
+        public Product ProductToStoreToProductEntity(ProductToStoreDTO productToStore, List<ProductCategoryMapping> categories, List<Discount> dicsounts)
         {
-            var newProductId = Guid.NewGuid();
-            var productCategoryMapping = categories.Select(c => new ProductCategoryMapping { ProductId = newProductId, CategoryId = c.CategoryId });
+            var newProductId = productToStore.ProductId;
+            if(newProductId == Guid.Empty)
+            {
+                newProductId = Guid.NewGuid();
+            }
             return new Product
             {
                 ProductId = newProductId,
                 ProductName = productToStore.ProductName,
                 ProductPicture = productToStore.ProductPicture,
-                ProductCategoryMappings = productCategoryMapping.ToList(),
+                ProductCategoryMappings = categories,
                 ProductDescription = productToStore.Description,
                 ProductPrice = productToStore.Price,
+                AmountOnStock = productToStore.AmountOnStock,
+                Discounts = dicsounts,
                 //noch kein Discount und Rating
             };
         }
