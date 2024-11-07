@@ -13,7 +13,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
         //Produkte prop
         public List<ProductForInternalUseDTO> Products;
-        //public ProductForInternalUseDTO Product { get; set; }
+        //public ProductForInternalUseDTO ProductForModal { get; set; }
 
         public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger)
         {
@@ -45,7 +45,14 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
         }
 
+        //public IActionResult OnPostToggleEditMode()
+        //{
+        //    // Schalte den Bearbeitungsmodus um
+        //    IsEditingMode = !IsEditingMode;
 
-        
+        //    return Page(); // Bleibe auf der aktuellen Seite und lade sie neu
+        //}
+
+
     }
 }

@@ -7,57 +7,107 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="productModalLabel">Product details</h5>
+                <h5 class="modal-title" id="productModalLabel">
+                    Product details
+                    @* @if (Model.IsEditingMode)
+                    {
+                        <span>Produkt bearbeiten: @Model.Product.ProductName</span>
+                    }
+                    else
+                    {
+                        <span>Details für @Model.Product.ProductName</span>
+                    } *@
+                </h5>
+                @* <form method="post">
+                    <button type="submit" asp-page-handler="ToggleEditMode" class="btn btn-sm btn-outline-primary">
+                        @if (Model.IsEditingMode)
+                        {
+                            <i class="bi bi-eye"></i>
+                            Ansicht
+                                    }
+                        else
+                        {
+                            <i class="bi bi-pencil-square"></i>
+                            Bearbeiten
+                                    }
+                    </button>
+                </form> *@
+
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 
+                @if (!Model.IsEditingMode)
+                {
+                    <div class="container">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <img src="@Model.Product.ProductPicture" alt="Produktbild" class="img-fluid rounded" />
+                            </div>
+                            <div class="col-md-8">
+                                <h2>@Model.Product.ProductName</h2>
+                                <p>@Model.Product.Description</p>
+                                <p><strong>Price:</strong> @Model.Product.Price.ToString("C")</p>
+                                <p><strong>Rating:</strong> @(Model.Product.Rating.HasValue ? Model.Product.Rating.Value.ToString("N1") + " Sterne" : "No Rating")</p>
+                                <p><strong>On Stock:</strong> @Model.Product.AmountOnStock Pieces</p>
+                            </div>
+                        </div>
 
-                <div class="container">
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <img src="@Model.Product.ProductPicture" alt="Produktbild" class="img-fluid rounded" />
-                        </div>
-                        <div class="col-md-8">
-                            <h2>@Model.Product.ProductName</h2>
-                            <p>@Model.Product.Description</p>
-                            <p><strong>Price:</strong> @Model.Product.Price.ToString("C")</p>
-                            <p><strong>Rating:</strong> @(Model.Product.Rating.HasValue ? Model.Product.Rating.Value.ToString("N1") + " Sterne" : "No Rating")</p>
-                            <p><strong>On Stock:</strong> @Model.Product.AmountOnStock Pieces</p>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-4">
-                            <h4>Categories</h4>
-                            <ul class="list-group">
-                                @foreach (var category in Model.Product.Categories)
-                                {
-                                    <li class="list-group-item">@category.CategoryName</li>
-                                }
-                            </ul>
-                        </div>
-                        <div class="col-md-8">
-                            <h4>Discounts</h4>
-                            @if (Model.Product.Discounts.Any())
-                            {
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h4>Categories</h4>
                                 <ul class="list-group">
-                                    @foreach (var discount in Model.Product.Discounts)
+                                    @foreach (var category in Model.Product.Categories)
                                     {
-                                        <li class="list-group-item">
-                                            <strong>@discount.StartDate.ToShortDateString() - @discount.EndDate.ToShortDateString():</strong>
-                                            @((@Model.Product.Price / 100.0m * (100.0m - ((decimal)discount.DiscountPercentage))).ToString("C")) (@discount.DiscountPercentage.ToString()%)
-                                        </li>
+                                        <li class="list-group-item">@category.CategoryName</li>
                                     }
                                 </ul>
-                            }
-                            else
-                            {
-                                <p>Keine Rabatte verfügbar.</p>
-                            }
+                            </div>
+                            <div class="col-md-8">
+                                <h4>Discounts</h4>
+                                @if (Model.Product.Discounts.Any())
+                                {
+                                    <ul class="list-group">
+                                        @foreach (var discount in Model.Product.Discounts)
+                                        {
+                                            <li class="list-group-item">
+                                                <strong>@discount.StartDate.ToShortDateString() - @discount.EndDate.ToShortDateString():</strong>
+                                                @((@Model.Product.Price / 100.0m * (100.0m - ((decimal)discount.DiscountPercentage))).ToString("C")) (@discount.DiscountPercentage.ToString()%)
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <p>Keine Rabatte verfügbar.</p>
+                                }
+                            </div>
                         </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="Save">
+                        <div class="mb-3">
+                            <label for="productName" class="form-label">Produktname</label>
+                            <input type="text" id="productName" name="ProductName" class="form-control" value="@Model.Product.ProductName" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Beschreibung</label>
+                            <textarea id="description" name="Description" class="form-control">@Model.Product.Description</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Preis</label>
+                            <input type="number" step="0.01" id="price" name="Price" class="form-control" value="@Model.Product.Price" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="amountOnStock" class="form-label">Lagerbestand</label>
+                            <input type="number" id="amountOnStock" name="AmountOnStock" class="form-control" value="@Model.Product.AmountOnStock" />
+                        </div>
+                        <button type="submit" class="btn btn-success">Speichern</button>
+                        <a href="@Url.Page("ModalPartial", new { productId = Model.Product.ProductId, isEditMode = false })" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modal-@Model.Product.ProductId">Abbrechen</a>
+                    </form>
+                }
 
 
 
