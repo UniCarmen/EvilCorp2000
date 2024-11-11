@@ -7,5 +7,7 @@ namespace RazorPagesSpielwiese.Services
         Task<List<ProductForInternalUseDTO>> GetProductsForInternalUse();
         Task<List<CategoryDTO>> GetCategories();
         Task SaveProductToStore(ProductToStoreDTO productToStore);
+        Task UpdateProductToStore(ProductToStoreDTO productToStore);
+        
     }
 }

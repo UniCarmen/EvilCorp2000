@@ -13,5 +13,6 @@ namespace RazorPagesSpielwiese.Models
         public decimal Price { get; set; }
         //public double? Discount { get; set; }
         public int AmountOnStock { get; set; }
+        public double? Rating { get; set; }
     }
 }

@@ -4,22 +4,23 @@ using RazorPagesSpielwiese.Models;
 using RazorPagesSpielwiese.Services;
 using System.Diagnostics.Eventing.Reader;
 
-namespace RazorPagesSpielwiese.Pages.Shared
+namespace RazorPagesSpielwiese.Pages.Shared.Partials
 {
-    public class AlterProductModalPartialModel 
+    public class AlterProductModalPartialModel
     {
+        [BindProperty]
         public ProductForInternalUseDTO Product { get; set; }
 
+        //public ProductToStoreDTO ProductToStore { get; set; }
         public List<CategoryDTO> Categories { get; set; }
 
-        //public AlterProductModalPartialModel (IInternalProductManager productManager)
-        //{
-        //    _productManager = productManager;
-        //}
+        [BindProperty]
+        public List<CategoryDTO> SelectedCategoryIds { get; set; }
+
+
 
         public async Task OnGet()
         {
-            //Categories = await _productManager.GetCategories();
         }
 
     }

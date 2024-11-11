@@ -74,16 +74,45 @@ namespace RazorPagesSpielwiese.Services
         //TODO
         public async Task SaveProductToStore(ProductToStoreDTO productToStore)
         {
-            var productMapper = new Mappings.ProductMappings();
-            var discountMapper = new Mappings.DiscountMappings();
-            var categoryMapper = new Mappings.CategoryMappings();
+            if (productToStore != null)
+            {
+                var productMapper = new Mappings.ProductMappings();
+                var discountMapper = new Mappings.DiscountMappings();
+                //var categoryMapper = new Mappings.CategoryMappings();
 
-            var discounts = productToStore.Discounts.Select(d => discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
-             
+                var discounts = productToStore.Discounts.Select(d => discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
 
-            var productCategoryMapping = productToStore.Categories.Select(c => new ProductCategoryMapping { ProductId = productToStore.ProductId, CategoryId = c.CategoryId }).ToList();
 
-            await _productRepository.AddProduct(productMapper.ProductToStoreToProductEntity(productToStore, productCategoryMapping, discounts));
+                var productCategoryMapping = productToStore.Categories.Select(c => new ProductCategoryMapping { ProductId = productToStore.ProductId, CategoryId = c.CategoryId }).ToList();
+
+                await _productRepository.AddProduct(productMapper.ProductToStoreToProductEntity(productToStore, productCategoryMapping, discounts));
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(productToStore));
+            }
+        }
+
+
+        public async Task UpdateProductToStore(ProductToStoreDTO productToStore)
+        {
+            if (productToStore != null)
+            {
+                var productMapper = new Mappings.ProductMappings();
+                var discountMapper = new Mappings.DiscountMappings();
+                //var categoryMapper = new Mappings.CategoryMappings();
+
+                var discounts = productToStore.Discounts.Select(d => discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
+
+
+                var productCategoryMapping = productToStore.Categories.Select(c => new ProductCategoryMapping { ProductId = productToStore.ProductId, CategoryId = c.CategoryId }).ToList();
+
+                await _productRepository.UpdateProduct(productMapper.ProductToStoreToProductEntity(productToStore, productCategoryMapping, discounts));
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(productToStore));
+            }
         }
     }
 }

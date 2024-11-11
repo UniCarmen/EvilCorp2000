@@ -1,7 +1,7 @@
 ﻿@page
 @model ProductManagementModel
 @using RazorPagesSpielwiese.Models
-@using RazorPagesSpielwiese.Pages.Shared
+@using RazorPagesSpielwiese.Pages.Shared.Partials
 @*@using static RazorPagesSpielwiese.Pages.ProductManagement.Index*@
 
 @{
@@ -34,11 +34,26 @@
                 <td>
                     <p>
                         <a href="#" data-bs-toggle="modal" data-bs-target="#productDetailsModal-@product.ProductId">@product.ProductName</a>
-                        @await Html.PartialAsync("Shared/ProductDetailsModalPartial", new ProductDetailsModalPartialModel { Product = product })
+                        @await Html.PartialAsync("Shared/Partials/ProductDetailsModalPartial", new ProductDetailsModalPartialModel { Product = product })
                     </p>
 
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#alterProductsModal-@product.ProductId">Alter Product</a>
-                    @await Html.PartialAsync("Shared/AlterProductModalPartial", new AlterProductModalPartialModel { Product = product, Categories = Model.Categories })
+                    @* <form method="post" asp-page-handler="SelectProductId">
+                        <input type="hidden" name="selectedProductId" value="@product.ProductId" />
+                        <button type="submit" data-bs-toggle="modal" data-bs-target="#alterProductsModal-@product.ProductId">
+                            Produkt bearbeiten
+                        </button>
+                    </form> *@
+
+                    @* <form method="post" asp-page-handler="SelectProductId">
+                        <input type="hidden" name="selectedProductId" value="@product.ProductId" />
+                        <button type="submit" data-bs-toggle="modal" data-bs-target="#alterProductModal">
+                            Produkt bearbeiten
+                        </button>
+                    </form>
+ *@
+
+                    <a href="?selectedProductId=@product-ProductId" data-bs-toggle="modal" data-bs-target="#alterProductsModal-@product.ProductId">Alter Product</a>
+                    @await Html.PartialAsync("Shared/Partials/AlterProductModalPartial", new AlterProductModalPartialModel { Product = product, Categories = Model.Categories }) 
                 </td>
                 <td>
                     <p>@product.ProductPicture</p>

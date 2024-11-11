@@ -15,7 +15,13 @@
             </div>
             <div class="modal-body">
                  
+                @* der Handler verweist auf die OnPostSave der Hauptseite *@
                 <form method="post" asp-page-handler="Save">
+
+                    <input type="hidden" name="ProductId" value="@Model.Product.ProductId" />
+                        
+                    
+                    
                     <div class="mb-3">
                         <label for="productName" class="form-label">Produktname</label>
                         <input type="text" id="productName" name="ProductName" class="form-control" value="@Model.Product.ProductName" />
@@ -37,7 +43,7 @@
                     <div class="mb-3">
                         <label for="categories" class="form-label">Categories</label>
 
-                        <select id="categories" name="SelectedCategories" class="form-select" multiple>
+                        <select id="categories" name="SelectedCategoryIds" class="form-select" multiple>
                             @foreach (var category in Model.Categories)
                             {
                                 var productCategories = Model.Product.Categories.Select(c => c.CategoryId);
@@ -73,7 +79,7 @@
                             <span class="input-group-text">%</span>
                         </div>
 
-                        @Model.Product.Discounts.OrderByDescending(d => d.StartDate);
+                        @* @Model.Product.Discounts.OrderByDescending(d => d.StartDate); *@
                         @for (int i = 0; i < Model.Product.Discounts.Count; i++)
                         {
                             <div class="input-group mb-2">
@@ -91,7 +97,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-success">Speichern</button>
-                    <a href="@Url.Page("ModalPartial", new { productId = Model.Product.ProductId, isEditMode = false })" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modal-@Model.Product.ProductId">Abbrechen</a>
+                    <a class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Abbrechen</a>
 
 
                 </form>

@@ -28,7 +28,7 @@ namespace RazorPagesSpielwiese.Pages
             {
                 ProductsForSale = await _productForSaleManager.GetProductsForSale();
             }
-            catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte", ex); }
+            catch (Exception ex) { _logger.LogError(ex, "Error getting the products from the database"); }
 
         }
 

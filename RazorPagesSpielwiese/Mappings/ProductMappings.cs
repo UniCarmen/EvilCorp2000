@@ -36,6 +36,7 @@ namespace RazorPagesSpielwiese.Mappings
             };
         }
 
+
         public Product ProductToStoreToProductEntity(ProductToStoreDTO productToStore, List<ProductCategoryMapping> categories, List<Discount> dicsounts)
         {
             var newProductId = productToStore.ProductId;
@@ -53,7 +54,7 @@ namespace RazorPagesSpielwiese.Mappings
                 ProductPrice = productToStore.Price,
                 AmountOnStock = productToStore.AmountOnStock,
                 Discounts = dicsounts,
-                //noch kein Discount und Rating
+                Rating = productToStore.Rating
             };
         }
 
@@ -72,5 +73,7 @@ namespace RazorPagesSpielwiese.Mappings
                 Rating = product.Rating
             };
         }
+
+        //public Produ
     }
 }
