@@ -8,5 +8,6 @@ namespace RazorPagesSpielwiese.Repositories
         Task<List<Category>> GetAllCategories();
         Task SaveNewCategory(Category productClass);
         Task UpdateCategory(Category newProductClass);
+        List<Category> AttachCategoriesIfNeeded(List<Category> categories);
     }
 }

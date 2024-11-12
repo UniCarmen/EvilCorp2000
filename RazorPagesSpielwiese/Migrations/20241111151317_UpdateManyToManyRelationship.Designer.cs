@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RazorPagesSpielwiese.DBContexts;
 
@@ -11,9 +12,11 @@ using RazorPagesSpielwiese.DBContexts;
 namespace RazorPagesSpielwiese.Migrations
 {
     [DbContext(typeof(EvilCorp2000Context))]
-    partial class EvilCorp2000ContextModelSnapshot : ModelSnapshot
+    [Migration("20241111151317_UpdateManyToManyRelationship")]
+    partial class UpdateManyToManyRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

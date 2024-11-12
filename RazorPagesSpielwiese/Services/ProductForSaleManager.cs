@@ -33,9 +33,9 @@ namespace RazorPagesSpielwiese.Services
             {
                 var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(product.ProductId);
 
-                var categories = product.ProductCategoryMappings
-                    .Select(mapping => mapping.Category.CategoryName)
-                    .ToList();
+                //var categories = product.ProductCategoryMappings
+                //    .Select(mapping => mapping.Category.CategoryName)
+                //    .ToList();
 
                 //if (categories.Count == 0)
                 //{
@@ -44,7 +44,7 @@ namespace RazorPagesSpielwiese.Services
 
                 var productMapper = new Mappings.ProductMappings();
 
-                productsForSale.Add(productMapper.ProductToProductForSale(product, currentDiscount, categories));
+                productsForSale.Add(productMapper.ProductToProductForSale(product, currentDiscount));
             }
 
             return productsForSale;
@@ -61,13 +61,13 @@ namespace RazorPagesSpielwiese.Services
 
             var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(id);
 
-            var categories = productEntity.ProductCategoryMappings
-                    .Select(mapping => mapping.Category.CategoryName)
-                    .ToList();
+            //var categories = productEntity.ProductCategoryMappings
+            //        .Select(mapping => mapping.Category.CategoryName)
+            //        .ToList();
 
             var productMapper = new Mappings.ProductMappings();
 
-            return productMapper.ProductToProductForSale(productEntity, currentDiscount, categories);
+            return productMapper.ProductToProductForSale(productEntity, currentDiscount);
         }
     }
 }

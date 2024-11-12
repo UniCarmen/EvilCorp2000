@@ -14,7 +14,7 @@ namespace RazorPagesSpielwiese.Pages.NewProduct
 
         [Required(ErrorMessage = "Category required")]
         [Display(Name = "Category")]
-        public string CategoryFromSelect { get; set; } = "";
+        public List<Guid> CategoriyIdsFromSelect { get; set; } = [];
 
         [Display(Name = "ProductPicture")]
         public string? ProductPicture { get; set; }

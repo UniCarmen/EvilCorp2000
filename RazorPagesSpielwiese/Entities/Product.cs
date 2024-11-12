@@ -30,6 +30,5 @@ public partial class Product
 
     public virtual ICollection<Discount> Discounts { get; set; } = new List<Discount>();
 
-    [InverseProperty("Product")]
-    public virtual ICollection<ProductCategoryMapping> ProductCategoryMappings { get; set; } = new List<ProductCategoryMapping>();
+    public virtual ICollection<Category> Categories { get; set; } = new List<Category>();
 }

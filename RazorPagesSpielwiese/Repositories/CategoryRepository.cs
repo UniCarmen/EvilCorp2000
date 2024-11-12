@@ -15,7 +15,7 @@ namespace RazorPagesSpielwiese.Repositories
 
         public async Task<List<Category>> GetAllCategories()
         {
-            return await _context.Category.ToListAsync();
+            return await _context.Category.AsNoTracking().ToListAsync ();
         }
 
         public async Task SaveNewCategory(Category category)
@@ -52,6 +52,15 @@ namespace RazorPagesSpielwiese.Repositories
             }
             _context.Category.Remove(oldClass);
             await _context.SaveChangesAsync();
+        }
+
+        public List<Category> AttachCategoriesIfNeeded(List<Category> categories)
+        {
+            foreach (var category in categories)
+            {
+                _context.Attach(category); // Verhindert das Hinzufügen neuer Kategorien in der Datenbank
+            }
+            return categories;
         }
     }
 }

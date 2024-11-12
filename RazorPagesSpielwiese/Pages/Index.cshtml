@@ -23,11 +23,12 @@
     <div>
         <p>
             <h5>@product.ProductName.Trim()</h5>
-            @{
+            @if (@product.Categories.Count != 0)
+            { 
                 var categoryLine = @product.Categories.Aggregate((c1, c2) => c1 + ", " + c2);
                 <b>@categoryLine</b>
+                
             }
-            
         </p>
         <p>@product.Price</p>
         <p>@product.Description</p>

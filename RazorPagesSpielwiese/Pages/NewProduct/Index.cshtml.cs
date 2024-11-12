@@ -62,8 +62,8 @@ namespace RazorPagesSpielwiese.Pages.NewProduct
 
                 int selectNumber;
 
-                int.TryParse(NewProduct.CategoryFromSelect, out selectNumber);
-                var category = categories[selectNumber];
+
+                var category = categories.FindAll(c => NewProduct.CategoriyIdsFromSelect.Contains(c.CategoryId));
 
                 if (category == null)
                 {
@@ -75,8 +75,7 @@ namespace RazorPagesSpielwiese.Pages.NewProduct
                     Price = NewProduct.Price,
                     ProductName = NewProduct.ProductName,
                     AmountOnStock = NewProduct.AmountOnStock,
-                    //TODO: hier eine Liste
-                    Categories = [category],
+                    Categories = category,
                     Description = NewProduct.Description,
                     ProductPicture = NewProduct.ProductPicture,
                     //TODO: noch füllen bzw von Oberfläche übergeben

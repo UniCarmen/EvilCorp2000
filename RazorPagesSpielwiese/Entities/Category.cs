@@ -14,6 +14,5 @@ public partial class Category
     [Key]
     public Guid CategoryId { get; set; }
 
-    [InverseProperty("Category")]
-    public virtual ICollection<ProductCategoryMapping> ProductCategoryMappings { get; set; } = new List<ProductCategoryMapping>();
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

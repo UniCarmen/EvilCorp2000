@@ -1,4 +1,5 @@
-﻿using RazorPagesSpielwiese.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using RazorPagesSpielwiese.Entities;
 using RazorPagesSpielwiese.Models;
 using RazorPagesSpielwiese.Repositories;
 using System.Collections;
@@ -31,9 +32,8 @@ namespace RazorPagesSpielwiese.Services
                 var discountMapper = new Mappings.DiscountMappings();
                 var currentDiscounts = currentDiscountEntities.Select(de => discountMapper.DiscountToDiscountDTO(de)).ToList();
 
-                var categories = product.ProductCategoryMappings
-                    .Select(mapping => new CategoryDTO { CategoryName = mapping.Category.CategoryName, CategoryId = mapping.Category.CategoryId})
-                    .ToList();
+                var categorieMapper = new Mappings.CategoryMappings();
+                var categories = product.Categories.Select(c => categorieMapper.CategoryEntityToCategoryModel(c)).ToList();
 
                 var productMapper = new Mappings.ProductMappings();
 
@@ -61,11 +61,7 @@ namespace RazorPagesSpielwiese.Services
 
         public async Task<List<Models.CategoryDTO>> GetCategories()
         {
-            //get all categories
             var categoryEntities = await _categoryRepository.GetAllCategories();
-
-            //if (categoryEntities.Count == 0)
-            //{ throw new ArgumentNullException(nameof(categoryEntities)); }
 
             var Mapping = new Mappings.CategoryMappings();
             return categoryEntities.Select(c => Mapping.CategoryEntityToCategoryModel(c)).ToList();
@@ -78,14 +74,17 @@ namespace RazorPagesSpielwiese.Services
             {
                 var productMapper = new Mappings.ProductMappings();
                 var discountMapper = new Mappings.DiscountMappings();
-                //var categoryMapper = new Mappings.CategoryMappings();
+                var categoryMapper = new Mappings.CategoryMappings();
 
                 var discounts = productToStore.Discounts.Select(d => discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
 
+                var categories = productToStore.Categories.Select(c =>
+                    categoryMapper.CategoryDtoToCategory(c)
+                ).ToList();
 
-                var productCategoryMapping = productToStore.Categories.Select(c => new ProductCategoryMapping { ProductId = productToStore.ProductId, CategoryId = c.CategoryId }).ToList();
+                categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
 
-                await _productRepository.AddProduct(productMapper.ProductToStoreToProductEntity(productToStore, productCategoryMapping, discounts));
+                await _productRepository.AddProduct(productMapper.ProductToStoreToProductEntity(productToStore, categories, discounts));
             }
             else
             {
@@ -100,14 +99,16 @@ namespace RazorPagesSpielwiese.Services
             {
                 var productMapper = new Mappings.ProductMappings();
                 var discountMapper = new Mappings.DiscountMappings();
-                //var categoryMapper = new Mappings.CategoryMappings();
+                var categoryMapper = new Mappings.CategoryMappings();
 
                 var discounts = productToStore.Discounts.Select(d => discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
 
+                var categories = productToStore.Categories.Select(c => categoryMapper.CategoryDtoToCategory(c)).ToList();
 
-                var productCategoryMapping = productToStore.Categories.Select(c => new ProductCategoryMapping { ProductId = productToStore.ProductId, CategoryId = c.CategoryId }).ToList();
+                //markiert Die Kategorien im Context in den Categories als bereits existierend, damit nicht versucht wird, diese neu anzulegen
+                categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
 
-                await _productRepository.UpdateProduct(productMapper.ProductToStoreToProductEntity(productToStore, productCategoryMapping, discounts));
+                await _productRepository.UpdateProduct(productMapper.ProductToStoreToProductEntity(productToStore, categories, discounts));
             }
             else
             {

@@ -5,7 +5,7 @@ namespace RazorPagesSpielwiese.Mappings
 {
     public class ProductMappings
     {
-        public ProductForSaleDTO ProductToProductForSale (Product productEntity, Discount currentDiscount, List<string> categories)
+        public ProductForSaleDTO ProductToProductForSale (Product productEntity, Discount currentDiscount)
         {
             decimal discountedPrice = 0.0m;
             double discountedPercentage;
@@ -27,7 +27,7 @@ namespace RazorPagesSpielwiese.Mappings
                 ProductName = productEntity.ProductName,
                 ProductPicture = productEntity.ProductPicture,
                 AmountOnStock = productEntity.AmountOnStock,
-                Categories = categories,
+                Categories = productEntity.Categories.Select(c => c.CategoryName).ToList(),
                 Description = productEntity.ProductDescription ?? "",
                 Discount = discountedPercentage,
                 DiscountedPrice = discountedPrice,
@@ -37,7 +37,7 @@ namespace RazorPagesSpielwiese.Mappings
         }
 
 
-        public Product ProductToStoreToProductEntity(ProductToStoreDTO productToStore, List<ProductCategoryMapping> categories, List<Discount> dicsounts)
+        public Product ProductToStoreToProductEntity(ProductToStoreDTO productToStore, List<Category> categories, List<Discount> dicsounts)
         {
             var newProductId = productToStore.ProductId;
             if(newProductId == Guid.Empty)
@@ -49,7 +49,7 @@ namespace RazorPagesSpielwiese.Mappings
                 ProductId = newProductId,
                 ProductName = productToStore.ProductName,
                 ProductPicture = productToStore.ProductPicture,
-                ProductCategoryMappings = categories,
+                Categories = categories,
                 ProductDescription = productToStore.Description,
                 ProductPrice = productToStore.Price,
                 AmountOnStock = productToStore.AmountOnStock,

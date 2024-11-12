@@ -16,7 +16,7 @@ namespace RazorPagesSpielwiese.Repositories
 
         public async Task<List<Product>> GetAllProductsAsync()
         {            
-            return await _context.Products.Include(p => p.ProductCategoryMappings).ThenInclude(pcm => pcm.Category).ToListAsync();
+            return await _context.Products.Include(p => p.Categories).Include(c => c.Categories).ToListAsync();
         }
 
         public async Task<Product?> GetProductById(Guid id)
@@ -32,10 +32,24 @@ namespace RazorPagesSpielwiese.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateProduct(Product product)
+        public async Task UpdateProduct(Product productToStore)
         {
-            if (product == null) { throw new ArgumentNullException(nameof(product)); }
-            _context.Products.Update(product);
+            if (productToStore == null) 
+            { throw new ArgumentNullException(nameof(productToStore)); }
+            
+            var productEntity = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productToStore.ProductId);
+
+            if (productEntity == null)
+            { throw new ArgumentNullException(nameof(productEntity));}
+
+            //löschen des alten products: verbindungen in join tabellen werden automatisch gelöscht
+            //die methode könnte leistungseinbußen haben, da ich kein update mache, sprich die Cat und Disc Tabellen manuell ändere, das geladene ProductIdentity ändere und dann speichere
+            await DeleteProduct(productEntity);
+
+            await _context.SaveChangesAsync();
+
+            await AddProduct(productToStore);
+
             await _context.SaveChangesAsync();
         }
 
@@ -44,15 +58,6 @@ namespace RazorPagesSpielwiese.Repositories
             if (product == null) { throw new ArgumentNullException(nameof(product)); }
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
-        }
-
-        public async Task<List<Category>> GetCategoriesForProduct (Product product)
-        {
-            if (product == null) { throw new ArgumentNullException(nameof(product)); }
-            return await _context.ProductCategoryMappings
-                .Where(pcm => pcm.ProductId == product.ProductId)
-                .Select(pcm => pcm.Category)
-                .ToListAsync();
         }
     }
 }
