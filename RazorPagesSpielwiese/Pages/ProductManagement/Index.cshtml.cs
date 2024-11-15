@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorPagesSpielwiese.Entities;
 using RazorPagesSpielwiese.Models;
-using RazorPagesSpielwiese.Pages.Shared;
-using RazorPagesSpielwiese.Pages.Shared.Partials;
+using RazorPagesSpielwiese.Pages.ProductManagement;
+using RazorPagesSpielwiese.Pages.ProductManagement.Partials;
 using RazorPagesSpielwiese.Services;
 
 namespace RazorPagesSpielwiese.Pages.ProductManagement

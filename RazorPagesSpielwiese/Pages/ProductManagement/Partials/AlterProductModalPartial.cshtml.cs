@@ -4,7 +4,7 @@ using RazorPagesSpielwiese.Models;
 using RazorPagesSpielwiese.Services;
 using System.Diagnostics.Eventing.Reader;
 
-namespace RazorPagesSpielwiese.Pages.Shared.Partials
+namespace RazorPagesSpielwiese.Pages.ProductManagement.Partials
 {
     public class AlterProductModalPartialModel
     {

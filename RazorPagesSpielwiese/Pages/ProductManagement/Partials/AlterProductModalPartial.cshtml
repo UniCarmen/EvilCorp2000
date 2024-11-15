@@ -18,10 +18,20 @@
                 @* der Handler verweist auf die OnPostSave der Hauptseite *@
                 <form method="post" asp-page-handler="Save">
 
-                    <input type="hidden" name="ProductId" value="@Model.Product.ProductId" />
-                        
+                    <input asp-for="Product.ProductId" type="hidden" />
+
+                    <div class="mb-3">
+                        <label asp-for="Product.ProductName" class="form-label"></label>
+                        <input asp-for="Product.ProductName" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Product.Description" class="form-label"></label>
+                        <textarea asp-for="Product.Description" class="form-control"></textarea>
+                    </div>
                     
-                    
+                    @* <input type="hidden" name="ProductId" value="@Model.Product.ProductId" />
+                       
                     <div class="mb-3">
                         <label for="productName" class="form-label">Produktname</label>
                         <input type="text" id="productName" name="ProductName" class="form-control" value="@Model.Product.ProductName" />
@@ -29,18 +39,28 @@
                     <div class="mb-3">
                         <label for="description" class="form-label">Beschreibung</label>
                         <textarea id="description" name="Description" class="form-control">@Model.Product.Description</textarea>
-                    </div>
+                    </div> *@
+
                     <div class="mb-3">
-                        <label for="price" class="form-label">Preis</label>
-                        <input type="number" step="0.01" id="price" name="Price" class="form-control" value="@Model.Product.Price" />
-                    </div>
-                    <div class="mb-3">
-                        <label for="amountOnStock" class="form-label">Lagerbestand</label>
-                        <input type="number" id="amountOnStock" name="AmountOnStock" class="form-control" value="@Model.Product.AmountOnStock" />
+                        <label asp-for="@Model.Product.Price" class="form-label"></label>
+                        <div class="input-group">
+                            <input asp-for="@Model.Product.Price" class="form-control" aria-describedby="currency-symbol" />
+                            <span class="input-group-text" id="currency-symbol">€</span>
+                        </div>
+                        <span asp-validation-for="@Model.Product.Price" class="text-danger"></span>
                     </div>
 
-                    @* Categories *@
+                    @* <div class="mb-3">
+                        <label for="amountOnStock" class="form-label">AmountOnStock</label>
+                        <input type="number" id="amountOnStock" name="AmountOnStock" class="form-control" value="@Model.Product.AmountOnStock" />
+                    </div> *@
+
                     <div class="mb-3">
+                        <label asp-for="Product.AmountOnStock" class="form-label"></label>
+                        <input asp-for="Product.AmountOnStock" type="number" class="form-control" />
+                    </div>
+
+                    @* <div class="mb-3">
                         <label for="categories" class="form-label">Categories</label>
 
                         <select id="categories" name="SelectedCategoryIds" class="form-select" multiple>
@@ -59,11 +79,31 @@
                         </select>
 
                         <small class="form-text text-muted">Hold Ctrl to select multiple categories</small>
+                    </div> *@
+
+                    @* Categories *@
+                    <div class="mb-3">
+                        <label asp-for="SelectedCategoryIds" class="form-label"></label>
+                        <select asp-for="SelectedCategoryIds" class="form-select" multiple>
+                            @foreach (var category in Model.Categories)
+                            {
+                                var productCategories = Model.Product.Categories.Select(c => c.CategoryId);
+                                if (productCategories.Contains(category.CategoryId))
+                                {
+                                    <option value="@category.CategoryId" selected>@category.CategoryName</option>
+                                }
+                                else
+                                {
+                                    <option value="@category.CategoryId">@category.CategoryName</option>
+                                }
+                            }
+                        </select>
+                        <small class="form-text text-muted">Hold Ctrl to select multiple categories</small>
                     </div>
 
 
                     @* Discounts *@
-                    <div class="mb-3">
+                    @* <div class="mb-3">
                         <label class="form-label">Rabatte</label>
 
                         <!-- Leere Felder für neuen Rabatt -->
@@ -79,7 +119,6 @@
                             <span class="input-group-text">%</span>
                         </div>
 
-                        @* @Model.Product.Discounts.OrderByDescending(d => d.StartDate); *@
                         @for (int i = 0; i < Model.Product.Discounts.Count; i++)
                         {
                             <div class="input-group mb-2">
@@ -94,7 +133,40 @@
                                 <span class="input-group-text">%</span>
                             </div>
                         }   
-                    </div>
+                    </div> *@
+
+                    @*erst noch richtig einbauen, damit auch ein neuer Rabatt hinzugefügt werden kann*@
+                    @* <div class="mb-3">
+                        <label class="form-label">Rabatte</label>
+
+                        <!-- Leere Felder für neuen Rabatt -->
+                        <div class="input-group mb-2">
+                            <span class="input-group-text">Startdatum</span>
+                            <input asp-for="NewDiscount.StartDate" type="date" class="form-control" />
+
+                            <span class="input-group-text">Enddatum</span>
+                            <input asp-for="NewDiscount.EndDate" type="date" class="form-control" />
+
+                            <span class="input-group-text">Prozentsatz</span>
+                            <input asp-for="NewDiscount.Percentage" type="number" step="0.01" class="form-control" />
+                            <span class="input-group-text">%</span>
+                        </div>
+
+                        @for (int i = 0; i < Model.Product.Discounts.Count; i++)
+                        {
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">Startdatum</span>
+                                <input asp-for="Product.Discounts[i].StartDate" type="date" class="form-control" />
+
+                                <span class="input-group-text">Enddatum</span>
+                                <input asp-for="Product.Discounts[i].EndDate" type="date" class="form-control" />
+
+                                <span class="input-group-text">Prozentsatz</span>
+                                <input asp-for="Product.Discounts[i].DiscountPercentage" type="number" step="0.01" class="form-control" />
+                                <span class="input-group-text">%</span>
+                            </div>
+                        }
+                    </div> *@
 
                     <button type="submit" class="btn btn-success">Speichern</button>
                     <a class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Abbrechen</a>

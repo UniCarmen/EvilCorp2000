@@ -13,8 +13,8 @@ namespace RazorPagesSpielwiese.Pages.NewProduct
 
         [BindProperty]
         //Verwendung von ViewModel, damit es bei der Validierung des ModelStates keine Probleme gibt, da ich den Wert für die Category erst herausfischen muss
-        public NewProductViewModel NewProduct { get; set; }
-        public List<CategoryDTO> Categories { get; set; }
+        public NewProductViewModel? NewProduct { get; set; }
+        public List<CategoryDTO> Categories { get; set; } = [];
         public List<SelectListItem> CategoriesForSelect { set; get; }
 
 
@@ -26,15 +26,7 @@ namespace RazorPagesSpielwiese.Pages.NewProduct
 
         public async Task OnGet()
         {
-
-            try
-            {
-                Categories = await _internalProductManager.GetCategories();
-                CategoriesForSelect = Categories
-                    .Select((c, i) => new SelectListItem { Value = i/*+1*/.ToString("D"), Text = c.CategoryName })
-                    .ToList();
-            }
-            catch (Exception ex) { _logger.LogError("Error getting the categories from the database: {0}", ex); }
+            await InitializeCategoriesAsync();
         }
 
         //IActionResult, um zur gleichen Seite redirecten zu können
@@ -50,11 +42,19 @@ namespace RazorPagesSpielwiese.Pages.NewProduct
                 //    return Redirect(httpsUrl);
                 //}
 
-
+                var descriptionErrors = ModelState["NewProduct.Description"]?.Errors;
+                if (descriptionErrors != null && descriptionErrors.Any())
+                {
+                    foreach (var error in descriptionErrors)
+                    {
+                        Console.WriteLine($"Description Error: {error.ErrorMessage}");
+                    }
+                }
 
                 if (!ModelState.IsValid)
                 {
                     // Falls das Formular ungültig ist, bleibe auf der Seite und zeige Fehler an
+                    await InitializeCategoriesAsync();
                     return Page();
                 }
 
@@ -70,11 +70,21 @@ namespace RazorPagesSpielwiese.Pages.NewProduct
                     throw new ArgumentNullException(nameof(category));
                 }
 
+                if (NewProduct.Price == null)
+                {
+                    throw new ArgumentNullException(nameof(NewProduct.Price));
+                }
+
+                if (NewProduct.AmountOnStock == null)
+                {
+                    throw new ArgumentNullException(nameof(NewProduct.AmountOnStock));
+                }
+
                 var productToStore = new ProductToStoreDTO
                 {
-                    Price = NewProduct.Price,
+                    Price = NewProduct.Price.Value,
                     ProductName = NewProduct.ProductName,
-                    AmountOnStock = NewProduct.AmountOnStock,
+                    AmountOnStock = NewProduct.AmountOnStock.Value,
                     Categories = category,
                     Description = NewProduct.Description,
                     ProductPicture = NewProduct.ProductPicture,
@@ -84,6 +94,10 @@ namespace RazorPagesSpielwiese.Pages.NewProduct
 
 
                 await _internalProductManager.SaveProductToStore(productToStore);
+
+                //TempData, um in der Oberfläche anzuzeigen, dass der Speichervorgang erfolgreich gelaufen ist / Artikel erfolgreich gespeichert wurde
+                TempData["SuccessMessage"] = "Artikel wurde erfolgreich gespeichert.";
+
                 return RedirectToPage(); //oder Page()
                                          //später mal? auf eine andere Seiten Leiten
                                          //return RedirectToPage("Success");
@@ -93,8 +107,21 @@ namespace RazorPagesSpielwiese.Pages.NewProduct
                 _logger.LogError("Unexpected Error: {0}", ex);
                 return Page();
             }
+        }
 
-
+        private async Task InitializeCategoriesAsync()
+        {
+            try
+            {
+                Categories = await _internalProductManager.GetCategories();
+                CategoriesForSelect = Categories
+                    .Select((c, i) => new SelectListItem { Value = i.ToString("D"), Text = c.CategoryName })
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error getting the categories from the database: {0}", ex);
+            }
         }
     }
 
