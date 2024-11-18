@@ -11,7 +11,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement.Partials
         [BindProperty]
         public ProductForInternalUseDTO Product { get; set; }
 
-        //public ProductToStoreDTO ProductToStore { get; set; }
+
         public List<CategoryDTO> Categories { get; set; }
 
         [BindProperty]

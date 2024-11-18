@@ -3,11 +3,56 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using RazorPagesSpielwiese.Models;
 using RazorPagesSpielwiese.Services;
+using System.ComponentModel.DataAnnotations;
+using static RazorPagesSpielwiese.Models.NewProductViewModelValidations1;
 
 namespace RazorPagesSpielwiese.Pages.NewProduct
 {
     public class NewProductModel : PageModel
     {
+        //[BindProperty]
+        //[Required(ErrorMessage = "Productname required")]
+        //[Display(Name = "Productname")]
+        //[StringLength(100)]
+        //public string ValidatedProductName { get; set; } = "";
+
+
+        //[BindProperty]
+        //[Display(Name = "Description")]
+        //public string? ValidatedDescription { get; set; } = "";
+
+        //[BindProperty]
+        //[GuidListValidation(ErrorMessage = "Please select at least one category.")]
+        //[Display(Name = "Category")]
+        //public List<Guid> ValidatedSelectedCategoryIds { get; set; } = [];
+
+        //[BindProperty]
+        //[Display(Name = "ProductPicture")]
+        //public string? ValidatedProductPicture { get; set; }
+
+
+        //[BindProperty]
+        //[DecimalValidation(0.99, "Price required")]
+        //[Display(Name = "Price")]
+        //public decimal? ValidatedPrice { get; set; }
+
+        ////[Display(Name = "")]
+        ////public double? Discount { get; set; }
+
+        //[BindProperty]
+        //[IntValidation(ErrorMessage = "Amount on Stock required")]
+        //[Display(Name = "Amount on Stock")]
+        //public int? ValidatedAmountOnStock { get; set; }
+
+
+
+
+
+
+
+
+
+
         private readonly ILogger<NewProductModel> _logger;
         private readonly IInternalProductManager _internalProductManager;
 

@@ -2,7 +2,6 @@
 @model ProductManagementModel
 @using RazorPagesSpielwiese.Models
 @using RazorPagesSpielwiese.Pages.ProductManagement.Partials
-@*@using static RazorPagesSpielwiese.Pages.ProductManagement.Index*@
 
 @{
     ViewData["Title"] = "Product Management";
@@ -15,10 +14,11 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3>Product Management</h3>
-    <!-- Button to trigger a modal -->
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+    @*irgendwie flags setzen, und über den button switchen, ob das modal gerendert werden soll - mit if*@
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProductModal">
         Add New Product
     </button>
+    @await Html.PartialAsync("Partials/NewProductModalPartial", new NewProductModalPartialModel1 { Categories = Model.Categories })
 </div>
 
 
@@ -37,65 +37,54 @@
         </tr>
     </thead>
     <tbody>
-        @foreach(ProductForInternalUseDTO product in Model.Products)
+        @if (Model.Products != null)
         {
-            <tr>
-                <td>
-                    <p>
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#productDetailsModal-@product.ProductId">@product.ProductName</a>
-                        @await Html.PartialAsync("ProductManagement/Partials/ProductDetailsModalPartial", new ProductDetailsModalPartialModel { Product = product })
-                    </p>
+            @foreach (ProductForInternalUseDTO product in Model.Products)
+            {
+                <tr>
+                    <td>
+                        <p>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#productDetailsModal-@product.ProductId">@product.ProductName</a>
+                            @await Html.PartialAsync("Partials/ProductDetailsModalPartial", new ProductDetailsModalPartialModel { Product = product })
+                        </p>
 
-                    @* <form method="post" asp-page-handler="SelectProductId">
-                        <input type="hidden" name="selectedProductId" value="@product.ProductId" />
-                        <button type="submit" data-bs-toggle="modal" data-bs-target="#alterProductsModal-@product.ProductId">
-                            Produkt bearbeiten
-                        </button>
-                    </form> *@
-
-                    @* <form method="post" asp-page-handler="SelectProductId">
-                        <input type="hidden" name="selectedProductId" value="@product.ProductId" />
-                        <button type="submit" data-bs-toggle="modal" data-bs-target="#alterProductModal">
-                            Produkt bearbeiten
-                        </button>
-                    </form>
- *@
-
-                    <a href="?selectedProductId=@product-ProductId" data-bs-toggle="modal" data-bs-target="#alterProductsModal-@product.ProductId">Alter Product</a>
-                    @await Html.PartialAsync("ProductManagement/Partials/AlterProductModalPartial", new AlterProductModalPartialModel { Product = product, Categories = Model.Categories })
-                </td>
-                <td>
-                    <p>@product.ProductPicture</p>
-                </td>
-                <td>
-                    <p>@product.Description</p>
-                </td>
-                <td>
-                    <p>@product.Price</p>
-                </td>
-                <td>
-                    @foreach (DiscountDTO discount in @product.Discounts)
-                    {
-                        //TODO: price in euro oder so
-                        <p>@discount.StartDate.ToShortDateString() - @discount.EndDate.ToShortDateString() -@discount.DiscountPercentage%</p>
-                        <p>Discounted Price: @(@product.Price / 100.0m * (100.0m - ((decimal)discount.DiscountPercentage)))</p>
-                    }
-                </td>
-                <td>
-                    @foreach (CategoryDTO category in product.Categories)
-                    {
-                        <p>@category.CategoryName</p>
-                    }
-                </td>
-                <td>
-                    <p>@product.Rating</p>
-                    @*<i class="bi bi-star-fill"></i>*@
-                </td>
-                <td>
-                    <p>@product.AmountOnStock</p>
-                </td>
-            </tr>  
+                        <a href="?selectedProductId=@product-ProductId" data-bs-toggle="modal" data-bs-target="#alterProductsModal-@product.ProductId">Alter Product</a>
+                        @await Html.PartialAsync("Partials/AlterProductModalPartial", new AlterProductModalPartialModel { Product = product, Categories = Model.Categories })
+                    </td>
+                    <td>
+                        <p>@product.ProductPicture</p>
+                    </td>
+                    <td>
+                        <p>@product.Description</p>
+                    </td>
+                    <td>
+                        <p>@product.Price</p>
+                    </td>
+                    <td>
+                        @foreach (DiscountDTO discount in @product.Discounts)
+                        {
+                            //TODO: price in euro oder so
+                            <p>@discount.StartDate.ToShortDateString() - @discount.EndDate.ToShortDateString() -@discount.DiscountPercentage%</p>
+                            <p>Discounted Price: @(@product.Price / 100.0m * (100.0m - ((decimal)discount.DiscountPercentage)))</p>
+                        }
+                    </td>
+                    <td>
+                        @foreach (CategoryDTO category in product.Categories)
+                        {
+                            <p>@category.CategoryName</p>
+                        }
+                    </td>
+                    <td>
+                        <p>@product.Rating</p>
+                        @*<i class="bi bi-star-fill"></i>*@
+                    </td>
+                    <td>
+                        <p>@product.AmountOnStock</p>
+                    </td>
+                </tr>
+            }
         }
+        
     </tbody>
 </table>
 

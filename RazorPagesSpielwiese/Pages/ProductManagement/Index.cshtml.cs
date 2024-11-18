@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorPagesSpielwiese.Entities;
 using RazorPagesSpielwiese.Models;
+using RazorPagesSpielwiese.Pages.NewProduct;
 using RazorPagesSpielwiese.Pages.ProductManagement;
 using RazorPagesSpielwiese.Pages.ProductManagement.Partials;
 using RazorPagesSpielwiese.Services;
@@ -29,6 +30,10 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         [BindProperty]
         public List<Guid>? SelectedCategoryIds { get; set; }
 
+        //NewProductValidation Test aus new Product
+        [BindProperty]
+        public NewProductViewModel1? ValidatedProduct { get; set; }
+
         public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger)
         {
             _internalProductManager = internalProductManager ?? throw new ArgumentNullException(nameof(internalProductManager));
@@ -51,11 +56,31 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
         public async Task<IActionResult> OnPostSave()
         {
-            if (Product != null)
+
+            if (Product != null || ValidatedProduct != null)
             {
+
                 var categories = await _internalProductManager.GetCategories();
 
                 var selectedCategories = categories.FindAll(c => SelectedCategoryIds.Exists(id => id == c.CategoryId));
+
+
+                var newProduct = new ProductToStoreDTO { };
+                if(ValidatedProduct != null)
+                {
+
+                    newProduct.ProductName = ValidatedProduct.ProductName;
+                    newProduct.ProductPicture = ValidatedProduct.ProductPicture;
+                    newProduct.AmountOnStock = ValidatedProduct.AmountOnStock.Value;
+                    newProduct.Description = ValidatedProduct.Description;
+                    newProduct.Categories = selectedCategories;
+                    //Discounts = Product.Discounts,
+                    newProduct.Price = ValidatedProduct.Price.Value;
+
+                    await _internalProductManager.UpdateProductToStore(newProduct);
+                }
+
+
 
                 var productToStore = new ProductToStoreDTO
                 {
