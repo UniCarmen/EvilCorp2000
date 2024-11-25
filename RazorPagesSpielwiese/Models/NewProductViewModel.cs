@@ -23,16 +23,16 @@ namespace RazorPagesSpielwiese.Models
         public string? ProductPicture { get; set; }
 
 
-        [DecimalValidation(0.99, "Price required")]
-        //[Required(ErrorMessage = "Price required")]
+        //[DecimalValidation(0.99, "Price required")]
+        [Required(ErrorMessage = "Price required")]
         [Display(Name = "Price")]
         public decimal? Price { get; set; }
 
         //[Display(Name = "")]
         //public double? Discount { get; set; }
 
-        [IntValidation(ErrorMessage = "Amount on Stock required")]
-        //[Required(ErrorMessage = "Amount on Stock required")]
+        //[IntValidation(ErrorMessage = "Amount on Stock required")]
+        [Required(ErrorMessage = "Amount on Stock required")]
         [Display(Name = "Amount on Stock")]
         public int? AmountOnStock { get; set; }
     }

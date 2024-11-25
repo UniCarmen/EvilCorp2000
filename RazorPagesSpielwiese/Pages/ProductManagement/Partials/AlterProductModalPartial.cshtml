@@ -3,84 +3,90 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 
-<div class="modal fade" id="alterProductsModal-@Model.Product.ProductId" tabindex="-1" aria-labelledby="alterProduct" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="productModalLabel">
-                    Product details
-                </h5>
+@* <div class="modal fade" id="alterProductsModal-@Model.Product.ProductId" tabindex="-1" aria-labelledby="alterProduct" aria-hidden="true">
+    
+</div> *@
 
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                 
-                @* der Handler verweist auf die OnPostSave der Hauptseite *@
-                <form method="post" asp-page-handler="Save">
+<div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">
+                Alter Product
+            </h5>
 
-                    <input asp-for="Product.ProductId" type="hidden" />
+            <form method="post" asp-page-handler="CloseModal">
+                <button type="submit" class="btn-close" aria-label="Close"></button>
+            </form><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
 
-                    <div class="mb-3">
-                        <label asp-for="Product.ProductName" class="form-label">Product Name</label>
-                        <input asp-for="Product.ProductName" class="form-control" />
+            @* der Handler verweist auf die OnPostSave der Hauptseite *@
+            <form method="post" asp-page-handler="Save">
+
+                <input asp-for="Product.ProductId" type="hidden" />
+                <p>@Model.Product.ProductId</p>
+
+                <div class="mb-3">
+                    <label asp-for="Product.ProductName" class="form-label">Product Name</label>
+                    <input asp-for="Product.ProductName" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Product.Description" class="form-label"></label>
+                    <textarea asp-for="Product.Description" class="form-control"></textarea>
+                </div>
+
+
+                <div class="mb-3">
+                    <label asp-for="@Model.Product.Price" class="form-label"></label>
+                    <div class="input-group">
+                        <input asp-for="@Model.Product.Price" class="form-control" aria-describedby="currency-symbol" />
+                        <span class="input-group-text" id="currency-symbol">€</span>
                     </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Product.Description" class="form-label"></label>
-                        <textarea asp-for="Product.Description" class="form-control"></textarea>
-                    </div>
-                    
-
-                    <div class="mb-3">
-                        <label asp-for="@Model.Product.Price" class="form-label"></label>
-                        <div class="input-group">
-                            <input asp-for="@Model.Product.Price" class="form-control" aria-describedby="currency-symbol" />
-                            <span class="input-group-text" id="currency-symbol">€</span>
-                        </div>
-                        <span asp-validation-for="@Model.Product.Price" class="text-danger"></span>
-                    </div>
+                    <span asp-validation-for="@Model.Product.Price" class="text-danger"></span>
+                </div>
 
 
-                    <div class="mb-3">
-                        <label asp-for="Product.AmountOnStock" class="form-label">On Stock</label>
-                        <input asp-for="Product.AmountOnStock" type="number" class="form-control" />
-                    </div>
+                <div class="mb-3">
+                    <label asp-for="Product.AmountOnStock" class="form-label">On Stock</label>
+                    <input asp-for="Product.AmountOnStock" type="number" class="form-control" />
+                </div>
 
 
-                    @* Categories *@
-                    <div class="mb-3">
-                        <label asp-for="SelectedCategoryIds" class="form-label">Categories</label>
-                        <select asp-for="SelectedCategoryIds" class="form-select" multiple>
-                            @foreach (var category in Model.Categories)
+                @* Categories *@
+                <div class="mb-3">
+                    <label asp-for="SelectedCategoryIds" class="form-label">Categories</label>
+                    <select asp-for="SelectedCategoryIds" class="form-select" multiple>
+                        @foreach (var category in Model.Categories)
+                        {
+                            var productCategories = Model.Product.Categories.Select(c => c.CategoryId);
+                            if (productCategories.Contains(category.CategoryId))
                             {
-                                var productCategories = Model.Product.Categories.Select(c => c.CategoryId);
-                                if (productCategories.Contains(category.CategoryId))
-                                {
-                                    <option value="@category.CategoryId" selected>@category.CategoryName</option>
-                                }
-                                else
-                                {
-                                    <option value="@category.CategoryId">@category.CategoryName</option>
-                                }
+                                <option value="@category.CategoryId" selected>@category.CategoryName</option>
                             }
-                        </select>
-                        <small class="form-text text-muted">Hold Ctrl to select multiple categories</small>
-                    </div>
+                            else
+                            {
+                                <option value="@category.CategoryId">@category.CategoryName</option>
+                            }
+                        }
+                    </select>
+                    <small class="form-text text-muted">Hold Ctrl to select multiple categories</small>
+                </div>
 
 
-                    <button type="submit" class="btn btn-success">Save</button>
-                    <a class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Dismiss</a>
-                    @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-success">Save</button>
+                @* <a class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Dismiss</a> *@
+                @Html.AntiForgeryToken()
 
-                </form>
-                
+            </form>
+
+            <form method="post" asp-page-handler="CloseModal">
+                <button type="submit" class="btn btn-primary">Dismiss</button>
+            </form>
 
 
 
 
-
-            </div>
         </div>
     </div>
 </div>
-

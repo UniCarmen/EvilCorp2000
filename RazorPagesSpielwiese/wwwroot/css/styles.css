@@ -5,3 +5,7 @@
 .descriptionTh {
     width: 30%;
 }
+
+.modal-visible {
+    display: block !important;
+}

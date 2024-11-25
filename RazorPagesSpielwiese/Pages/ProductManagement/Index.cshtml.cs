@@ -10,8 +10,18 @@ using RazorPagesSpielwiese.Services;
 
 namespace RazorPagesSpielwiese.Pages.ProductManagement
 {
+    public enum ShowModalState
+    {
+        None,
+        New,
+        Alter
+    }
+
     public class ProductManagementModel : PageModel
     {
+        //Enum Flags, welches Modal angezeigt werden soll
+        //public Enum ShowModalState { get; set; }
+        public ShowModalState ModalState { get; set; } = ShowModalState.None;
 
         private readonly IInternalProductManager _internalProductManager;
         private readonly ILogger<ProductManagementModel> _logger;
@@ -19,8 +29,10 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         public List<ProductForInternalUseDTO>? Products;
         public List<CategoryDTO>? Categories { get; set; }
 
+
         //um es an das Partial weiterzugeben
         public Guid? SelectedProductId { get; set; }
+        public ProductForInternalUseDTO SelectedProduct {get; set; }
 
         //um die Daten aus dem Partial zu bekommen
         [BindProperty]
@@ -53,9 +65,41 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         }
 
 
+        public async Task<IActionResult> OnPostShowNewProductModal() 
+        {
+            ModalState = ShowModalState.New;
+            await LoadDataAsync();
+            return Page();
+        }
+
+
+        //was passiert, wenn nicht explizit der Schließen-Button gedrückt wird?
+        public async Task<IActionResult> OnPostCloseModal()
+        {
+            ModalState = ShowModalState.None;
+            await LoadDataAsync();
+            return Page();
+        }
+
+
+
+        public async Task<IActionResult> OnPostShowAlterProductModal(Guid selectedProductId)
+        {
+            SelectedProductId = selectedProductId;
+            await LoadDataAsync();
+            var products = await _internalProductManager.GetProductsForInternalUse();
+            SelectedProduct = products.FirstOrDefault(p => p.ProductId == selectedProductId);
+            
+            ModalState = ShowModalState.Alter;
+            return Page();
+            //muss hier das Product noch übergeben werden?
+        }
+
 
         public async Task<IActionResult> OnPostSave()
         {
+
+            //validation auch für altering product
 
             if (Product != null || ValidatedProduct != null)
             {
@@ -65,9 +109,14 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 var selectedCategories = categories.FindAll(c => SelectedCategoryIds.Exists(id => id == c.CategoryId));
 
 
+                //wie finde ich heraus, ob das product new ist oder nicht?
+                //id vorhanden oder nicht
+
                 var newProduct = new ProductToStoreDTO { };
                 if(ValidatedProduct != null)
                 {
+                    //Problem bei alter product: amout on stock in validated Product ist null
+
 
                     newProduct.ProductName = ValidatedProduct.ProductName;
                     newProduct.ProductPicture = ValidatedProduct.ProductPicture;
@@ -76,6 +125,9 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                     newProduct.Categories = selectedCategories;
                     //Discounts = Product.Discounts,
                     newProduct.Price = ValidatedProduct.Price.Value;
+
+                    //gucken, dass update nur bei alterproduct
+                    //und save product bei new product aufgerufen wird
 
                     await _internalProductManager.UpdateProductToStore(newProduct);
                 }
@@ -98,11 +150,12 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 //validation
 
                 await _internalProductManager.UpdateProductToStore(productToStore);
+
             }
 
-            
 
-            
+
+            ModalState = ShowModalState.None;
 
             //soll aber neu geladen werden
             return RedirectToPage();
@@ -119,5 +172,6 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
             catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }
 
         }
+
     }
 }
