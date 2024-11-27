@@ -1,11 +1,6 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using RazorPagesSpielwiese.Entities;
 using RazorPagesSpielwiese.Models;
-using RazorPagesSpielwiese.Pages.NewProduct;
-using RazorPagesSpielwiese.Pages.ProductManagement;
-using RazorPagesSpielwiese.Pages.ProductManagement.Partials;
 using RazorPagesSpielwiese.Services;
 
 namespace RazorPagesSpielwiese.Pages.ProductManagement
@@ -30,18 +25,14 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
 
         //Weitergabe an Partial
+        //? wofür nochmal die Id
         public Guid? SelectedProductId { get; set; }
-        public ProductForInternalUseDTO SelectedProduct {get; set; }
 
-        //TODO: muss weg, dafür soll ValidatedProduct verwendet werden
-        //um die Daten aus dem Partial zu bekommen
-        [BindProperty]
-        public ProductForInternalUseDTO? Product { get; set; }
 
         // Rückgabe aus dem Partial 
         //? warum ist es nullable?
         [BindProperty]
-        public ValidatedProduct? ValidatedProduct { get; set; }
+        public ValidatedProduct ValidatedProduct { get; set; }
 
 
         public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger)
@@ -63,15 +54,38 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         }
 
 
-        public async Task<IActionResult> OnPostShowNewProductModal() 
+        public async Task<IActionResult> OnPostShowNewProductModal(Guid selectedProductId) 
         {
-            ModalState = ShowModalState.New;
+            SelectedProductId = selectedProductId;
             await LoadDataAsync();
+
+            if (selectedProductId != Guid.Empty)
+            {
+                await LoadDataAsync();
+
+                var selectedProduct = Products.FirstOrDefault(p => p.ProductId == selectedProductId);
+
+                ValidatedProduct = new ValidatedProduct
+                {
+                    ProductId = selectedProduct.ProductId,
+                    ProductPicture = selectedProduct.ProductPicture,
+                    ProductName = selectedProduct.ProductName,
+                    AmountOnStock = selectedProduct.AmountOnStock,
+                    SelectedCategoryIds = selectedProduct.Categories.Select(c => c.CategoryId).ToList(),
+                    Description = selectedProduct.Description,
+                    Discounts = selectedProduct.Discounts,
+                    Price = selectedProduct.Price
+                };
+            }
+
+
+            ModalState = ShowModalState.New;
+            
             return Page();
         }
 
 
-        //? was passiert, wenn nicht explizit der Schließen-Button gedrückt wird?
+        //? TODO: was passiert, wenn nicht explizit der Schließen-Button gedrückt wird?
         public async Task<IActionResult> OnPostCloseModal()
         {
             ModalState = ShowModalState.None;
@@ -81,54 +95,27 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
 
 
-        public async Task<IActionResult> OnPostShowAlterProductModal(Guid selectedProductId)
-        {
-            SelectedProductId = selectedProductId;
-            await LoadDataAsync();
-            var products = await _internalProductManager.GetProductsForInternalUse();
-            SelectedProduct = products.FirstOrDefault(p => p.ProductId == selectedProductId);
+        //public async Task<IActionResult> OnPostShowAlterProductModal(Guid selectedProductId)
+        //{
+        //    SelectedProductId = selectedProductId;
+        //    await LoadDataAsync();
+        //    var products = await _internalProductManager.GetProductsForInternalUse();
+        //    SelectedProduct = products.FirstOrDefault(p => p.ProductId == selectedProductId);
             
-            ModalState = ShowModalState.Alter;
-            return Page();
-        }
+        //    //ModalState = ShowModalState.Alter;
+        //    ModalState = ShowModalState.New;
+        //    return Page();
+        //}
 
 
         public async Task<IActionResult> OnPostSave()
         {
-            //wenn ModelState nicht valid ist, dann... neu laden mit eingegebenen Produktdaten und Fehleranzeige
             if (!ModelState.IsValid) 
             {
                 ModalState = ShowModalState.New;
                 await LoadDataAsync();
-
-                var temporarySelectedCategories = Categories.Where(c => ValidatedProduct.SelectedCategoryIds.Contains(c.CategoryId)).ToList();
-
-                decimal price;
-                if (ValidatedProduct.Price == null)
-                    price = 0.0m;
-                else price = ValidatedProduct.Price.Value;
-
-                int amountOnStock;
-                if (ValidatedProduct.AmountOnStock == null)
-                    amountOnStock = 0;
-                else amountOnStock = ValidatedProduct.AmountOnStock.Value;
-
-                SelectedProduct = new ProductForInternalUseDTO 
-                {
-                    ProductPicture = ValidatedProduct.ProductPicture,
-                    ProductName = ValidatedProduct.Description,
-                    Description = ValidatedProduct.Description,
-                    Price = price,
-                    AmountOnStock = amountOnStock,
-                    Discounts = ValidatedProduct.Discounts,
-                    Categories = temporarySelectedCategories
-                };
                 return Page();
             }
-
-            //so, als Vorbereitung zum speichern eines AlterProducts habe ich eine Id in ValidatedProduct eingefügt
-            //hier kann geprüft werden, ob es sich um ein NEUES Product oder eines zum UPDATEN handelt
-            //die Id wird bei einem neuen Product als Guid.Empts mitgegeben
 
             var categories = await _internalProductManager.GetCategories();
 
@@ -142,18 +129,17 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 Description = ValidatedProduct.Description,
                 Categories = selectedCategories,
                 Discounts = ValidatedProduct.Discounts,
-                Price = ValidatedProduct.Price.Value
+                Price = ValidatedProduct.Price.Value,
+                ProductId = ValidatedProduct.ProductId,
             };
 
             if (ValidatedProduct.ProductId == Guid.Empty)
             {
-                //Speichern eines NEUEN ProductToStoreDTO
                 await _internalProductManager.SaveProductToStore(newProduct);
             }
 
             else
             {
-                //hier muss die ProductId von newProduct noch gefüllt werden
                 await _internalProductManager.UpdateProductToStore(newProduct);
             }
             

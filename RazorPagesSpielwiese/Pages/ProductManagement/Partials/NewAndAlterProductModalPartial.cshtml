@@ -18,6 +18,8 @@
 
             <form method="post" class="border p-4 rounded shadow-sm bg-light" asp-page-handler="Save">
 
+                <input asp-for="ValidatedProduct.ProductId" type="hidden" />
+
                 <div class="mb-3">
                     <label asp-for="@Model.ValidatedProduct.ProductName" class="form-label"></label>
                     <input asp-for="@Model.ValidatedProduct.ProductName" class="form-control" />

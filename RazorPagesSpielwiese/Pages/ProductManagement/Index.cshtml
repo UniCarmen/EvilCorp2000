@@ -14,10 +14,10 @@
 
 
 @*Modal für AlterProduct aus der Tabelle extrahiert, damit nur eines gerendert wird*@
-@if (Model.ModalState == ShowModalState.Alter && Model.SelectedProduct != null)
+@if (Model.ModalState == ShowModalState.New && Model.SelectedProductId != Guid.Empty)
 {
     <div class="modal fade modal-visible show" id="alterProductModal" tabindex="-1" aria-labelledby="alterProduct" aria-hidden="true" data-bs-backdrop="static">
-        @await Html.PartialAsync("Partials/AlterProductModalPartial", new AlterProductModalPartialModel { Product = @Model.SelectedProduct, Categories = Model.Categories })
+        @await Html.PartialAsync("Partials/NewAndAlterProductModalPartial", new NewProductModalPartialModel1 { ValidatedProduct = @Model.ValidatedProduct, Categories = Model.Categories })
     </div>
 }
 
@@ -33,14 +33,15 @@
     <h3>Product Management</h3>
 
     <form method="post" asp-page-handler="ShowNewProductModal">
+        <input type="hidden" name="SelectedProductId" value="@Guid.Empty" />
         <button type="submit" class="btn btn-primary">Add New Product</button>
     </form>
 
     @*Modal für NewProduct*@
-    @if (Model.ModalState == ShowModalState.New)
+    @if (Model.ModalState == ShowModalState.New && Model.SelectedProductId == Guid.Empty)
     {
         <div class="modal fade modal-visible" id="newProductModal" tabindex="-1" aria-labelledby="newProduct" aria-hidden="true" data-bs-backdrop="static">
-            @await Html.PartialAsync("Partials/NewProductModalPartial", new NewProductModalPartialModel1 { ValidatedProduct = new ValidatedProduct {ProductId = Guid.Empty}, Categories = Model.Categories })
+            @await Html.PartialAsync("Partials/NewAndAlterProductModalPartial", new NewProductModalPartialModel1 { ValidatedProduct = new ValidatedProduct {ProductId = Guid.Empty}, Categories = Model.Categories })
         </div>
     }
 
@@ -75,7 +76,12 @@
 
                         <p>@product.ProductId</p>
 
-                        <form method="post" asp-page-handler="ShowAlterProductModal">
+                        @* <form method="post" asp-page-handler="ShowAlterProductModal">
+                            <input type="hidden" name="SelectedProductId" value="@product.ProductId" />
+                            <button type="submit" class="btn btn-primary">Alter Product</button>
+                        </form> *@
+
+                        <form method="post" asp-page-handler="ShowNewProductModal">
                             <input type="hidden" name="SelectedProductId" value="@product.ProductId" />
                             <button type="submit" class="btn btn-primary">Alter Product</button>
                         </form>
