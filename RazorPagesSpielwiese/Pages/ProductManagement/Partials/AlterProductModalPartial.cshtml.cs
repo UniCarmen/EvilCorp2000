@@ -8,6 +8,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement.Partials
 {
     public class AlterProductModalPartialModel
     {
+        //wurde mitgegeben und wird auch an Index zurückgegeben
         [BindProperty]
         public ProductForInternalUseDTO Product { get; set; }
 

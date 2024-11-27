@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using RazorPagesSpielwiese.Models;
 using RazorPagesSpielwiese.Services;
 using System.ComponentModel.DataAnnotations;
-using static RazorPagesSpielwiese.Models.NewProductViewModelValidations1;
+using static RazorPagesSpielwiese.Models.NewProductValidations;
 
 namespace RazorPagesSpielwiese.Pages.NewProduct
 {

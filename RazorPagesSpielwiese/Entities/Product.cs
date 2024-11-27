@@ -31,4 +31,6 @@ public partial class Product
     public virtual ICollection<Discount> Discounts { get; set; } = new List<Discount>();
 
     public virtual ICollection<Category> Categories { get; set; } = new List<Category>();
+
+    //TODO: Status: Aktiv / nicht aktiv
 }

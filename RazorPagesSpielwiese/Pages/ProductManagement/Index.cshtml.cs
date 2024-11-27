@@ -19,8 +19,6 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
     public class ProductManagementModel : PageModel
     {
-        //Enum Flags, welches Modal angezeigt werden soll
-        //public Enum ShowModalState { get; set; }
         public ShowModalState ModalState { get; set; } = ShowModalState.None;
 
         private readonly IInternalProductManager _internalProductManager;
@@ -30,21 +28,21 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         public List<CategoryDTO>? Categories { get; set; }
 
 
-        //um es an das Partial weiterzugeben
+
+        //Weitergabe an Partial
         public Guid? SelectedProductId { get; set; }
         public ProductForInternalUseDTO SelectedProduct {get; set; }
 
+        //TODO: muss weg, dafür soll ValidatedProduct verwendet werden
         //um die Daten aus dem Partial zu bekommen
         [BindProperty]
         public ProductForInternalUseDTO? Product { get; set; }
 
-        //um die Daten aus dem Partial zu bekommen
+        // Rückgabe aus dem Partial 
+        //? warum ist es nullable?
         [BindProperty]
-        public List<Guid>? SelectedCategoryIds { get; set; }
+        public ValidatedProduct? ValidatedProduct { get; set; }
 
-        //NewProductValidation Test aus new Product
-        [BindProperty]
-        public NewProductViewModel1? ValidatedProduct { get; set; }
 
         public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger)
         {
@@ -73,7 +71,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         }
 
 
-        //was passiert, wenn nicht explizit der Schließen-Button gedrückt wird?
+        //? was passiert, wenn nicht explizit der Schließen-Button gedrückt wird?
         public async Task<IActionResult> OnPostCloseModal()
         {
             ModalState = ShowModalState.None;
@@ -92,70 +90,134 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
             
             ModalState = ShowModalState.Alter;
             return Page();
-            //muss hier das Product noch übergeben werden?
         }
 
 
         public async Task<IActionResult> OnPostSave()
         {
-
-            //validation auch für altering product
-
-            if (Product != null || ValidatedProduct != null)
+            //wenn ModelState nicht valid ist, dann... neu laden mit eingegebenen Produktdaten und Fehleranzeige
+            if (!ModelState.IsValid) 
             {
+                ModalState = ShowModalState.New;
+                await LoadDataAsync();
 
-                var categories = await _internalProductManager.GetCategories();
+                var temporarySelectedCategories = Categories.Where(c => ValidatedProduct.SelectedCategoryIds.Contains(c.CategoryId)).ToList();
 
-                var selectedCategories = categories.FindAll(c => SelectedCategoryIds.Exists(id => id == c.CategoryId));
+                decimal price;
+                if (ValidatedProduct.Price == null)
+                    price = 0.0m;
+                else price = ValidatedProduct.Price.Value;
 
+                int amountOnStock;
+                if (ValidatedProduct.AmountOnStock == null)
+                    amountOnStock = 0;
+                else amountOnStock = ValidatedProduct.AmountOnStock.Value;
 
-                //wie finde ich heraus, ob das product new ist oder nicht?
-                //id vorhanden oder nicht
-
-                var newProduct = new ProductToStoreDTO { };
-                if(ValidatedProduct != null)
+                SelectedProduct = new ProductForInternalUseDTO 
                 {
-                    //Problem bei alter product: amout on stock in validated Product ist null
-
-
-                    newProduct.ProductName = ValidatedProduct.ProductName;
-                    newProduct.ProductPicture = ValidatedProduct.ProductPicture;
-                    newProduct.AmountOnStock = ValidatedProduct.AmountOnStock.Value;
-                    newProduct.Description = ValidatedProduct.Description;
-                    newProduct.Categories = selectedCategories;
-                    //Discounts = Product.Discounts,
-                    newProduct.Price = ValidatedProduct.Price.Value;
-
-                    //gucken, dass update nur bei alterproduct
-                    //und save product bei new product aufgerufen wird
-
-                    await _internalProductManager.UpdateProductToStore(newProduct);
-                }
-
-
-
-                var productToStore = new ProductToStoreDTO
-                {
-                    ProductId = Product.ProductId,
-                    ProductName = Product.ProductName,
-                    ProductPicture = Product.ProductPicture,
-                    AmountOnStock = Product.AmountOnStock,
-                    Categories = selectedCategories,
-                    Description = Product.Description,
-                    Discounts = Product.Discounts,
-                    Price = Product.Price,
-                    Rating = Product.Rating
+                    ProductPicture = ValidatedProduct.ProductPicture,
+                    ProductName = ValidatedProduct.Description,
+                    Description = ValidatedProduct.Description,
+                    Price = price,
+                    AmountOnStock = amountOnStock,
+                    Discounts = ValidatedProduct.Discounts,
+                    Categories = temporarySelectedCategories
                 };
-
-                //validation
-
-                await _internalProductManager.UpdateProductToStore(productToStore);
-
+                return Page();
             }
 
+            //so, als Vorbereitung zum speichern eines AlterProducts habe ich eine Id in ValidatedProduct eingefügt
+            //hier kann geprüft werden, ob es sich um ein NEUES Product oder eines zum UPDATEN handelt
+            //die Id wird bei einem neuen Product als Guid.Empts mitgegeben
+
+            var categories = await _internalProductManager.GetCategories();
+
+            var selectedCategories = categories.FindAll(c => ValidatedProduct.SelectedCategoryIds.Exists(id => id == c.CategoryId));
+
+            var newProduct = new ProductToStoreDTO
+            {
+                ProductName = ValidatedProduct.ProductName,
+                ProductPicture = ValidatedProduct.ProductPicture,
+                AmountOnStock = ValidatedProduct.AmountOnStock.Value,
+                Description = ValidatedProduct.Description,
+                Categories = selectedCategories,
+                Discounts = ValidatedProduct.Discounts,
+                Price = ValidatedProduct.Price.Value
+            };
+
+            if (ValidatedProduct.ProductId == Guid.Empty)
+            {
+                //Speichern eines NEUEN ProductToStoreDTO
+                await _internalProductManager.SaveProductToStore(newProduct);
+            }
+
+            else
+            {
+                //hier muss die ProductId von newProduct noch gefüllt werden
+                await _internalProductManager.UpdateProductToStore(newProduct);
+            }
+            
+
+            
 
 
-            ModalState = ShowModalState.None;
+
+
+
+            //    //TODO: hier soll in Zukunft nur noch auf Validated Product geprüft werden
+            //    if (Product != null || ValidatedProduct != null)
+            //{
+
+            //    var categories = await _internalProductManager.GetCategories();
+
+            //    var selectedCategories = categories.FindAll(c => SelectedCategoryIds.Exists(id => id == c.CategoryId));
+
+
+            //    //TODO: ValidatedProduct auch bei Alter Product verwenden
+            //    //über das ValidatedProduct auch eine nullabe Id mitgeben.
+            //    //Falls Id vorhanden dann ist es ein AlterPRoduct ->UpdateProductToStoreFunktion
+            //    //ohne Id: SaveProduct
+
+            //    var newProduct = new ProductToStoreDTO { };
+            //    if(ValidatedProduct != null)
+            //    {
+            //        //Problem bei alter product: amout on stock in validated Product ist null
+
+            //        newProduct.ProductName = ValidatedProduct.ProductName;
+            //        newProduct.ProductPicture = ValidatedProduct.ProductPicture;
+            //        newProduct.AmountOnStock = ValidatedProduct.AmountOnStock.Value;
+            //        newProduct.Description = ValidatedProduct.Description;
+            //        newProduct.Categories = selectedCategories;
+            //        //Discounts = Product.Discounts,
+            //        newProduct.Price = ValidatedProduct.Price.Value;
+
+            //        await _internalProductManager.UpdateProductToStore(newProduct);
+            //    }
+
+
+
+            //    var productToStore = new ProductToStoreDTO
+            //    {
+            //        ProductId = Product.ProductId,
+            //        ProductName = Product.ProductName,
+            //        ProductPicture = Product.ProductPicture,
+            //        AmountOnStock = Product.AmountOnStock,
+            //        Categories = selectedCategories,
+            //        Description = Product.Description,
+            //        Discounts = Product.Discounts,
+            //        Price = Product.Price,
+            //        Rating = Product.Rating
+            //    };
+
+            //    //validation
+
+            //    await _internalProductManager.UpdateProductToStore(productToStore);
+
+            //}
+
+
+
+            //ModalState = ShowModalState.None;
 
             //soll aber neu geladen werden
             return RedirectToPage();

@@ -15,5 +15,6 @@ namespace RazorPagesSpielwiese.Models
         //public double? Discount { get; set; }
         public int AmountOnStock { get; set; }
         public double? Rating { get; set; }
+        //TODO: Status: Aktiv / nicht aktiv
     }
 }

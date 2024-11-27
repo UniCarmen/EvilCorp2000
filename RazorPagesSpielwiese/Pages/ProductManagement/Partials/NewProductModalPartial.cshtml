@@ -1,10 +1,6 @@
 ﻿@model NewProductModalPartialModel1
 
 
-@* <div class="modal fade" id="newProductModal" tabindex="-1" aria-labelledby="newProduct" aria-hidden="true">
-    
-</div> *@
-
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
         <div class="modal-header">
@@ -25,21 +21,21 @@
                 <div class="mb-3">
                     <label asp-for="@Model.ValidatedProduct.ProductName" class="form-label"></label>
                     <input asp-for="@Model.ValidatedProduct.ProductName" class="form-control" />
-                    @* <span asp-validation-for="@Model.Product.ProductName" class="text-danger"></span> *@
+                    <span asp-validation-for="@Model.ValidatedProduct.ProductName" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
                     <label asp-for="@Model.ValidatedProduct.Description" class="form-label"></label>
                     <textarea asp-for="@Model.ValidatedProduct.Description" class="form-control"></textarea>
-                    @* <span asp-validation-for="@Model.Product.Description" class="text-danger"></span> *@
+                    <span asp-validation-for="@Model.ValidatedProduct.Description" class="text-danger"></span>
                 </div>
 
 
                 @if (Model.Categories != null)
                 {
                     <div class="mb-3">
-                        <label asp-for="SelectedCategoryIds" class="form-label"></label>
-                        <select asp-for="SelectedCategoryIds" class="form-select" multiple>
+                        <label asp-for="@Model.ValidatedProduct.SelectedCategoryIds" class="form-label"></label>
+                        <select asp-for="@Model.ValidatedProduct.SelectedCategoryIds" class="form-select" multiple>
                             @foreach (var category in Model.Categories)
                             {
                                 <option value="@category.CategoryId">@category.CategoryName</option>
@@ -47,6 +43,7 @@
                             }
                         </select>
                         <small class="form-text text-muted">Hold Ctrl to select multiple categories</small>
+                        <span asp-validation-for="@Model.ValidatedProduct.SelectedCategoryIds" class="text-danger"></span>
                     </div>
                 }
 
@@ -55,6 +52,7 @@
                 <div class="mb-3">
                     <label asp-for="@Model.ValidatedProduct.ProductPicture" class="form-label"></label>
                     <input asp-for="@Model.ValidatedProduct.ProductPicture" class="form-control" />
+                    <span asp-validation-for="@Model.ValidatedProduct.ProductPicture" class="text-danger"></span>
                 </div>
 
                 <div class="mb-3">
@@ -63,14 +61,16 @@
                         <input asp-for="@Model.ValidatedProduct.Price" class="form-control" aria-describedby="currency-symbol" />
                         <span class="input-group-text" id="currency-symbol">€</span>
                     </div>
-                    @* <span asp-validation-for="@Model.Product.Price" class="text-danger"></span> *@
+                    <span asp-validation-for="@Model.ValidatedProduct.Price" class="text-danger"></span> 
                 </div>
 
                 <div class="mb-3">
                     <label asp-for="@Model.ValidatedProduct.AmountOnStock" class="form-label"></label>
                     <input asp-for="@Model.ValidatedProduct.AmountOnStock" class="form-control" />
-                    @* <span asp-validation-for="@Model.Product.AmountOnStock" class="text-danger"></span> *@
+                    <span asp-validation-for="@Model.ValidatedProduct.AmountOnStock" class="text-danger"></span>
                 </div>
+
+                @* TODO: Discounts eingeben *@
 
                 <button type="submit" class="btn btn-success">Add New Product</button>
                 @Html.AntiForgeryToken()

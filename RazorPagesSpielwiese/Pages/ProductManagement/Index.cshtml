@@ -12,6 +12,8 @@
 
 <script src="/js/openModalScript.js?v=@DateTime.Now.Ticks"></script>
 
+
+@*Modal für AlterProduct aus der Tabelle extrahiert, damit nur eines gerendert wird*@
 @if (Model.ModalState == ShowModalState.Alter && Model.SelectedProduct != null)
 {
     <div class="modal fade modal-visible show" id="alterProductModal" tabindex="-1" aria-labelledby="alterProduct" aria-hidden="true" data-bs-backdrop="static">
@@ -34,10 +36,11 @@
         <button type="submit" class="btn btn-primary">Add New Product</button>
     </form>
 
+    @*Modal für NewProduct*@
     @if (Model.ModalState == ShowModalState.New)
     {
         <div class="modal fade modal-visible" id="newProductModal" tabindex="-1" aria-labelledby="newProduct" aria-hidden="true" data-bs-backdrop="static">
-            @await Html.PartialAsync("Partials/NewProductModalPartial", new NewProductModalPartialModel1 { Categories = Model.Categories })
+            @await Html.PartialAsync("Partials/NewProductModalPartial", new NewProductModalPartialModel1 { ValidatedProduct = new ValidatedProduct {ProductId = Guid.Empty}, Categories = Model.Categories })
         </div>
     }
 

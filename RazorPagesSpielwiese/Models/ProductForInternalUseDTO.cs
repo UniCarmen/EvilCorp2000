@@ -11,5 +11,6 @@
         public List<DiscountDTO> Discounts { get; set; } = new List<DiscountDTO>();
         public double? Rating { get; set; }
         public int AmountOnStock { get; set; }
+        //TODO: Status: Aktiv / nicht aktiv
     }
 }
