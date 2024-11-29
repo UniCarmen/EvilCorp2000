@@ -5,15 +5,11 @@ using RazorPagesSpielwiese.Services;
 
 namespace RazorPagesSpielwiese.Pages.ProductManagement
 {
-    public enum ShowModalState
-    {
-        None,
-        New,
-    }
+    
 
     public class ProductManagementModel : PageModel
     {
-        public ShowModalState ModalState { get; set; } = ShowModalState.None;
+        public bool ShowModal { get; set; } = false;
 
         private readonly IInternalProductManager _internalProductManager;
         private readonly ILogger<ProductManagementModel> _logger;
@@ -74,13 +70,13 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 catch (Exception ex) 
                 {
                     _logger.LogError("Product not Found: {0}", ex);
-                    ModalState = ShowModalState.None;
+                    ShowModal = false;
                     return Page();
                 }
             }
 
 
-            ModalState = ShowModalState.New;
+            ShowModal = true;
             
             return Page();
         }
@@ -92,7 +88,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
             // - Button unten irgendwie schön gemacht, positioniert
         public async Task<IActionResult> OnPostCloseModal()
         {
-            ModalState = ShowModalState.None;
+            ShowModal = false;
             await LoadDataAsync();
             return Page();
         }
@@ -101,7 +97,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         {
             if (!ModelState.IsValid) 
             {
-                ModalState = ShowModalState.New;
+                ShowModal = true;
                 await LoadDataAsync();
                 return Page();
             }
@@ -132,7 +128,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 await _internalProductManager.UpdateProductToStore(newProduct);
             }
 
-            ModalState = ShowModalState.None;
+            ShowModal = false;
             return RedirectToPage();
         }
 

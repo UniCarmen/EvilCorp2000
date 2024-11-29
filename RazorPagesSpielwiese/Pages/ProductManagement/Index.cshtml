@@ -8,13 +8,13 @@
     ViewData["Title"] = "Product Management";
 }
 
-<div id="modalState" data-modal-state="@Model.ModalState"></div>
+<div id="modalState" data-modal-state="@Model.ShowModal"></div>
 
-<script src="/js/openModalScript.js?v=@DateTime.Now.Ticks"></script>
+<script src="/js/openModalScript.js?v=@DateTime.Now.Ticks"></script>@**@
 
 
 @*Modal für AlterProduct aus der Tabelle extrahiert, damit nur eines gerendert wird*@
-@if (Model.ModalState == ShowModalState.New && Model.SelectedProductId != Guid.Empty)
+@if (Model.ShowModal == true && Model.SelectedProductId != Guid.Empty)
 {
     <div class="modal fade modal-visible" id="newAndAlterProductModal" tabindex="-1" aria-labelledby="alterProduct" aria-hidden="true" data-bs-backdrop="static">
         @await Html.PartialAsync("Partials/NewAndAlterProductModalPartial", new NewProductModalPartialModel1 { ValidatedProduct = @Model.ValidatedProduct, Categories = Model.Categories })
@@ -38,7 +38,7 @@
     </form>
 
     @*Modal für NewProduct*@
-    @if (Model.ModalState == ShowModalState.New && Model.SelectedProductId == Guid.Empty)
+    @if (Model.ShowModal == true && Model.SelectedProductId == Guid.Empty)
     {
         <div class="modal fade modal-visible" id="newAndAlterProductModal" tabindex="-1" aria-labelledby="newProduct" aria-hidden="true" data-bs-backdrop="static">
             @await Html.PartialAsync("Partials/NewAndAlterProductModalPartial", new NewProductModalPartialModel1 { ValidatedProduct = new ValidatedProduct {ProductId = Guid.Empty}, Categories = Model.Categories })

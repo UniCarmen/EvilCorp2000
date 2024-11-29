@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-    if (modalState === "New") {
+    if (modalState === "True") {
         const modalElement = document.getElementById("newAndAlterProductModal");
         if (modalElement) {
             const modal = new bootstrap.Modal(modalElement);
