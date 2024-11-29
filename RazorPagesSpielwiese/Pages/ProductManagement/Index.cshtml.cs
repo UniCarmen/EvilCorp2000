@@ -17,6 +17,8 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         public List<ProductForInternalUseDTO>? Products;
         public List<CategoryDTO>? Categories { get; set; }
 
+        [BindProperty]
+        public DiscountDTO? NewDiscount { get; set; }
 
 
         //Weitergabe an Modal
@@ -75,17 +77,12 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 }
             }
 
-
             ShowModal = true;
             
             return Page();
         }
 
 
-        //? TODO: was passiert, wenn nicht explizit der Schließen-Button gedrückt wird?
-            // - bei Click außerhalb des Modals passiert nichts
-            // - Button oben muss noch angepasst werden
-            // - Button unten irgendwie schön gemacht, positioniert
         public async Task<IActionResult> OnPostCloseModal()
         {
             ShowModal = false;
@@ -93,7 +90,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
             return Page();
         }
 
-        public async Task<IActionResult> OnPostSave()
+        public async Task<IActionResult> OnPostSaveProduct()
         {
             if (!ModelState.IsValid) 
             {
@@ -130,6 +127,71 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
             ShowModal = false;
             return RedirectToPage();
+        }
+
+
+
+        //testDiscounts
+        //funktioniert das, ohne dass das modal zugeht bzw. das modal wird wieder mit allen infos aufgemacht? -ne
+        public async Task OnPostAddDiscount()
+        {
+            //validiert aber das ganze Model...das macht keinen Sinn
+            //if (!ModelState.IsValid)
+            //{
+            //    return Page(); // Validierungsfehler bleiben im Modal sichtbar
+            //}
+
+            //Prüfen, ob der NewDiscount Valide ist
+            // Neuen Discount hinzufügen
+            var newDiscount = new DiscountDTO
+            {
+                DiscountId = Guid.NewGuid(),
+                StartDate = NewDiscount.StartDate,
+                EndDate = NewDiscount.EndDate,
+                DiscountPercentage = NewDiscount.DiscountPercentage
+            };
+            ValidatedProduct.Discounts.Add(newDiscount);
+
+            await OnPostReloadModalWithAlteredDiscounts(ValidatedProduct);
+
+            //ShowModal = true;
+            //await LoadDataAsync();
+            //return Page();
+
+        }
+
+
+        public async Task<IActionResult> OnPostReloadModalWithAlteredDiscounts(ValidatedProduct validatedProduct)
+        {
+            SelectedProductId = validatedProduct.ProductId;
+            ValidatedProduct = validatedProduct;
+            await LoadDataAsync();
+
+            ShowModal = true;
+
+            return Page();
+        }
+
+
+        //bei den unteren muss ich noch gucken, wie ich das zum Laufen bekomme
+        public IActionResult OnPostEditDiscount(Guid discountId)
+        {
+            // Discount bearbeiten (Logik zur Anzeige der Edit-Werte)
+            return Page();
+        }
+
+        public IActionResult OnPostDeleteDiscount(Guid discountId)
+        {
+            // Discount löschen
+            ValidatedProduct.Discounts.RemoveAll(d => d.DiscountId == discountId);
+            return Page();
+        }
+
+        public IActionResult OnPostDismiss()
+        {
+            // Logik beim Dismiss-Button
+            ViewData["ModalDismissed"] = true; // Beispielhafte Änderung
+            return Page();
         }
 
 

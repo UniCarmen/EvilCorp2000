@@ -17,6 +17,9 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement.Partials
         //von Backing Code Index empfangen
         public List<CategoryDTO> Categories { get; set; }
 
+        [BindProperty]
+        public DiscountDTO? NewDiscount { get; set; }
+
         public async Task OnGet()
         {
         }
