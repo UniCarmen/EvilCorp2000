@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using static RazorPagesSpielwiese.Models.NewProductValidations;
+//TODO: momentan wird nur die GUID Liste validert, benötige ich den Rest später für Grenzwerte?
 
 namespace RazorPagesSpielwiese.Models
 {

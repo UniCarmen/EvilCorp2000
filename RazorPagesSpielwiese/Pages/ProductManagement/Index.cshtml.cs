@@ -9,7 +9,6 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
     {
         None,
         New,
-        Alter
     }
 
     public class ProductManagementModel : PageModel
@@ -24,13 +23,10 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
 
 
-        //Weitergabe an Partial
-        //? wofür nochmal die Id
-        public Guid? SelectedProductId { get; set; }
+        //Weitergabe an Modal
+        public Guid SelectedProductId { get; set; }
 
-
-        // Rückgabe aus dem Partial 
-        //? warum ist es nullable?
+        //von Modal
         [BindProperty]
         public ValidatedProduct ValidatedProduct { get; set; }
 
@@ -41,41 +37,46 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-
-        public async Task OnGet(Guid? selectedProduct)
+        public async Task OnGet()
         {
             try
             {
                 await LoadDataAsync();
-                SelectedProductId = selectedProduct;
             }
             catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }
 
         }
 
 
-        public async Task<IActionResult> OnPostShowNewProductModal(Guid selectedProductId) 
+        public async Task<IActionResult> OnPostShowNewAndAlterProductModal(Guid selectedProductId) 
         {
             SelectedProductId = selectedProductId;
             await LoadDataAsync();
 
             if (selectedProductId != Guid.Empty)
             {
-                await LoadDataAsync();
-
-                var selectedProduct = Products.FirstOrDefault(p => p.ProductId == selectedProductId);
-
-                ValidatedProduct = new ValidatedProduct
+                try
                 {
-                    ProductId = selectedProduct.ProductId,
-                    ProductPicture = selectedProduct.ProductPicture,
-                    ProductName = selectedProduct.ProductName,
-                    AmountOnStock = selectedProduct.AmountOnStock,
-                    SelectedCategoryIds = selectedProduct.Categories.Select(c => c.CategoryId).ToList(),
-                    Description = selectedProduct.Description,
-                    Discounts = selectedProduct.Discounts,
-                    Price = selectedProduct.Price
-                };
+                    var selectedProduct = Products.FirstOrDefault(p => p.ProductId == selectedProductId);
+
+                    ValidatedProduct = new ValidatedProduct
+                    {
+                        ProductId = selectedProduct.ProductId,
+                        ProductPicture = selectedProduct.ProductPicture,
+                        ProductName = selectedProduct.ProductName,
+                        AmountOnStock = selectedProduct.AmountOnStock,
+                        SelectedCategoryIds = selectedProduct.Categories.Select(c => c.CategoryId).ToList(),
+                        Description = selectedProduct.Description,
+                        Discounts = selectedProduct.Discounts,
+                        Price = selectedProduct.Price
+                    };
+                }
+                catch (Exception ex) 
+                {
+                    _logger.LogError("Product not Found: {0}", ex);
+                    ModalState = ShowModalState.None;
+                    return Page();
+                }
             }
 
 
@@ -86,27 +87,15 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
 
         //? TODO: was passiert, wenn nicht explizit der Schließen-Button gedrückt wird?
+            // - bei Click außerhalb des Modals passiert nichts
+            // - Button oben muss noch angepasst werden
+            // - Button unten irgendwie schön gemacht, positioniert
         public async Task<IActionResult> OnPostCloseModal()
         {
             ModalState = ShowModalState.None;
             await LoadDataAsync();
             return Page();
         }
-
-
-
-        //public async Task<IActionResult> OnPostShowAlterProductModal(Guid selectedProductId)
-        //{
-        //    SelectedProductId = selectedProductId;
-        //    await LoadDataAsync();
-        //    var products = await _internalProductManager.GetProductsForInternalUse();
-        //    SelectedProduct = products.FirstOrDefault(p => p.ProductId == selectedProductId);
-            
-        //    //ModalState = ShowModalState.Alter;
-        //    ModalState = ShowModalState.New;
-        //    return Page();
-        //}
-
 
         public async Task<IActionResult> OnPostSave()
         {
@@ -142,70 +131,8 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
             {
                 await _internalProductManager.UpdateProductToStore(newProduct);
             }
-            
 
-            
-
-
-
-
-
-            //    //TODO: hier soll in Zukunft nur noch auf Validated Product geprüft werden
-            //    if (Product != null || ValidatedProduct != null)
-            //{
-
-            //    var categories = await _internalProductManager.GetCategories();
-
-            //    var selectedCategories = categories.FindAll(c => SelectedCategoryIds.Exists(id => id == c.CategoryId));
-
-
-            //    //TODO: ValidatedProduct auch bei Alter Product verwenden
-            //    //über das ValidatedProduct auch eine nullabe Id mitgeben.
-            //    //Falls Id vorhanden dann ist es ein AlterPRoduct ->UpdateProductToStoreFunktion
-            //    //ohne Id: SaveProduct
-
-            //    var newProduct = new ProductToStoreDTO { };
-            //    if(ValidatedProduct != null)
-            //    {
-            //        //Problem bei alter product: amout on stock in validated Product ist null
-
-            //        newProduct.ProductName = ValidatedProduct.ProductName;
-            //        newProduct.ProductPicture = ValidatedProduct.ProductPicture;
-            //        newProduct.AmountOnStock = ValidatedProduct.AmountOnStock.Value;
-            //        newProduct.Description = ValidatedProduct.Description;
-            //        newProduct.Categories = selectedCategories;
-            //        //Discounts = Product.Discounts,
-            //        newProduct.Price = ValidatedProduct.Price.Value;
-
-            //        await _internalProductManager.UpdateProductToStore(newProduct);
-            //    }
-
-
-
-            //    var productToStore = new ProductToStoreDTO
-            //    {
-            //        ProductId = Product.ProductId,
-            //        ProductName = Product.ProductName,
-            //        ProductPicture = Product.ProductPicture,
-            //        AmountOnStock = Product.AmountOnStock,
-            //        Categories = selectedCategories,
-            //        Description = Product.Description,
-            //        Discounts = Product.Discounts,
-            //        Price = Product.Price,
-            //        Rating = Product.Rating
-            //    };
-
-            //    //validation
-
-            //    await _internalProductManager.UpdateProductToStore(productToStore);
-
-            //}
-
-
-
-            //ModalState = ShowModalState.None;
-
-            //soll aber neu geladen werden
+            ModalState = ShowModalState.None;
             return RedirectToPage();
         }
 
