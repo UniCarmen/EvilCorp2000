@@ -46,11 +46,11 @@ namespace RazorPagesSpielwiese.Repositories
             //die methode könnte leistungseinbußen haben, da ich kein update mache, sprich die Cat und Disc Tabellen manuell ändere, das geladene ProductIdentity ändere und dann speichere
             await DeleteProduct(productEntity);
 
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
 
             await AddProduct(productToStore);
 
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
         }
 
         public async Task DeleteProduct(Product product)

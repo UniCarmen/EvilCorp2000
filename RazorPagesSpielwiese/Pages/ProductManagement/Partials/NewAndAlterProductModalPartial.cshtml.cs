@@ -2,23 +2,47 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorPagesSpielwiese.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using static RazorPagesSpielwiese.Models.NewProductValidations;
 
 namespace RazorPagesSpielwiese.Pages.ProductManagement.Partials
 {
     public class NewProductModalPartialModel1
     {
-        
-        [BindProperty]
-        //? hatte ich es optional wegen der automatischen Validierung - die nicht funktioniert - oder weil es evtl null sein könnte
-        //jetzt könnte es nicht mehr null sein, da ich ein leeres Product mit einer Empty Guid mitgebe
-        public ValidatedProduct ValidatedProduct { get; set; }
+        //private ValidatedProduct _validatedProduct;
+
+        [BindProperty]        
+        public ValidatedProduct ValidatedProduct
+        { get;set;
+            //get => _validatedProduct; set
+            //{
+            //    _validatedProduct = value;
+            //    if (_validatedProduct != null)
+            //    {
+            //        var json = JsonSerializer.Serialize(_validatedProduct.Discounts);
+            //        DiscountsJson = json;
+            //    }
+            //    else
+            //        DiscountsJson = null;
+            //}
+        }
 
         //von Backing Code Index empfangen
         public List<CategoryDTO> Categories { get; set; }
 
         [BindProperty]
-        public DiscountDTO? NewDiscount { get; set; }
+        public ValidatedDiscount? NewDiscount { get; set; }
+
+        [BindProperty]
+        public string DiscountsJson { get; set; }
+
+        [BindProperty]
+        public string ValidatedProductJson { get; set; }
+
+        [BindProperty]
+        public string CategoryIdsJson { get; set; }
+
 
         public async Task OnGet()
         {

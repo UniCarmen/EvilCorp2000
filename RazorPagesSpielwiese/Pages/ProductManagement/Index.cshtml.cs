@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using RazorPagesSpielwiese.Entities;
 using RazorPagesSpielwiese.Models;
 using RazorPagesSpielwiese.Services;
+using System.Text.Json;
 
 namespace RazorPagesSpielwiese.Pages.ProductManagement
 {
@@ -17,8 +20,11 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         public List<ProductForInternalUseDTO>? Products;
         public List<CategoryDTO>? Categories { get; set; }
 
+        //[BindProperty]
+        //public DiscountDTO? NewDiscount { get; set; }
+
         [BindProperty]
-        public DiscountDTO? NewDiscount { get; set; }
+        public ValidatedDiscount? NewDiscount { get; set; }
 
 
         //Weitergabe an Modal
@@ -27,6 +33,15 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         //von Modal
         [BindProperty]
         public ValidatedProduct ValidatedProduct { get; set; }
+
+        [BindProperty]
+        public string DiscountsJson { get; set; }
+
+        [BindProperty]
+        public string ValidatedProductJson { get; set; }
+
+        [BindProperty]
+        public string CategoryIdsJson { get; set; }
 
 
         public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger)
@@ -56,6 +71,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 try
                 {
                     var selectedProduct = Products.FirstOrDefault(p => p.ProductId == selectedProductId);
+                    var categoryIds = selectedProduct.Categories.Select(c => c.CategoryId).ToList();
 
                     ValidatedProduct = new ValidatedProduct
                     {
@@ -63,11 +79,15 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                         ProductPicture = selectedProduct.ProductPicture,
                         ProductName = selectedProduct.ProductName,
                         AmountOnStock = selectedProduct.AmountOnStock,
-                        SelectedCategoryIds = selectedProduct.Categories.Select(c => c.CategoryId).ToList(),
+                        SelectedCategoryIds = categoryIds,
                         Description = selectedProduct.Description,
                         Discounts = selectedProduct.Discounts,
                         Price = selectedProduct.Price
                     };
+
+                    DiscountsJson = JsonSerializer.Serialize(selectedProduct.Discounts);
+                    ValidatedProductJson = JsonSerializer.Serialize(selectedProduct);
+                    CategoryIdsJson = JsonSerializer.Serialize(categoryIds);
                 }
                 catch (Exception ex) 
                 {
@@ -103,14 +123,22 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
             var selectedCategories = categories.FindAll(c => ValidatedProduct.SelectedCategoryIds.Exists(id => id == c.CategoryId));
 
-            var newProduct = new ProductToStoreDTO
+            List<DiscountDTO> discounts = [] ;
+
+            if (DiscountsJson != null)
+                discounts = JsonSerializer.Deserialize<List<DiscountDTO>>(DiscountsJson);
+
+
+
+
+                var newProduct = new ProductToStoreDTO
             {
                 ProductName = ValidatedProduct.ProductName,
                 ProductPicture = ValidatedProduct.ProductPicture,
                 AmountOnStock = ValidatedProduct.AmountOnStock.Value,
                 Description = ValidatedProduct.Description,
                 Categories = selectedCategories,
-                Discounts = ValidatedProduct.Discounts,
+                Discounts = discounts,
                 Price = ValidatedProduct.Price.Value,
                 ProductId = ValidatedProduct.ProductId,
             };
@@ -133,44 +161,79 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
         //testDiscounts
         //funktioniert das, ohne dass das modal zugeht bzw. das modal wird wieder mit allen infos aufgemacht? -ne
-        public async Task OnPostAddDiscount()
+        public async Task<IActionResult> OnPostAddDiscount()
         {
-            //validiert aber das ganze Model...das macht keinen Sinn
-            //if (!ModelState.IsValid)
-            //{
-            //    return Page(); // Validierungsfehler bleiben im Modal sichtbar
-            //}
+            if (ModelState["NewDiscount.EndDate"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["NewDiscount.StartDate"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["NewDiscount.DiscountPercentage"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["ValidatedProductJson"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["CategoryIdsJson"]?.ValidationState != ModelValidationState.Valid)
+            {
+                
+                
+                //die seite wird zwar neu geladen ABER das product ist nicht mehr gefüllt...
+                await LoadDataAsync();
+                //SelectedProductId = ValidatedProduct.ProductId;
+                //ValidatedProduct = ValidatedProduct;
+                //ValidatedProductJson = ValidatedProductJson;
+                //CategoryIdsJson = CategoryIdsJson;
+                ShowModal = true;
+                return Page();
+            }
 
-            //Prüfen, ob der NewDiscount Valide ist
-            // Neuen Discount hinzufügen
+            await LoadDataAsync();
+
             var newDiscount = new DiscountDTO
             {
-                DiscountId = Guid.NewGuid(),
-                StartDate = NewDiscount.StartDate,
-                EndDate = NewDiscount.EndDate,
-                DiscountPercentage = NewDiscount.DiscountPercentage
+                StartDate = NewDiscount.StartDate.Value,
+                EndDate = NewDiscount.EndDate.Value,
+                DiscountPercentage = NewDiscount.DiscountPercentage.Value,
             };
-            ValidatedProduct.Discounts.Add(newDiscount);
 
-            await OnPostReloadModalWithAlteredDiscounts(ValidatedProduct);
+            if (ValidatedProductJson != null)
+                ValidatedProduct = JsonSerializer.Deserialize<ValidatedProduct>(ValidatedProductJson);
 
-            //ShowModal = true;
-            //await LoadDataAsync();
-            //return Page();
+            //ich habe momentan nur eine guid liste....
+            //die muss ich erst in eine dto liste mappen bzw die dtos raussuchen
 
-        }
+            
+
+            List<Guid> categoryIds = [];
+            if (CategoryIdsJson != null) //prüfen schon mit modelstate
+                categoryIds = JsonSerializer.Deserialize<List<Guid>>(CategoryIdsJson);
+
+            //prüfen ob null
+
+            var loadedCategories = await _internalProductManager.GetCategories();
+
+            var selectedCategories = loadedCategories.FindAll(c => categoryIds.Exists(id => id == c.CategoryId));
+
+            var newProduct = new ProductToStoreDTO
+            {
+                ProductName = ValidatedProduct.ProductName,
+                ProductPicture = ValidatedProduct.ProductPicture,
+                AmountOnStock = ValidatedProduct.AmountOnStock.Value,
+                Description = ValidatedProduct.Description,
+                Categories = selectedCategories,
+                Discounts = ValidatedProduct.Discounts,
+                Price = ValidatedProduct.Price.Value,
+                ProductId = ValidatedProduct.ProductId,
+            };
+
+            await _internalProductManager.AddDiscount(newDiscount, newProduct);
 
 
-        public async Task<IActionResult> OnPostReloadModalWithAlteredDiscounts(ValidatedProduct validatedProduct)
-        {
-            SelectedProductId = validatedProduct.ProductId;
-            ValidatedProduct = validatedProduct;
-            await LoadDataAsync();
+            ValidatedProduct.SelectedCategoryIds = selectedCategories.Select(c => c.CategoryId).ToList();
+
+            SelectedProductId = ValidatedProduct.ProductId;
+            ValidatedProduct = ValidatedProduct;
 
             ShowModal = true;
 
             return Page();
+
         }
+
 
 
         //bei den unteren muss ich noch gucken, wie ich das zum Laufen bekomme

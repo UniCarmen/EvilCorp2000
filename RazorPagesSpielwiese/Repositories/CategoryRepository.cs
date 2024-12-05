@@ -40,7 +40,7 @@ namespace RazorPagesSpielwiese.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteProductClass(Category categoryToDelete)
+        public async Task DeleteCategory(Category categoryToDelete)
         {
             if (categoryToDelete == null) { throw new ArgumentNullException("keine Productclass"); }
 
@@ -56,11 +56,43 @@ namespace RazorPagesSpielwiese.Repositories
 
         public List<Category> AttachCategoriesIfNeeded(List<Category> categories)
         {
+
+            //foreach (var category in categories)
+            //{
+            //    var trackedCategory = _context.ChangeTracker.Entries<Category>()
+            //        .FirstOrDefault(e => e.Entity.CategoryId == category.CategoryId);
+
+            //    if (trackedCategory == null)
+            //    {
+            //        // Nur attachen, wenn nicht bereits getrackt
+            //        _context.Attach(category); // Verhindert das Hinzufügen neuer Kategorien in der Datenbank
+            //    }
+            //    //_context.Attach(category); 
+            //}
+            //return categories;
+
+            var attachedCategories = new List<Category>();
+
             foreach (var category in categories)
             {
-                _context.Attach(category); // Verhindert das Hinzufügen neuer Kategorien in der Datenbank
+                var existingCategory = _context.Category
+                    .Local
+                    .FirstOrDefault(c => c.CategoryId == category.CategoryId);
+
+                if (existingCategory == null)
+                {
+                    // Füge hinzu, falls nicht lokal
+                    _context.Attach(category);
+                    attachedCategories.Add(category);
+                }
+                else
+                {
+                    // Nutze die bestehende Instanz
+                    attachedCategories.Add(existingCategory);
+                }
             }
-            return categories;
+
+            return attachedCategories;
         }
     }
 }

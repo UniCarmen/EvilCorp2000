@@ -8,6 +8,8 @@ namespace RazorPagesSpielwiese.Services
         Task<List<CategoryDTO>> GetCategories();
         Task SaveProductToStore(ProductToStoreDTO productToStore);
         Task UpdateProductToStore(ProductToStoreDTO productToStore);
-        
+        Task AddDiscount(DiscountDTO discount, ProductToStoreDTO productToStore);
+
+
     }
 }

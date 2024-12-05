@@ -3,6 +3,7 @@ using RazorPagesSpielwiese.Entities;
 using RazorPagesSpielwiese.Models;
 using RazorPagesSpielwiese.Repositories;
 using System.Collections;
+using System.Diagnostics.Contracts;
 
 namespace RazorPagesSpielwiese.Services
 {
@@ -92,6 +93,24 @@ namespace RazorPagesSpielwiese.Services
             }
         }
 
+
+        public async Task AddDiscount(DiscountDTO discount, ProductToStoreDTO productToStore)
+        {
+            if (discount == null)
+            {
+                throw new ArgumentNullException(nameof(discount));
+            }
+
+            var discountMapper = new Mappings.DiscountMappings();
+            var newDiscount = discountMapper.SetDiscountId(discount);
+
+            if (productToStore == null)
+                throw new ArgumentNullException(nameof(productToStore));
+
+            productToStore.Discounts.Add(newDiscount);
+            await UpdateProductToStore(productToStore);
+            
+        }
 
         public async Task UpdateProductToStore(ProductToStoreDTO productToStore)
         {

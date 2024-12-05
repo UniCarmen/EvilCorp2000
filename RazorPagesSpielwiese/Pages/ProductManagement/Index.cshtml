@@ -17,7 +17,7 @@
 @if (Model.ShowModal == true && Model.SelectedProductId != Guid.Empty)
 {
     <div class="modal fade modal-visible" id="newAndAlterProductModal" tabindex="-1" aria-labelledby="alterProduct" aria-hidden="true" data-bs-backdrop="static">
-        @await Html.PartialAsync("Partials/NewAndAlterProductModalPartial", new NewProductModalPartialModel1 { ValidatedProduct = @Model.ValidatedProduct, Categories = Model.Categories })
+        @await Html.PartialAsync("Partials/NewAndAlterProductModalPartial", new NewProductModalPartialModel1 { ValidatedProduct = @Model.ValidatedProduct, Categories = Model.Categories, DiscountsJson = Model.DiscountsJson, ValidatedProductJson = Model.ValidatedProductJson, CategoryIdsJson = Model.CategoryIdsJson })
     </div>
 }
 

@@ -34,12 +34,6 @@ namespace RazorPagesSpielwiese.Models
         [Display(Name = "Amount on Stock")]
         public int? AmountOnStock { get; set; }
 
-        //TODO: Neu anlegen: ValidatedDiscount
-        //public DateTime StartDate { get; set; } --> mind heutiges Datum
-        //public DateTime EndDate { get; set; }
-        //public double DiscountPercentage { get; set; } --> nicht größer als 80
-        //keine ID, wird entweder beim Speichern von altem Discount übernommen oder erzeugt
-
         //TODO: ...später Abfrage möglich, bei einem längeren Zeitraum als... 2 Wochen?
         [Display(Name = "Discounts")]
         public List<DiscountDTO> Discounts { get; set; } = new List<DiscountDTO>();
