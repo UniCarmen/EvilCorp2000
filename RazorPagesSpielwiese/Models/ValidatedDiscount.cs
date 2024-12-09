@@ -6,7 +6,7 @@ namespace RazorPagesSpielwiese.Models
 {
     public class ValidatedDiscount
     {
-        [StartDateValidation("Start Date Required")] 
+        [StartDateValidation("Start Date Required (min: today)")] 
         //[Required(ErrorMessage = "Start Date Required")]
         public DateTime? StartDate { get; set; }
 
@@ -32,7 +32,7 @@ namespace RazorPagesSpielwiese.Models
             protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
             {
                 //wenn Date null oder vor dem aktuellen Datum
-                if (value == null || value is DateTime date && date <= DateTime.UtcNow)
+                if (value == null || value is DateTime date && date < DateTime.Today)
                 {
                     return new ValidationResult(ErrorMessage);
                 }

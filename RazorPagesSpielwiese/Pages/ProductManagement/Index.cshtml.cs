@@ -168,20 +168,31 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 ModelState["NewDiscount.DiscountPercentage"]?.ValidationState != ModelValidationState.Valid ||
                 ModelState["ValidatedProductJson"]?.ValidationState != ModelValidationState.Valid ||
                 ModelState["CategoryIdsJson"]?.ValidationState != ModelValidationState.Valid)
+                //hier Prüfung, ob Discounts überlappen?
             {
-                
-                
                 //die seite wird zwar neu geladen ABER das product ist nicht mehr gefüllt...
                 await LoadDataAsync();
-                //SelectedProductId = ValidatedProduct.ProductId;
-                //ValidatedProduct = ValidatedProduct;
-                //ValidatedProductJson = ValidatedProductJson;
-                //CategoryIdsJson = CategoryIdsJson;
+
+                var categoryIdList = JsonSerializer.Deserialize<List<Guid>>(CategoryIdsJson);
+                var productCategories = Categories.FindAll(c => categoryIdList.Exists(id => id == c.CategoryId));
+
+                var validatedProduct = JsonSerializer.Deserialize<ValidatedProduct>(ValidatedProductJson);
+                validatedProduct.SelectedCategoryIds = productCategories.Select(c => c.CategoryId).ToList();
+                //Nullprüfung?
+                SelectedProductId = validatedProduct.ProductId;
+                ValidatedProduct = validatedProduct;
+                ValidatedProductJson = ValidatedProductJson;
+                CategoryIdsJson = CategoryIdsJson;
                 ShowModal = true;
                 return Page();
             }
 
+
+
             await LoadDataAsync();
+
+            //wenn DiscountsJson(Deserialisiert)
+
 
             var newDiscount = new DiscountDTO
             {
