@@ -59,7 +59,7 @@ namespace RazorPagesSpielwiese.Models
                 if (startDateValue == null && (endDate == null || endDate <= DateTime.UtcNow))
                     return new ValidationResult(ErrorMessage);
 
-                if (endDate < startDateValue || endDate == null || endDate <= DateTime.UtcNow)
+                if (endDate < startDateValue || endDate == null || endDate < DateTime.Today)
                     return new ValidationResult(ErrorMessage);
 
                 else return ValidationResult.Success;

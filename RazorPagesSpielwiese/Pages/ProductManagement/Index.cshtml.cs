@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorPagesSpielwiese.Entities;
 using RazorPagesSpielwiese.Models;
+using RazorPagesSpielwiese.Pages.ProductManagement.Partials;
 using RazorPagesSpielwiese.Services;
 using System.Text.Json;
 
@@ -38,13 +39,30 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         public string DiscountsJson { get; set; }
 
         [BindProperty]
+        public bool DiscountOverlap { get; set; } // = false;
+
+        [BindProperty]
         public string ValidatedProductJson { get; set; }
 
         [BindProperty]
         public string CategoryIdsJson { get; set; }
 
+        //public NewProductModalPartialModel1 PartialModel {
+        //    get => new NewProductModalPartialModel1
+        //    {
+        //        ValidatedProduct = this.ValidatedProduct,
+        //        Categories = this.Categories,
+        //        DiscountsJson = this.DiscountsJson,
+        //        ValidatedProductJson = this.ValidatedProductJson,
+        //        CategoryIdsJson = this.CategoryIdsJson,
+        //        DiscountOverlap = this.DiscountOverlap,
+        //        NewDiscount= new ValidatedDiscount()
+        //    };
+        //    set { } 
+        //}
+                
 
-        public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger)
+    public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger)
         {
             _internalProductManager = internalProductManager ?? throw new ArgumentNullException(nameof(internalProductManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -112,7 +130,19 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
         public async Task<IActionResult> OnPostSaveProduct()
         {
-            if (!ModelState.IsValid) 
+            if (ModelState["DiscountsJson"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["ValidatedProduct.Price"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["ValidatedProduct.ProductId"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["ValidatedProduct.Description"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["ValidatedProduct.ProductName"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["ValidatedProduct.AmountOnStock"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["ValidatedProduct.ProductPicture"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["ValidatedProduct.SelectedCategoryIds"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["ValidatedProductJson"]?.ValidationState != ModelValidationState.Valid ||
+                ModelState["CategoryIdsJson"]?.ValidationState != ModelValidationState.Valid)
+
+
+                //!ModelState.IsValid) 
             {
                 ShowModal = true;
                 await LoadDataAsync();
@@ -168,10 +198,10 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 ModelState["NewDiscount.DiscountPercentage"]?.ValidationState != ModelValidationState.Valid ||
                 ModelState["ValidatedProductJson"]?.ValidationState != ModelValidationState.Valid ||
                 ModelState["CategoryIdsJson"]?.ValidationState != ModelValidationState.Valid)
-                //hier Prüfung, ob Discounts überlappen?
             {
-                //die seite wird zwar neu geladen ABER das product ist nicht mehr gefüllt...
                 await LoadDataAsync();
+
+
 
                 var categoryIdList = JsonSerializer.Deserialize<List<Guid>>(CategoryIdsJson);
                 var productCategories = Categories.FindAll(c => categoryIdList.Exists(id => id == c.CategoryId));
@@ -191,9 +221,6 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
             await LoadDataAsync();
 
-            //wenn DiscountsJson(Deserialisiert)
-
-
             var newDiscount = new DiscountDTO
             {
                 StartDate = NewDiscount.StartDate.Value,
@@ -201,15 +228,42 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 DiscountPercentage = NewDiscount.DiscountPercentage.Value,
             };
 
+            var returnedValidatedProduct = JsonSerializer.Deserialize<ValidatedProduct>(ValidatedProductJson);
+            // to get the new discounts, if one was already entered and an new one should be entered
+            var newLoadedProducts = await _internalProductManager.GetProductsForInternalUse();
+            var newSelectedProduct = newLoadedProducts.FirstOrDefault(p => p.ProductId == returnedValidatedProduct.ProductId);
+
             if (ValidatedProductJson != null)
                 ValidatedProduct = JsonSerializer.Deserialize<ValidatedProduct>(ValidatedProductJson);
 
-            //ich habe momentan nur eine guid liste....
-            //die muss ich erst in eine dto liste mappen bzw die dtos raussuchen
+            ValidatedProduct.Discounts = newSelectedProduct.Discounts;
+            //
 
             
 
-            List<Guid> categoryIds = [];
+            //Prüfung, ob Überlappung von NewDiscount mit Discount in Liste
+            //wenn DiscountsJson(Deserialisiert)
+            var discountOverlap = ValidatedProduct.Discounts.Any(d => newDiscount.StartDate < d.EndDate && newDiscount.EndDate > d.StartDate);
+
+            if (discountOverlap)
+            {
+                var categoryIdList = JsonSerializer.Deserialize<List<Guid>>(CategoryIdsJson);
+                var productCategories = Categories.FindAll(c => categoryIdList.Exists(id => id == c.CategoryId));
+
+                var validatedProduct = JsonSerializer.Deserialize<ValidatedProduct>(ValidatedProductJson);
+                validatedProduct.SelectedCategoryIds = productCategories.Select(c => c.CategoryId).ToList();
+                //Nullprüfung?
+                SelectedProductId = validatedProduct.ProductId;
+                ValidatedProduct = validatedProduct;
+                ValidatedProductJson = ValidatedProductJson;
+                CategoryIdsJson = CategoryIdsJson;
+                ShowModal = true;
+                DiscountOverlap = true;
+                return Page();
+            }
+
+
+            List <Guid> categoryIds = [];
             if (CategoryIdsJson != null) //prüfen schon mit modelstate
                 categoryIds = JsonSerializer.Deserialize<List<Guid>>(CategoryIdsJson);
 
@@ -233,9 +287,13 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
             await _internalProductManager.AddDiscount(newDiscount, newProduct);
 
+            var newProducts = await _internalProductManager.GetProductsForInternalUse();
+            var selectedProduct = newProducts.FirstOrDefault(p => p.ProductId == ValidatedProduct.ProductId);
 
             ValidatedProduct.SelectedCategoryIds = selectedCategories.Select(c => c.CategoryId).ToList();
+            ValidatedProduct.Discounts = selectedProduct.Discounts;
 
+            NewDiscount = null;
             SelectedProductId = ValidatedProduct.ProductId;
             ValidatedProduct = ValidatedProduct;
 
@@ -279,6 +337,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
             catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }
 
         }
+
 
     }
 }

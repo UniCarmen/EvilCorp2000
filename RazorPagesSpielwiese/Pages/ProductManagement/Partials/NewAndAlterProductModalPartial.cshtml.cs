@@ -38,6 +38,9 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement.Partials
         public string DiscountsJson { get; set; }
 
         [BindProperty]
+        public bool DiscountOverlap { get; set; }
+
+        [BindProperty]
         public string ValidatedProductJson { get; set; }
 
         [BindProperty]
