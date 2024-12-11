@@ -8,13 +8,14 @@ using static RazorPagesSpielwiese.Models.NewProductValidations;
 
 namespace RazorPagesSpielwiese.Pages.ProductManagement.Partials
 {
-    public class NewProductModalPartialModel1
+    public class NewProductModalPartialModel
     {
         //private ValidatedProduct _validatedProduct;
 
         [BindProperty]        
         public ValidatedProduct ValidatedProduct
         { get;set;
+            //diese Prüfung habe ich jetzt im Backing Code der Hauptseite
             //get => _validatedProduct; set
             //{
             //    _validatedProduct = value;
@@ -37,7 +38,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement.Partials
         [BindProperty]
         public string DiscountsJson { get; set; }
 
-        [BindProperty]
+        //[BindProperty]
         public bool DiscountOverlap { get; set; }
 
         [BindProperty]

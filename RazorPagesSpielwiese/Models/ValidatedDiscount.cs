@@ -10,7 +10,7 @@ namespace RazorPagesSpielwiese.Models
         //[Required(ErrorMessage = "Start Date Required")]
         public DateTime? StartDate { get; set; }
 
-        [EndDateValidation("End Date Required (min: Start Date)")] 
+        [EndDateValidation("End Date Required (must be after Start Date)")] 
         //[Required(ErrorMessage = "End Date Required")]
         public DateTime? EndDate { get; set; }
 
@@ -59,7 +59,7 @@ namespace RazorPagesSpielwiese.Models
                 if (startDateValue == null && (endDate == null || endDate <= DateTime.UtcNow))
                     return new ValidationResult(ErrorMessage);
 
-                if (endDate < startDateValue || endDate == null || endDate < DateTime.Today)
+                if (endDate <= startDateValue || endDate == null || endDate < DateTime.Today)
                     return new ValidationResult(ErrorMessage);
 
                 else return ValidationResult.Success;
