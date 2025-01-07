@@ -11,8 +11,14 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * Add and delete product discounts
 
 
+### Programming concepts included 
+* Data is stored in a MS SQL Server DB
+* Seperation of concerns (DAL, BL, UI)
+
+
 ### Planned
 * Backend Validation
+* Sorting Product List
 * Unit Tests
 * Logging in DB
 * Use of Identity - Log In, Log Out, Error Pages
@@ -31,6 +37,4 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * After entering a new Discount, the Modal is refreshed automatically but the fields are still filled
 
 
-### Programming concepts included 
-* Data is stored in a MS SQL Server DB
-* Seperation of concerns (DAL, BL, UI)
+
