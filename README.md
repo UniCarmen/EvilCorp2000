@@ -35,6 +35,7 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 
 ### Known Problems
 * After entering a new Discount, the Modal is refreshed automatically but the fields are still filled
+* Error when deleting two discounts after another
 
 
 
