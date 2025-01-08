@@ -2,6 +2,8 @@
 using Microsoft.Identity.Client;
 using RazorPagesSpielwiese.DBContexts;
 using RazorPagesSpielwiese.Entities;
+using RazorPagesSpielwiese.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace RazorPagesSpielwiese.Repositories
 {
@@ -56,5 +58,7 @@ namespace RazorPagesSpielwiese.Repositories
             _context.Discounts.Remove(discount);
             await _context.SaveChangesAsync();
         }
+
+        
     }
 }

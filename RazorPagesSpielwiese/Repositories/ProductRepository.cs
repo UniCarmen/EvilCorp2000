@@ -59,5 +59,10 @@ namespace RazorPagesSpielwiese.Repositories
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> IsProductNameUniqueAsync(string name)
+        {
+            return !await _context.Products.AnyAsync(p => p.ProductName == name);
+        }
     }
 }

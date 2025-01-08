@@ -3,6 +3,8 @@ using RazorPagesSpielwiese.Entities;
 using RazorPagesSpielwiese.Models;
 using RazorPagesSpielwiese.Repositories;
 using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Contracts;
 
 namespace RazorPagesSpielwiese.Services
@@ -44,21 +46,27 @@ namespace RazorPagesSpielwiese.Services
             return productsForInternalUse;
         }
 
-        //public async Task<ProductForSaleDTO> GetProductForInternalUse(int id)
-        //{
-        //    var productEntity = await _productRepository.GetProductById(id);
+        public async Task<ProductForInternalUseDTO> GetProductForInternalUse(Guid id)
+        {
+            var productEntity = await _productRepository.GetProductById(id);
 
-        //    if (productEntity == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(productEntity));
-        //    }
+            if (productEntity == null)
+            {
+                throw new ArgumentNullException(nameof(productEntity));
+            }
 
-        //    var currentDiscounts = await _discoutRepository.GetDiscountsByProductId(id);
+            var currentDiscountEntities = await _discoutRepository.GetDiscountsByProductId(id);
 
-        //    var productMapper = new ProductMappings();
+            var discountMapper = new Mappings.DiscountMappings();
+            var currentDiscounts = currentDiscountEntities.Select(de => discountMapper.DiscountToDiscountDTO(de)).ToList();
 
-        //    return productMapper.ProductToProductForInternalUse(productEntity, currentDiscounts);
-        //}
+            var categorieMapper = new Mappings.CategoryMappings();
+            var categories = productEntity.Categories.Select(c => categorieMapper.CategoryEntityToCategoryModel(c)).ToList();
+
+            var productMapper = new Mappings.ProductMappings();
+
+            return productMapper.ProductToProductForInternalUse(productEntity, currentDiscounts, categories);
+        }
 
         public async Task<List<Models.CategoryDTO>> GetCategories()
         {
@@ -73,6 +81,9 @@ namespace RazorPagesSpielwiese.Services
         {
             if (productToStore != null)
             {
+                var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName);
+                ValidateProduct(productToStore, nameIsUnique);
+
                 var productMapper = new Mappings.ProductMappings();
                 var discountMapper = new Mappings.DiscountMappings();
                 var categoryMapper = new Mappings.CategoryMappings();
@@ -101,6 +112,10 @@ namespace RazorPagesSpielwiese.Services
                 throw new ArgumentNullException(nameof(discount));
             }
 
+            var existingDiscounts = await _discoutRepository.GetDiscountsByProductId(productToStore.ProductId);
+            ValidateDiscountAsync(discount, existingDiscounts);
+
+
             var discountMapper = new Mappings.DiscountMappings();
             var newDiscount = discountMapper.SetDiscountId(discount);
 
@@ -116,6 +131,9 @@ namespace RazorPagesSpielwiese.Services
         {
             if (productToStore != null)
             {
+                var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName);
+                ValidateProduct(productToStore, nameIsUnique);
+
                 var productMapper = new Mappings.ProductMappings();
                 var discountMapper = new Mappings.DiscountMappings();
                 var categoryMapper = new Mappings.CategoryMappings();
@@ -132,6 +150,62 @@ namespace RazorPagesSpielwiese.Services
             else
             {
                 throw new ArgumentNullException(nameof(productToStore));
+            }
+        }
+
+
+
+
+
+        public void ValidateProduct(ProductToStoreDTO productToStore, bool nameIsUnique)
+        {
+            var validationErrors = new List<string>();
+
+            // Verschiedene Validierungen prüfen und Fehler sammeln
+            if (!nameIsUnique)
+            {
+                validationErrors.Add("Product name must be unique.");
+            }
+
+            if (productToStore.Price <= 0.0m)
+            {
+                validationErrors.Add("Price must be greater than 0.");
+            }
+
+            if (productToStore.AmountOnStock < 0)
+            {
+                validationErrors.Add("Amount on stock cannot be negative.");
+            }
+
+            // Wenn Fehler vorhanden sind, alle weitergeben
+            if (validationErrors.Any())
+            {
+                throw new ValidationException(string.Join(" ", validationErrors));
+            }
+        }
+
+
+        public void ValidateDiscountAsync(DiscountDTO discount, List<Discount> discounts)
+        {
+            var validationErrors = new List<string>();
+
+            if (discount.StartDate < DateTime.Today || discount.EndDate < DateTime.Today)
+                validationErrors.Add("Start and End dates must not be in the past.");
+
+            if (discount.StartDate >= discount.EndDate)
+                validationErrors.Add("End Date must be after Start Date.");
+
+            if (discount.DiscountPercentage <= 0)
+                validationErrors.Add("Discount Percentage must be greater than 0.");
+
+            if (discounts.Any(d => discount.StartDate < d.EndDate && discount.EndDate > d.StartDate))
+            {
+                validationErrors.Add("Discount overlaps with an existing discount.");
+            }
+
+            if (validationErrors.Any())
+            {
+                throw new ValidationException(string.Join(" ", validationErrors));
             }
         }
     }

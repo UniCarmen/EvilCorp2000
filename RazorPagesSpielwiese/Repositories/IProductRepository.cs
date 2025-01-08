@@ -9,5 +9,6 @@ namespace RazorPagesSpielwiese.Repositories
         Task<List<Product>> GetAllProductsAsync();
         Task<Product?> GetProductById(Guid id);
         Task UpdateProduct(Product product);
+        Task<bool> IsProductNameUniqueAsync(string name);
     }
 }

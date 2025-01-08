@@ -5,6 +5,7 @@ namespace RazorPagesSpielwiese.Services
     public interface IInternalProductManager
     {
         Task<List<ProductForInternalUseDTO>> GetProductsForInternalUse();
+        Task<ProductForInternalUseDTO> GetProductForInternalUse(Guid id);
         Task<List<CategoryDTO>> GetCategories();
         Task SaveProductToStore(ProductToStoreDTO productToStore);
         Task UpdateProductToStore(ProductToStoreDTO productToStore);

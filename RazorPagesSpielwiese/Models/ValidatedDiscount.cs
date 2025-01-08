@@ -7,15 +7,12 @@ namespace RazorPagesSpielwiese.Models
     public class ValidatedDiscount
     {
         [StartDateValidation("Start Date Required (min: today)")] 
-        //[Required(ErrorMessage = "Start Date Required")]
         public DateTime? StartDate { get; set; }
 
         [EndDateValidation("End Date Required (must be after Start Date)")] 
-        //[Required(ErrorMessage = "End Date Required")]
         public DateTime? EndDate { get; set; }
 
-        [DiscountPercentageAttribute("Discount Percentage required must be over 0 %")]
-        //[Required(ErrorMessage = "Discount Percentage required")]
+        [DiscountPercentage("Discount Percentage required must be over 0 %")]
         public double? DiscountPercentage { get; set; }
     }
 
