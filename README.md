@@ -9,6 +9,7 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 
 * Enter, view and change products (name, description, categories, price, amount on stock) with UI Validation
 * Add and delete product discounts
+* Product + Discount Backend Validation
 
 
 ### Programming concepts included 
@@ -17,7 +18,10 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 
 
 ### Planned
-* Backend Validation
+
+* Delete Products
+* Add, alter, delete(?) Categories
+* Add Imagesupport - save in Datebase
 * Sorting Product List
 * Unit Tests
 * Logging in DB
