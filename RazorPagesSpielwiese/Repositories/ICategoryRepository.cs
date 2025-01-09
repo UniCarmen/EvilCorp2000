@@ -1,6 +1,6 @@
-﻿using RazorPagesSpielwiese.Entities;
+﻿using EvilCorp2000.Entities;
 
-namespace RazorPagesSpielwiese.Repositories
+namespace EvilCorp2000.Repositories
 {
     public interface ICategoryRepository
     {

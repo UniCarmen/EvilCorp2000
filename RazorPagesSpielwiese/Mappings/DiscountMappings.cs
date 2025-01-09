@@ -1,7 +1,7 @@
-﻿using RazorPagesSpielwiese.Entities;
-using RazorPagesSpielwiese.Models;
+﻿using EvilCorp2000.Entities;
+using EvilCorp2000.Models;
 
-namespace RazorPagesSpielwiese.Mappings
+namespace EvilCorp2000.Mappings
 {
     public class DiscountMappings
     {

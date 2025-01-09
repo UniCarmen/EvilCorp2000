@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EvilCorp2000.DBContexts;
+using EvilCorp2000.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
-using RazorPagesSpielwiese.DBContexts;
-using RazorPagesSpielwiese.Entities;
-using RazorPagesSpielwiese.Models;
+using EvilCorp2000.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace RazorPagesSpielwiese.Repositories
+namespace EvilCorp2000.Repositories
 {
     public class DiscountRepository : IDiscountRepository
     {
@@ -31,9 +31,9 @@ namespace RazorPagesSpielwiese.Repositories
         {
             if (productId == Guid.Empty) { throw new ArgumentNullException("Invalid Guid"); }
             return await _context.Discounts.
-                Where(p => 
-                p.ProductId == productId && 
-                DateTime.UtcNow <= p.EndDate && 
+                Where(p =>
+                p.ProductId == productId &&
+                DateTime.UtcNow <= p.EndDate &&
                 DateTime.UtcNow >= p.StartDate
                 ).FirstOrDefaultAsync();
         }
@@ -59,6 +59,6 @@ namespace RazorPagesSpielwiese.Repositories
             await _context.SaveChangesAsync();
         }
 
-        
+
     }
 }

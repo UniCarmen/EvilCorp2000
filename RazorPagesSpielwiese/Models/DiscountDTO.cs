@@ -1,7 +1,7 @@
-﻿using RazorPagesSpielwiese.Entities;
+﻿using EvilCorp2000.Entities;
 using System.ComponentModel.DataAnnotations;
 
-namespace RazorPagesSpielwiese.Models
+namespace EvilCorp2000.Models
 {
     public class DiscountDTO
     {

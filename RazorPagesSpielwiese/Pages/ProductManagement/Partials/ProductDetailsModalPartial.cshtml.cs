@@ -1,9 +1,9 @@
+using EvilCorp2000.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using RazorPagesSpielwiese.Models;
 using System.Diagnostics.Eventing.Reader;
 
-namespace RazorPagesSpielwiese.Pages.ProductManagement.Partials
+namespace EvilCorp2000.Pages.ProductManagement.Partials
 {
     public class ProductDetailsModalPartialModel
     {

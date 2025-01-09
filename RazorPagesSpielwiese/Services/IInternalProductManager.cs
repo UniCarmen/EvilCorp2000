@@ -1,6 +1,6 @@
-﻿using RazorPagesSpielwiese.Models;
+﻿using EvilCorp2000.Models;
 
-namespace RazorPagesSpielwiese.Services
+namespace EvilCorp2000.Services
 {
     public interface IInternalProductManager
     {

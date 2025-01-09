@@ -1,15 +1,15 @@
-﻿using RazorPagesSpielwiese.Entities;
+﻿using EvilCorp2000.Entities;
 using System.ComponentModel.DataAnnotations;
-using static RazorPagesSpielwiese.Models.DiscountValidation;
+using static EvilCorp2000.Models.DiscountValidation;
 
-namespace RazorPagesSpielwiese.Models
+namespace EvilCorp2000.Models
 {
     public class ValidatedDiscount
     {
-        [StartDateValidation("Start Date Required (min: today)")] 
+        [StartDateValidation("Start Date Required (min: today)")]
         public DateTime? StartDate { get; set; }
 
-        [EndDateValidation("End Date Required (must be after Start Date)")] 
+        [EndDateValidation("End Date Required (must be after Start Date)")]
         public DateTime? EndDate { get; set; }
 
         [DiscountPercentage("Discount Percentage required must be over 0 %")]
@@ -34,7 +34,7 @@ namespace RazorPagesSpielwiese.Models
                     return new ValidationResult(ErrorMessage);
                 }
 
-                else return ValidationResult.Success;                
+                else return ValidationResult.Success;
             }
         }
 
@@ -42,7 +42,7 @@ namespace RazorPagesSpielwiese.Models
         public class EndDateValidationAttribute : ValidationAttribute
         {
             public EndDateValidationAttribute(string errorMessage)
-            {                
+            {
                 ErrorMessage = errorMessage;
             }
 

@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RazorPagesSpielwiese.DBContexts;
-using RazorPagesSpielwiese.Entities;
+﻿using EvilCorp2000.DBContexts;
+using EvilCorp2000.Entities;
+using Microsoft.EntityFrameworkCore;
 
-namespace RazorPagesSpielwiese.Repositories
+namespace EvilCorp2000.Repositories
 {
     public class CategoryRepository : ICategoryRepository
     {
@@ -15,7 +15,7 @@ namespace RazorPagesSpielwiese.Repositories
 
         public async Task<List<Category>> GetAllCategories()
         {
-            return await _context.Category.AsNoTracking().ToListAsync ();
+            return await _context.Category.AsNoTracking().ToListAsync();
         }
 
         public async Task SaveNewCategory(Category category)

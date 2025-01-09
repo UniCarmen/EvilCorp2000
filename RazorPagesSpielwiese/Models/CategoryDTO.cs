@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace RazorPagesSpielwiese.Models;
+namespace EvilCorp2000.Models;
 
 public partial class CategoryDTO
 {

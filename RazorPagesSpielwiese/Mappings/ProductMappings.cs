@@ -1,22 +1,22 @@
-﻿using RazorPagesSpielwiese.Entities;
-using RazorPagesSpielwiese.Models;
+﻿using EvilCorp2000.Entities;
+using EvilCorp2000.Models;
 
-namespace RazorPagesSpielwiese.Mappings
+namespace EvilCorp2000.Mappings
 {
     public class ProductMappings
     {
-        public ProductForSaleDTO ProductToProductForSale (Product productEntity, Discount currentDiscount)
+        public ProductForSaleDTO ProductToProductForSale(Product productEntity, Discount currentDiscount)
         {
             decimal discountedPrice = 0.0m;
             double discountedPercentage;
 
             if (currentDiscount != null && currentDiscount.DiscountPercentage != 0.0)
-            { 
-                discountedPrice = (decimal)(((double)productEntity.ProductPrice) / 100 * (100 - currentDiscount.DiscountPercentage));
+            {
+                discountedPrice = (decimal)((double)productEntity.ProductPrice / 100 * (100 - currentDiscount.DiscountPercentage));
                 discountedPercentage = currentDiscount.DiscountPercentage;
             }
             else
-            { 
+            {
                 discountedPrice = 0.0m;
                 discountedPercentage = 0.0;
             }
@@ -40,7 +40,7 @@ namespace RazorPagesSpielwiese.Mappings
         public Product ProductToStoreToProductEntity(ProductToStoreDTO productToStore, List<Category> categories, List<Discount> dicsounts)
         {
             var newProductId = productToStore.ProductId;
-            if(newProductId == Guid.Empty)
+            if (newProductId == Guid.Empty)
             {
                 newProductId = Guid.NewGuid();
             }
@@ -59,9 +59,10 @@ namespace RazorPagesSpielwiese.Mappings
         }
 
 
-        public ProductForInternalUseDTO ProductToProductForInternalUse(Product product, List<DiscountDTO> currentDiscounts, List<CategoryDTO>categories)
+        public ProductForInternalUseDTO ProductToProductForInternalUse(Product product, List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories)
         {
-            return new ProductForInternalUseDTO { 
+            return new ProductForInternalUseDTO
+            {
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
                 ProductPicture = product.ProductPicture,

@@ -1,10 +1,10 @@
-﻿using RazorPagesSpielwiese.Entities;
-using RazorPagesSpielwiese.Models;
-using RazorPagesSpielwiese.Repositories;
-using RazorPagesSpielwiese.Mappings;
+﻿using EvilCorp2000.Mappings;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore;
-namespace RazorPagesSpielwiese.Services
+using EvilCorp2000.Repositories;
+using EvilCorp2000.Entities;
+using EvilCorp2000.Models;
+namespace EvilCorp2000.Services
 {
     public class ProductForSaleManager : IProductForSaleManager
     {
@@ -16,7 +16,7 @@ namespace RazorPagesSpielwiese.Services
         {
             _discoutRepository = discoutRepository ?? throw new ArgumentNullException(nameof(discoutRepository));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            _categoryRepository = categoryRepository ?? throw new ArgumentNullException( nameof(categoryRepository));
+            _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
         public async Task<List<ProductForSaleDTO>> GetProductsForSale()

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace RazorPagesSpielwiese.Entities;
+namespace EvilCorp2000.Entities;
 
 public partial class Category
 {

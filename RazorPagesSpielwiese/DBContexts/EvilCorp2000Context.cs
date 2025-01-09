@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using EvilCorp2000.Entities;
 using Microsoft.EntityFrameworkCore;
-using RazorPagesSpielwiese.Entities;
 
-namespace RazorPagesSpielwiese.DBContexts;
+namespace EvilCorp2000.DBContexts;
 
 public partial class EvilCorp2000Context : DbContext
 {
@@ -24,14 +24,14 @@ public partial class EvilCorp2000Context : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-         modelBuilder.Entity<Discount>(entity =>
-        {
-            entity.HasKey(e => e.DiscountId);
-            entity.HasOne(d => d.Product)
-                .WithMany(p => p.Discounts)
-                .HasForeignKey(d => d.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
+        modelBuilder.Entity<Discount>(entity =>
+       {
+           entity.HasKey(e => e.DiscountId);
+           entity.HasOne(d => d.Product)
+               .WithMany(p => p.Discounts)
+               .HasForeignKey(d => d.ProductId)
+               .OnDelete(DeleteBehavior.Cascade);
+       });
 
         modelBuilder.Entity<Product>(entity =>
         {

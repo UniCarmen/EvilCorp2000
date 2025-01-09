@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace RazorPagesSpielwiese.Entities;
+namespace EvilCorp2000.Entities;
 
 public partial class Discount
 {

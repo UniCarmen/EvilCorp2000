@@ -1,8 +1,8 @@
+using EvilCorp2000.DBContexts;
+using EvilCorp2000.Repositories;
+using EvilCorp2000.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RazorPagesSpielwiese.DBContexts;
-using RazorPagesSpielwiese.Repositories;
-using RazorPagesSpielwiese.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EvilCorp2000.DBContexts;
+using EvilCorp2000.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
-using RazorPagesSpielwiese.DBContexts;
-using RazorPagesSpielwiese.Entities;
 
-namespace RazorPagesSpielwiese.Repositories
+namespace EvilCorp2000.Repositories
 {
     public class ProductRepository : IProductRepository
     {
@@ -15,7 +15,7 @@ namespace RazorPagesSpielwiese.Repositories
         }
 
         public async Task<List<Product>> GetAllProductsAsync()
-        {            
+        {
             return await _context.Products.Include(p => p.Categories).Include(c => c.Categories).ToListAsync();
         }
 
@@ -34,13 +34,13 @@ namespace RazorPagesSpielwiese.Repositories
 
         public async Task UpdateProduct(Product productToStore)
         {
-            if (productToStore == null) 
+            if (productToStore == null)
             { throw new ArgumentNullException(nameof(productToStore)); }
-            
+
             var productEntity = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productToStore.ProductId);
 
             if (productEntity == null)
-            { throw new ArgumentNullException(nameof(productEntity));}
+            { throw new ArgumentNullException(nameof(productEntity)); }
 
             //löschen des alten products: verbindungen in join tabellen werden automatisch gelöscht
             //die methode könnte leistungseinbußen haben, da ich kein update mache, sprich die Cat und Disc Tabellen manuell ändere, das geladene ProductIdentity ändere und dann speichere

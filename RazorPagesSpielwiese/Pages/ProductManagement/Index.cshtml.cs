@@ -1,20 +1,20 @@
+using EvilCorp2000.Models;
+using EvilCorp2000.Pages.ProductManagement.Partials;
+using EvilCorp2000.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;
-using RazorPagesSpielwiese.Entities;
-using RazorPagesSpielwiese.Models;
-using RazorPagesSpielwiese.Pages.ProductManagement.Partials;
-using RazorPagesSpielwiese.Services;
+using EvilCorp2000.Entities;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.Design.Serialization;
 using System.Security.Cryptography.Xml;
 using System.Text.Json;
 
-namespace RazorPagesSpielwiese.Pages.ProductManagement
+namespace EvilCorp2000.Pages.ProductManagement
 {
-    
+
 
     public class ProductManagementModel : PageModel
     {
@@ -80,7 +80,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
         }
 
 
-        public async Task<IActionResult> OnPostShowNewAndAlterProductModal(Guid selectedProductId) 
+        public async Task<IActionResult> OnPostShowNewAndAlterProductModal(Guid selectedProductId)
         {
             SelectedProductId = selectedProductId;
 
@@ -190,7 +190,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
             catch (Exception ex)
             {
-                
+
                 return await ExecuteOnExceptionCatch("Failed to save the product. {0}", "Failed to save the product.", ex);
             }
 
@@ -218,7 +218,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
 
             // Load Product from DB to get all Discounts, if one has already been entered            
-            (ValidatedProduct validatedProduct, IActionResult? validatedProductError) = 
+            (ValidatedProduct validatedProduct, IActionResult? validatedProductError) =
                 await DeserializeWithTryCatchAsync<ValidatedProduct>(ValidatedProductJson, "Failed to parse ValidatedProduct.", "Discount couldn't be added.");
             if (validatedProductError != null) return validatedProductError;
             ValidatedProduct = validatedProduct;
@@ -227,12 +227,12 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
             ValidatedProduct.Discounts = newSelectedProduct.Discounts;
 
             // Load SelectedCategories to fill Fields after Reload of the Modal after Saving the Discount
-            (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) = 
+            (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) =
                 await DeserializeWithTryCatchAsync<List<Guid>>(CategoryIdsJson, "Failed to parse CategoryIds.", "Discount couldn't be added.");
             if (categoryIdsJsonError != null) return categoryIdsJsonError;
 
             var selectedCategories = Categories.FindAll(c => categoryIds.Exists(id => id == c.CategoryId));
-            
+
 
             //Validation in Backend
             //var discountOverlap = ValidatedProduct.Discounts.Any(d => newDiscount.StartDate < d.EndDate && newDiscount.EndDate > d.StartDate);
@@ -263,7 +263,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
             var selectedProduct = Products.FirstOrDefault(p => p.ProductId == ValidatedProduct.ProductId);
 
             return await ReInitializeModalWithProduct(ValidatedProduct, categoryIds, selectedProduct.Discounts);
-            
+
         }
 
 
@@ -279,7 +279,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
         public async Task<IActionResult> OnPostDeleteDiscount(Guid discountId, Guid productId) // hier gleich auch die Product Id mitgeben
         {
-            
+
             // productliste in der Hauptseite nicht mehr sichtbar
 
 
@@ -308,8 +308,8 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 var newDisounts = ValidatedProduct.Discounts.FindAll(d => d.DiscountId != discountId);
                 ValidatedProduct.Discounts = newDisounts;
             }
-            
-            catch (Exception ex) 
+
+            catch (Exception ex)
             {
                 return await ExecuteOnExceptionCatch("Failed to remove Discount from Discounts", "An error occured", ex);
             }
@@ -391,7 +391,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
         //Hilfsfunktionen - Auslagern in separate klasse, wie ist das dann mit dem IActionResult???
 
-        public async Task <IActionResult> ReInitializeModalWithProduct(ValidatedProduct validatedProduct, List<Guid> categoryIds, List<DiscountDTO> discounts)
+        public async Task<IActionResult> ReInitializeModalWithProduct(ValidatedProduct validatedProduct, List<Guid> categoryIds, List<DiscountDTO> discounts)
         {
             validatedProduct.SelectedCategoryIds = categoryIds;
             validatedProduct.Discounts = discounts;
@@ -464,11 +464,11 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
 
         private bool IsModelStateIsInvalidForDiscount(ModelStateDictionary modelState)
         {
-            return (modelState["NewDiscount.EndDate"]?.ValidationState != ModelValidationState.Valid ||
+            return modelState["NewDiscount.EndDate"]?.ValidationState != ModelValidationState.Valid ||
                 modelState["NewDiscount.StartDate"]?.ValidationState != ModelValidationState.Valid ||
                 modelState["NewDiscount.DiscountPercentage"]?.ValidationState != ModelValidationState.Valid ||
                 modelState["ValidatedProductJson"]?.ValidationState != ModelValidationState.Valid ||
-                modelState["CategoryIdsJson"]?.ValidationState != ModelValidationState.Valid);
+                modelState["CategoryIdsJson"]?.ValidationState != ModelValidationState.Valid;
         }
 
 
@@ -477,7 +477,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
             try
             {
                 var result = JsonSerializer.Deserialize<T>(json);
-                return (result, null); 
+                return (result, null);
             }
             catch (JsonException ex)
             {
@@ -485,7 +485,7 @@ namespace RazorPagesSpielwiese.Pages.ProductManagement
                 ModelState.AddModelError(string.Empty, modelStateError);
                 ShowModal = true;
                 await LoadDataAsync();
-                return (default, Page()); 
+                return (default, Page());
             }
         }
 

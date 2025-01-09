@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using static RazorPagesSpielwiese.Models.NewProductValidations;
+using static EvilCorp2000.Models.NewProductValidations;
 //TODO: momentan wird nur die GUID Liste validert, benötige ich den Rest später für Grenzwerte?
 
-namespace RazorPagesSpielwiese.Models
+namespace EvilCorp2000.Models
 {
     public class ValidatedProduct
     {
@@ -25,12 +25,13 @@ namespace RazorPagesSpielwiese.Models
         [Display(Name = "Product Picture")]
         public string? ProductPicture { get; set; }
 
-        //[DecimalValidation(0.99, "Price required")] falls ich Einschränkungen hinzufügen will
         [Required(ErrorMessage = "Price required")]
+        [Range(0, double.MaxValue, ErrorMessage = "Price must be at least 0.")]
         [Display(Name = "Price")]
         public decimal? Price { get; set; }
 
         [Required(ErrorMessage = "Amount on Stock required")]
+        [Range(0, int.MaxValue, ErrorMessage = "Amount on stock cannot be negative.")]
         [Display(Name = "Amount on Stock")]
         public int? AmountOnStock { get; set; }
 

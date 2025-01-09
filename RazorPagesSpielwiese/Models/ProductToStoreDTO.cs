@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace RazorPagesSpielwiese.Models
+namespace EvilCorp2000.Models
 {
     public class ProductToStoreDTO
     {

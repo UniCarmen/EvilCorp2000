@@ -1,4 +1,4 @@
-﻿namespace RazorPagesSpielwiese.Models
+﻿namespace EvilCorp2000.Models
 {
     public class ProductForInternalUseDTO
     {

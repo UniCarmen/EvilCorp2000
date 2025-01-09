@@ -1,19 +1,22 @@
-﻿namespace RazorPagesSpielwiese.Mappings
+﻿using EvilCorp2000.Entities;
+using EvilCorp2000.Models;
+
+namespace EvilCorp2000.Mappings
 {
     public class CategoryMappings
     {
-        public Models.CategoryDTO CategoryEntityToCategoryModel(Entities.Category category)
+        public CategoryDTO CategoryEntityToCategoryModel(Category category)
         {
-            return new Models.CategoryDTO()
+            return new CategoryDTO()
             {
                 CategoryId = category.CategoryId,
                 CategoryName = category.CategoryName,
             };
         }
 
-        public Entities.Category CategoryDtoToCategory(Models.CategoryDTO category)
+        public Category CategoryDtoToCategory(CategoryDTO category)
         {
-            return new Entities.Category()
+            return new Category()
             {
                 CategoryId = category.CategoryId,
                 CategoryName = category.CategoryName,

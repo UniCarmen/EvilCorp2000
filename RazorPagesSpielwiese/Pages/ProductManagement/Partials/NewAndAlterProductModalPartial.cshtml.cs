@@ -1,20 +1,21 @@
+using EvilCorp2000.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using RazorPagesSpielwiese.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using static RazorPagesSpielwiese.Models.NewProductValidations;
+using static EvilCorp2000.Models.NewProductValidations;
 
-namespace RazorPagesSpielwiese.Pages.ProductManagement.Partials
+namespace EvilCorp2000.Pages.ProductManagement.Partials
 {
     public class NewProductModalPartialModel
     {
         //private ValidatedProduct _validatedProduct;
 
-        [BindProperty]        
+        [BindProperty]
         public ValidatedProduct ValidatedProduct
-        { get;set;
+        {
+            get; set;
             //diese Prüfung habe ich jetzt im Backing Code der Hauptseite
             //get => _validatedProduct; set
             //{

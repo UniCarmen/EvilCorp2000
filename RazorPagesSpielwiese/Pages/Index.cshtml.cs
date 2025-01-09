@@ -1,10 +1,10 @@
+using EvilCorp2000.Models;
+using EvilCorp2000.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using RazorPagesSpielwiese.Models;
-using RazorPagesSpielwiese.Repositories;
-using RazorPagesSpielwiese.Services;
+using EvilCorp2000.Repositories;
 
-namespace RazorPagesSpielwiese.Pages
+namespace EvilCorp2000.Pages
 {
     public class IndexModel : PageModel
     {

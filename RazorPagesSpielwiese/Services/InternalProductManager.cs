@@ -1,13 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RazorPagesSpielwiese.Entities;
-using RazorPagesSpielwiese.Models;
-using RazorPagesSpielwiese.Repositories;
+﻿using EvilCorp2000.Entities;
+using EvilCorp2000.Models;
+using EvilCorp2000.Repositories;
+using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Contracts;
 
-namespace RazorPagesSpielwiese.Services
+namespace EvilCorp2000.Services
 {
     public class InternalProductManager : IInternalProductManager
     {
@@ -68,7 +68,7 @@ namespace RazorPagesSpielwiese.Services
             return productMapper.ProductToProductForInternalUse(productEntity, currentDiscounts, categories);
         }
 
-        public async Task<List<Models.CategoryDTO>> GetCategories()
+        public async Task<List<CategoryDTO>> GetCategories()
         {
             var categoryEntities = await _categoryRepository.GetAllCategories();
 
@@ -124,7 +124,7 @@ namespace RazorPagesSpielwiese.Services
 
             productToStore.Discounts.Add(newDiscount);
             await UpdateProductToStore(productToStore);
-            
+
         }
 
         public async Task UpdateProductToStore(ProductToStoreDTO productToStore)
