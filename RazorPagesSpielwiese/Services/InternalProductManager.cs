@@ -131,8 +131,8 @@ namespace EvilCorp2000.Services
         {
             if (productToStore != null)
             {
-                var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName);
-                ValidateProduct(productToStore, nameIsUnique);
+                //var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName);
+                //ValidateProduct(productToStore, nameIsUnique);
 
                 var productMapper = new Mappings.ProductMappings();
                 var discountMapper = new Mappings.DiscountMappings();
@@ -141,6 +141,8 @@ namespace EvilCorp2000.Services
                 var discounts = productToStore.Discounts.Select(d => discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
 
                 var categories = productToStore.Categories.Select(c => categoryMapper.CategoryDtoToCategory(c)).ToList();
+
+                //! Die neuen Categories und Discounts müssen gespeichert werden, falls es Veränderungen gab
 
                 //markiert Die Kategorien im Context in den Categories als bereits existierend, damit nicht versucht wird, diese neu anzulegen
                 categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
@@ -161,7 +163,6 @@ namespace EvilCorp2000.Services
         {
             var validationErrors = new List<string>();
 
-            // Verschiedene Validierungen prüfen und Fehler sammeln
             if (!nameIsUnique)
             {
                 validationErrors.Add("Product name must be unique.");
@@ -177,7 +178,6 @@ namespace EvilCorp2000.Services
                 validationErrors.Add("Amount on stock cannot be negative.");
             }
 
-            // Wenn Fehler vorhanden sind, alle weitergeben
             if (validationErrors.Any())
             {
                 throw new ValidationException(string.Join(" ", validationErrors));
@@ -208,5 +208,11 @@ namespace EvilCorp2000.Services
                 throw new ValidationException(string.Join(" ", validationErrors));
             }
         }
+
+
+        //public async void DeleteProductAndItsDiscounts (Guid productId)
+        //{
+        //    await _productRepository.DeleteProduct(product);
+        //}
     }
 }

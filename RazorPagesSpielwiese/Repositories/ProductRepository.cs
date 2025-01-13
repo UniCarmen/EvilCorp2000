@@ -42,20 +42,25 @@ namespace EvilCorp2000.Repositories
             if (productEntity == null)
             { throw new ArgumentNullException(nameof(productEntity)); }
 
+            //TODO: warum genau habe ich das nochmal so gemacht und nicht mit Update???
             //löschen des alten products: verbindungen in join tabellen werden automatisch gelöscht
-            //die methode könnte leistungseinbußen haben, da ich kein update mache, sprich die Cat und Disc Tabellen manuell ändere, das geladene ProductIdentity ändere und dann speichere
-            await DeleteProduct(productEntity);
+            //das soll nicht sein. Das Product soll nur geupdated werden, evtl auch mit veränderten relationen, wenn z.B Categorien oder Discounts gelöscht oder hinzugefügt wurden.
 
-            //await _context.SaveChangesAsync();
+            //die methode könnte leistungseinbußen haben, da ich kein update mache, sprich die Cat und Disc Tabellen manuell ändere, das geladene ProductIdentity ändere und dann speichere
+            await DeleteProduct(productEntity.ProductId);
 
             await AddProduct(productToStore);
-
-            //await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteProduct(Product product)
+        //TODO: sicherstellen, dass ein Produkt samt evtl. vorhandenen Discounts übergeben wird
+        public async Task DeleteProduct(Guid productId)
         {
+            if (productId == Guid.Empty) { throw new ArgumentNullException(nameof(productId)); }
+
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
+
             if (product == null) { throw new ArgumentNullException(nameof(product)); }
+
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
         }

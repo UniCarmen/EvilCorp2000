@@ -5,6 +5,11 @@ VisualStudioVersion = 17.11.35431.28
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EvilCorp2000", "RazorPagesSpielwiese\EvilCorp2000.csproj", "{C2040339-765D-402D-871C-56EA6FABEE96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseTests", "DatabaseTests\DatabaseTests.csproj", "{A2AAF6F3-AC83-4218-A613-96B0CD10CAD4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C2040339-765D-402D-871C-56EA6FABEE96} = {C2040339-765D-402D-871C-56EA6FABEE96}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +20,10 @@ Global
 		{C2040339-765D-402D-871C-56EA6FABEE96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2040339-765D-402D-871C-56EA6FABEE96}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2040339-765D-402D-871C-56EA6FABEE96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2AAF6F3-AC83-4218-A613-96B0CD10CAD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2AAF6F3-AC83-4218-A613-96B0CD10CAD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2AAF6F3-AC83-4218-A613-96B0CD10CAD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2AAF6F3-AC83-4218-A613-96B0CD10CAD4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

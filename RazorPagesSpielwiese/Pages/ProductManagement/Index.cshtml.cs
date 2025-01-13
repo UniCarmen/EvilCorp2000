@@ -456,7 +456,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         {
             var keysToValidate = productId == Guid.Empty
                 ? new[] { "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", "ValidatedProduct.ProductPicture", "ValidatedProduct.SelectedCategoryIds" }
-                : new[] { "DiscountsJson", "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", "ValidatedProduct.ProductPicture", "ValidatedProduct.SelectedCategoryIds", "ValidatedProductJson", "CategoryIdsJson" };
+                : new[] {/* "DiscountsJson",*/ "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", "ValidatedProduct.ProductPicture", "ValidatedProduct.SelectedCategoryIds", "ValidatedProductJson", "CategoryIdsJson" };
 
             return keysToValidate.All(key => ModelState[key]?.ValidationState == ModelValidationState.Valid);
         }

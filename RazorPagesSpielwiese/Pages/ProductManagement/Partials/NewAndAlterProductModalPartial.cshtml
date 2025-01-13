@@ -71,7 +71,7 @@
                 <div class="mb-3">
                     <label asp-for="@Model.ValidatedProduct.Price" class="form-label"></label>
                     <div class="input-group">
-                        <input asp-for="@Model.ValidatedProduct.Price" class="form-control" aria-describedby="currency-symbol" />
+                        <input asp-for="@Model.ValidatedProduct.Price" class="form-control" type="number" step="0.01" aria-describedby="currency-symbol" />
                         <span class="input-group-text" id="currency-symbol">€</span>
                     </div>
                     <span asp-validation-for="@Model.ValidatedProduct.Price" class="text-danger"></span> 
