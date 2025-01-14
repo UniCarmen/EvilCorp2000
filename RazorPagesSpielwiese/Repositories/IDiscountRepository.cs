@@ -9,6 +9,6 @@ namespace EvilCorp2000.Repositories
         Task<List<Discount>> GetAllDiscountsAsync();
         Task<List<Discount>> GetDiscountsByProductId(Guid productId);
         Task<Discount> GetCurrentDiscountByProductId(Guid productId);
-        Task UpdateDiscount(Discount discount);
+        Task UpdateDiscounts(Product productFromDB, List<Discount> discounts);
     }
 }

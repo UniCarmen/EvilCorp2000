@@ -1,5 +1,6 @@
 ﻿using EvilCorp2000.DBContexts;
 using EvilCorp2000.Entities;
+using EvilCorp2000.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace EvilCorp2000.Repositories
@@ -25,18 +26,23 @@ namespace EvilCorp2000.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateCategory(Category newCategory)
+        public async Task UpdateCategories(Product productFromDB, List<Category>categories)
         {
-            if (newCategory == null) { throw new ArgumentNullException("keine Productclass"); }
-
-            var oldCategory = await _context.Category.FirstAsync(p => p.CategoryId == newCategory.CategoryId);
-
-            if (oldCategory == null)
+            var categoriesToRemove = productFromDB.Categories
+                    .Where(c => !categories.Any(uc => uc.CategoryId == c.CategoryId))
+                    .ToList();
+            foreach (var category in categoriesToRemove)
             {
-                throw new ArgumentNullException("keine alte Klasse vorhanden");
+                productFromDB.Categories.Remove(category);
             }
-            _context.Category.Remove(oldCategory);
-            _context.Add(newCategory);
+            var categoriesToAdd = categories
+                .Where(uc => !productFromDB.Categories.Any(c => c.CategoryId == uc.CategoryId))
+                .ToList();
+            foreach (var category in categoriesToAdd)
+            {
+                productFromDB.Categories.Add(category);
+            }
+
             await _context.SaveChangesAsync();
         }
 

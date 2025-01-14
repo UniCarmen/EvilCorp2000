@@ -8,7 +8,7 @@ namespace EvilCorp2000.Repositories
         Task DeleteProduct(Guid productId);
         Task<List<Product>> GetAllProductsAsync();
         Task<Product?> GetProductById(Guid id);
-        Task UpdateProduct(Product product);
+        Task UpdateProduct (Product productToStore, Product productFromDB);
         Task<bool> IsProductNameUniqueAsync(string name);
     }
 }

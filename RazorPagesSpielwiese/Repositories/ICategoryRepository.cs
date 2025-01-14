@@ -7,7 +7,7 @@ namespace EvilCorp2000.Repositories
         Task DeleteCategory(Category productClassToDelete);
         Task<List<Category>> GetAllCategories();
         Task SaveNewCategory(Category productClass);
-        Task UpdateCategory(Category newProductClass);
+        Task UpdateCategories(Product productFromDB, List<Category> categories);
         List<Category> AttachCategoriesIfNeeded(List<Category> categories);
     }
 }

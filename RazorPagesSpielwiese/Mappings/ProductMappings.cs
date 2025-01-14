@@ -37,6 +37,21 @@ namespace EvilCorp2000.Mappings
         }
 
 
+        //for update - brauche ich den Typen ProductToStore eigentlich noch??? veräderung für update direkt im repo
+       public Product MapProductToStoreDTOToProductEntity(ProductToStoreDTO productToStore)
+        {
+            return new Product
+            {
+                ProductId = productToStore.ProductId,
+                ProductName = productToStore.ProductName,
+                ProductPicture = productToStore.ProductPicture,
+                ProductDescription = productToStore.Description,
+                ProductPrice = productToStore.Price,
+                AmountOnStock = productToStore.AmountOnStock
+            };
+        }
+
+        //Namen ändern?? in neues Product, oder andere Funktionen abändern, dass categorien und Listen separat verändert werden und dann obige Methode verwenden
         public Product ProductToStoreToProductEntity(ProductToStoreDTO productToStore, List<Category> categories, List<Discount> dicsounts)
         {
             var newProductId = productToStore.ProductId;

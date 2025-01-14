@@ -76,7 +76,7 @@ namespace EvilCorp2000.Services
             return categoryEntities.Select(c => Mapping.CategoryEntityToCategoryModel(c)).ToList();
         }
 
-        //TODO
+        //TODO Save NEW Product
         public async Task SaveProductToStore(ProductToStoreDTO productToStore)
         {
             if (productToStore != null)
@@ -112,8 +112,8 @@ namespace EvilCorp2000.Services
                 throw new ArgumentNullException(nameof(discount));
             }
 
-            var existingDiscounts = await _discoutRepository.GetDiscountsByProductId(productToStore.ProductId);
-            ValidateDiscountAsync(discount, existingDiscounts);
+            //var existingDiscounts = await _discoutRepository.GetDiscountsByProductId(productToStore.ProductId);
+            ValidateDiscountAsync(discount, productToStore.Discounts);
 
 
             var discountMapper = new Mappings.DiscountMappings();
@@ -142,12 +142,26 @@ namespace EvilCorp2000.Services
 
                 var categories = productToStore.Categories.Select(c => categoryMapper.CategoryDtoToCategory(c)).ToList();
 
-                //! Die neuen Categories und Discounts müssen gespeichert werden, falls es Veränderungen gab
-
+                //noch nötig? ich update die categorien ja jetzt separat vom Product
                 //markiert Die Kategorien im Context in den Categories als bereits existierend, damit nicht versucht wird, diese neu anzulegen
-                categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
+                //categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
 
-                await _productRepository.UpdateProduct(productMapper.ProductToStoreToProductEntity(productToStore, categories, discounts));
+                var productFromDB = await _productRepository.GetProductById(productToStore.ProductId);
+
+                if (productFromDB == null)
+                {
+                    { throw new InvalidOperationException(nameof(productFromDB)); };
+                }
+
+                //das product hat weder categories noch discounts
+                var newProductEntity = productMapper.MapProductToStoreDTOToProductEntity(productToStore);
+                //newProductEntity.Discounts = productFromDB.Discounts;
+
+                await _productRepository.UpdateProduct(newProductEntity, productFromDB);
+
+                await _categoryRepository.UpdateCategories(productFromDB, categories);
+
+                await _discoutRepository.UpdateDiscounts(productFromDB, discounts);
             }
             else
             {
@@ -185,7 +199,7 @@ namespace EvilCorp2000.Services
         }
 
 
-        public void ValidateDiscountAsync(DiscountDTO discount, List<Discount> discounts)
+        public void ValidateDiscountAsync(DiscountDTO discount, List<DiscountDTO> discounts)
         {
             var validationErrors = new List<string>();
 

@@ -226,7 +226,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             var newSelectedProduct = Products.FirstOrDefault(p => p.ProductId == ValidatedProduct.ProductId);
             ValidatedProduct.Discounts = newSelectedProduct.Discounts;
 
-            // Load SelectedCategories to fill Fields after Reload of the Modal after Saving the Discount
+            // Load SelectedCategories to fill Fields after Reload of the Modal after Saving the Discount - if not done, there are na categories in the product
             (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) =
                 await DeserializeWithTryCatchAsync<List<Guid>>(CategoryIdsJson, "Failed to parse CategoryIds.", "Discount couldn't be added.");
             if (categoryIdsJsonError != null) return categoryIdsJsonError;
@@ -234,12 +234,6 @@ namespace EvilCorp2000.Pages.ProductManagement
             var selectedCategories = Categories.FindAll(c => categoryIds.Exists(id => id == c.CategoryId));
 
 
-            //Validation in Backend
-            //var discountOverlap = ValidatedProduct.Discounts.Any(d => newDiscount.StartDate < d.EndDate && newDiscount.EndDate > d.StartDate);
-            //if (discountOverlap)
-            //{
-            //    return ReInitializeAfterFailiedDiscountOverlapValidtion(selectedCategories, ValidatedProduct, ValidatedProductJson, CategoryIdsJson);
-            //}
 
             var newProduct = CreateProductToStoreDTO(ValidatedProduct, selectedCategories);
 

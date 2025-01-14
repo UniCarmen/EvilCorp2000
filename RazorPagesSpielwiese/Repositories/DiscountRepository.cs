@@ -45,10 +45,39 @@ namespace EvilCorp2000.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateDiscount(Discount discount)
+        public async Task UpdateDiscounts(Product productFromDB, List<Discount> discounts)
         {
-            if (discount == null) { throw new ArgumentNullException(nameof(discount)); }
-            _context.Discounts.Update(discount);
+            var discountsToRemove = productFromDB.Discounts
+                .Where(d => !discounts.Any(ud => ud.DiscountId == d.DiscountId))
+                .ToList();
+            foreach (var discount in discountsToRemove)
+            {
+                productFromDB.Discounts.Remove(discount);
+            }
+
+            foreach (var updatedDiscount in discounts)
+            {
+                var existingDiscount = productFromDB.Discounts
+                    .FirstOrDefault(d => d.DiscountId == updatedDiscount.DiscountId);
+
+                if (existingDiscount == null)
+                {
+                    // Neuer Discount
+                    productFromDB.Discounts.Add(updatedDiscount);
+                    //sagt dem EF, dass der Discount geadded werden soll, sonst wird er als modified getrackt und nicht gespeichert.
+                    _context.Entry(updatedDiscount).State=EntityState.Added;
+                }
+                else
+                {
+                    //TODO: Aktualisiere bestehenden Discount, falls Änderungen - momentan in der Oberfläche noch nicht implementiert
+                    existingDiscount.StartDate = updatedDiscount.StartDate;
+                    existingDiscount.EndDate = updatedDiscount.EndDate;
+                    existingDiscount.DiscountPercentage = updatedDiscount.DiscountPercentage;
+                }
+
+                var a = _context.Entry(productFromDB);
+                var b = _context.ChangeTracker.Entries();
+            }
             await _context.SaveChangesAsync();
         }
 
