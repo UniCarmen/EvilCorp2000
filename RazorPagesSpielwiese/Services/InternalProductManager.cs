@@ -170,7 +170,12 @@ namespace EvilCorp2000.Services
         }
 
 
-
+        public async Task DeleteProduct (Guid productId)
+        {
+            if (productId == Guid.Empty)
+            { throw new ArgumentNullException(nameof(productId)); }
+            await _productRepository.DeleteProduct(productId);
+        }
 
 
         public void ValidateProduct(ProductToStoreDTO productToStore, bool nameIsUnique)

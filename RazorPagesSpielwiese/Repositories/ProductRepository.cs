@@ -16,7 +16,7 @@ namespace EvilCorp2000.Repositories
 
         public async Task<List<Product>> GetAllProductsAsync()
         {
-            return await _context.Products.Include(p => p.Categories).Include(c => c.Categories).ToListAsync();
+            return await _context.Products.Include(p => p.Categories).Include(c => c.Categories).AsNoTracking().ToListAsync();
         }
 
         public async Task<Product?> GetProductById(Guid id)
@@ -40,13 +40,6 @@ namespace EvilCorp2000.Repositories
             if (productToStore == null)
             { throw new ArgumentNullException(nameof(productToStore)); }
 
-            //var productEntity = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productToStore.ProductId);
-
-            //var productEntity = await GetProductById( productToStore.ProductId);
-
-            //if (productEntity == null)
-            //{ throw new InvalidOperationException(nameof(productEntity)); }
-
             productFromDB.ProductName = productToStore.ProductName;
             productFromDB.ProductDescription = productToStore.ProductDescription;
             productFromDB.ProductPicture = productToStore.ProductPicture;
@@ -56,16 +49,8 @@ namespace EvilCorp2000.Repositories
             
 
             await _context.SaveChangesAsync();
-
-            //TODO: warum genau habe ich das nochmal so gemacht und nicht mit Update???
-            //löschen des alten products: verbindungen in join tabellen werden automatisch gelöscht
-            //das soll nicht sein. Das Product soll nur geupdated werden, evtl auch mit veränderten relationen, wenn z.B Categorien oder Discounts gelöscht oder hinzugefügt wurden.
-
-            //die methode könnte leistungseinbußen haben, da ich kein update mache, sprich die Cat und Disc Tabellen manuell ändere, das geladene ProductIdentity ändere und dann speichere
-            //await DeleteProduct(productEntity.ProductId);
-
-            //await AddProduct(productToStore);
         }
+
 
         //TODO: sicherstellen, dass ein Produkt samt evtl. vorhandenen Discounts übergeben wird
         public async Task DeleteProduct(Guid productId)
@@ -74,7 +59,7 @@ namespace EvilCorp2000.Repositories
 
             var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
 
-            if (product == null) { throw new ArgumentNullException(nameof(product)); }
+            if (product == null) { throw new InvalidOperationException(nameof(product)); }
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();

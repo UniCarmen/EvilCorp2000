@@ -61,6 +61,7 @@
             <th>Categories</th>
             <th>Rating</th>
             <th>Amount on Stock</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -112,6 +113,12 @@
                     </td>
                     <td>
                         <p>@product.AmountOnStock</p>
+                    </td>
+                    <td>
+                        <form method="post" asp-page-handler="DeleteProduct">
+                            <input type="hidden" name="productId" value="@product.ProductId" />
+                            <button type="submit" class="btn btn-danger">Delete Product</button>
+                        </form>
                     </td>
                 </tr>
             }

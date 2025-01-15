@@ -61,13 +61,6 @@ namespace DatabaseTests
                     .FirstOrDefaultAsync(p => p.ProductName == "Test Product");
 
                 await repo.DeleteProduct(product.ProductId);
-
-
-                //var product = await context.Products.Include(p => p.Discounts)
-                //    .FirstOrDefaultAsync(p => p.ProductName == "Test Product");
-
-                //context.Products.Remove(product);
-                //await context.SaveChangesAsync();
             }
 
             // Assert

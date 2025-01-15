@@ -265,7 +265,19 @@ namespace EvilCorp2000.Pages.ProductManagement
 
 
 
-
+        public async Task<IActionResult> OnPostDeleteProduct(Guid productId)
+        {
+            try
+            {
+                await _internalProductManager.DeleteProduct(productId);
+                ShowModal = false;
+                return RedirectToPage();
+            }
+            catch (Exception ex)
+            {
+                return await ExecuteOnExceptionCatch("Failed to delete the product. {0}", "Failed to delete the product.", ex);
+            }
+        }
 
 
 

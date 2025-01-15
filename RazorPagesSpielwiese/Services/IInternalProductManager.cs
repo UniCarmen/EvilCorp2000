@@ -11,6 +11,6 @@ namespace EvilCorp2000.Services
         Task UpdateProductToStore(ProductToStoreDTO productToStore);
         Task AddDiscount(DiscountDTO discount, ProductToStoreDTO productToStore);
 
-
+        Task DeleteProduct(Guid productId);
     }
 }
