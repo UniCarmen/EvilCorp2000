@@ -7,10 +7,10 @@ And then I was inspired by a really, really old website (http://www.eviloverlord
 ### Product Management (still in work)
 Since I don't use JS, a big challenge here is that the product overview opens in a modal written in  a partial.
 
-* Enter, view and change products (name, description, categories, price, amount on stock) with UI Validation
+* Enter, view, delete and change products (name, description, categories, price, amount on stock) with UI Validation
 * Add and delete product discounts
 * Product + Discount Backend Validation
-
+* Saving and Loading Product Images (there are problems in Firefox + Brave browser though)
 
 ### Programming concepts included 
 * Data is stored in a MS SQL Server DB
@@ -19,9 +19,7 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 
 ### Planned
 
-* Delete Products
 * Add, alter, delete(?) Categories
-* Add Imagesupport - save in Datebase
 * Sorting Product List
 * Unit Tests
 * Logging in DB
