@@ -10,7 +10,8 @@ namespace EvilCorp2000.Services
         Task SaveProductToStore(ProductToStoreDTO productToStore);
         Task UpdateProductToStore(ProductToStoreDTO productToStore);
         Task AddDiscount(DiscountDTO discount, ProductToStoreDTO productToStore);
-
+        Task SaveProductPicture(Guid productId, string encodedPicture);
+        Task DeleteProductPicture(Guid productId);
         Task DeleteProduct(Guid productId);
     }
 }

@@ -22,7 +22,7 @@ namespace EvilCorp2000.Models
         [Display(Name = "Category")]
         public List<Guid> SelectedCategoryIds { get; set; } = [];
 
-        [Display(Name = "Product Picture")]
+        //nur für die Anzeige
         public string? ProductPicture { get; set; }
 
         [Required(ErrorMessage = "Price required")]

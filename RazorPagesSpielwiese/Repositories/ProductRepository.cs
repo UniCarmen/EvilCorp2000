@@ -16,16 +16,27 @@ namespace EvilCorp2000.Repositories
 
         public async Task<List<Product>> GetAllProductsAsync()
         {
-            return await _context.Products.Include(p => p.Categories).Include(c => c.Categories).AsNoTracking().ToListAsync();
+            return await _context.Products.Include(p => p.Categories).Include(c => c.Categories)./*AsNoTracking().*/ToListAsync();
         }
 
-        public async Task<Product?> GetProductById(Guid id)
+        public async Task<Product?> GetProductByIdWithCategoriesAnsdDiscounts(Guid id)
         {
             if (id == Guid.Empty) { throw new ArgumentNullException("Invalid Guid"); }
             return await _context.Products
                 .Include(p => p.Categories)
                 .Include(p => p.Discounts)
                 .Where(p => p.ProductId == id).FirstOrDefaultAsync();
+        }
+
+        public async Task<Product> GetProductById (Guid productId)
+        {
+            if (productId == Guid.Empty) { throw new ArgumentNullException(nameof(productId)); }
+
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
+
+            if (product == null) { throw new InvalidOperationException(nameof(product)); }
+
+            return product;
         }
 
         public async Task AddProduct(Product product)
@@ -46,24 +57,38 @@ namespace EvilCorp2000.Repositories
             productFromDB.ProductPrice = productToStore.ProductPrice;
             productFromDB.AmountOnStock = productToStore.AmountOnStock;
 
-            
-
             await _context.SaveChangesAsync();
         }
 
 
-        //TODO: sicherstellen, dass ein Produkt samt evtl. vorhandenen Discounts übergeben wird
         public async Task DeleteProduct(Guid productId)
         {
-            if (productId == Guid.Empty) { throw new ArgumentNullException(nameof(productId)); }
-
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
-
-            if (product == null) { throw new InvalidOperationException(nameof(product)); }
+            var product = await GetProductById(productId);
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
         }
+
+
+        public async Task SaveProductPicture(Guid productId, string encodedPicture)
+        {
+            var product = await GetProductById(productId);
+
+            product.ProductPicture = encodedPicture;
+
+            await _context.SaveChangesAsync();
+        }
+
+
+        public async Task DeleteProductPicture(Guid productId)
+        {
+            var product = await GetProductById(productId);
+
+            product.ProductPicture = null;
+
+            await _context.SaveChangesAsync();
+        }
+
 
         public async Task<bool> IsProductNameUniqueAsync(string name)
         {

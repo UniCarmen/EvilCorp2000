@@ -20,3 +20,17 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.custom-list-image {
+    max-height: 100px;
+    width: auto;
+    max-width: 100px;
+    height: auto;
+}
+
+.custom-display-image {
+    max-height: 300px;
+    width: auto;
+    max-width: 300px;
+    height: auto;
+}

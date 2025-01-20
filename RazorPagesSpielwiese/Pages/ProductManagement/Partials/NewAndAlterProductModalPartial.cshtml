@@ -24,7 +24,14 @@
         </div>
         <div class="modal-body">
 
-            <form method="post" class="border p-4 rounded shadow-sm bg-light" asp-page-handler="SaveProduct">
+            @if (Model.ValidatedProduct.ProductPicture != null)
+            {
+                <div class="mb-3 d-flex justify-content-center align-items-center">
+                    <img src="data:image/png;base64,@Model.ValidatedProduct.ProductPicture" class="custom-display-image" style="max-width:100px; max-height:100px; height:auto; width:auto;" />
+                </div>
+            }
+          
+            <form method="post" class="border p-4 rounded shadow-sm bg-light mb-4" asp-page-handler="SaveProduct">
 
                 <input asp-for="ValidatedProduct.ProductId" type="hidden" />
                 <input asp-for="CategoryIdsJson" type="hidden" />
@@ -62,13 +69,6 @@
                 }
 
 
-
-                <div class="mb-3">
-                    <label asp-for="@Model.ValidatedProduct.ProductPicture" class="form-label"></label>
-                    <input asp-for="@Model.ValidatedProduct.ProductPicture" class="form-control" />
-                    <span asp-validation-for="@Model.ValidatedProduct.ProductPicture" class="text-danger"></span>
-                </div>
-
                 <div class="mb-3">
                     <label asp-for="@Model.ValidatedProduct.Price" class="form-label"></label>
                     <div class="input-group">
@@ -84,8 +84,6 @@
                     <span asp-validation-for="@Model.ValidatedProduct.AmountOnStock" class="text-danger"></span>
                 </div>
 
-                
-
                 <div class="d-flex justify-content-end mt-3">
                     <button type="submit" class="btn btn-success me-2" formaction="?handler=SaveProduct">
                         @(Model.ValidatedProduct.ProductId == Guid.Empty ? "Add New Product" : "Save and Close")
@@ -98,9 +96,39 @@
             </form>
 
 
+
+            @* ProductPicture *@
+            @* EncodingType because ImageUploads needs specific meta data  *@
+            <form method="post" class="border p-4 rounded shadow-sm bg-light mb-4" enctype="multipart/form-data" asp-page-handler="ImageUpload">
+                @* <input asp-for="ValidatedProduct.ProductId" type="hidden" /> *@
+                <input asp-for="CategoryIdsJson" type="hidden" />
+                <input asp-for="DiscountsJson" type="hidden" />
+                <input asp-for="ValidatedProductJson" type="hidden" />
+                
+                <div class="mb-3">
+                    <label asp-for="@Model.ImageFile" class="form-label"></label>
+                    <input asp-for="@Model.ImageFile" class="form-control" type="file" />
+                    @* <label for="imageFile" class="form-label">Upload Image</label>
+                    <input type="file" class="form-control" name="imageFile" id="imageFile" /> *@
+                </div>
+                <p>
+                    By uploading a new product picture the old one is going to be overwritten.
+                </p>
+                <div class="d-flex justify-content-end mt-3">
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                    @Html.AntiForgeryToken()
+                </div>
+            </form>
+
+
+
+
+            @* Discounts *@
             @if(Model.ValidatedProduct.ProductId != Guid.Empty)
             {
-                <fieldset class="border p-3 mb-3">
+                <fieldset class="border p-4 rounded shadow-sm bg-light">
+
+                    <legend>Discounts</legend>
 
                     @if (ViewData.ModelState["DiscountValidation"]?.Errors.Any() == true)
                     {
@@ -138,18 +166,62 @@
                         {
                             <p class="text-danger">Cannot enter overlapping discount timespans.</p>
                         }
-                        <div class="d-flex justify-content-end mt-3">
+                        <div class="d-flex justify-content-end mt-3 mb-3">
                             <button type="submit" class="btn btn-success me-2">Add Discount and Save</button>
                             @Html.AntiForgeryToken()
                         </div>
                     </form>
+
+                    <!-- Liste bestehender Discounts -->
+                    @if (Model.ValidatedProduct.Discounts != null && Model.ValidatedProduct.Discounts.Any())
+                    {
+                        <div class="mb-3">
+                            <ul class="list-group">
+                                @foreach (var discount in Model.ValidatedProduct.Discounts)
+                                {
+                                    var discountedPrice = ((double)Model.ValidatedProduct.Price) - (((double)Model.ValidatedProduct.Price) * (discount.DiscountPercentage / 100));
+                                    var dicountedDecimalPrice = Convert.ToDecimal(discountedPrice).ToString("C");
+                                    var discountedAmount = (((double)Model.ValidatedProduct.Price) * (discount.DiscountPercentage / 100));
+                                    var discountedAmountDecimal = Convert.ToDecimal(discountedAmount).ToString("C");
+
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Start:</strong> @discount.StartDate.ToShortDateString()
+                                            <strong>End:</strong> @discount.EndDate.ToShortDateString()
+                                            <strong>Percentage:</strong> @discount.DiscountPercentage%
+                                            <strong> Discounted Price:</strong> @dicountedDecimalPrice
+                                            <strong> Discount: </strong> @discountedAmountDecimal
+                                        </div>
+                                        <div>
+                                            <!-- Button zum Löschen -->
+                                            <form method="post" asp-page-handler="DeleteDiscount" class="d-inline">
+                                                <input asp-for="DiscountsJson" type="hidden" />
+                                                <input asp-for="CategoryIdsJson" type="hidden" />
+                                                <input asp-for="ValidatedProductJson" type="hidden" />
+
+                                                <input type="hidden" name="discountId" value="@discount.DiscountId" />
+                                                <input type="hidden" name="productId" value="@Model.ValidatedProduct.ProductId" />
+                                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                            </form>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                        <p>Deleted Discounts can't be restored!</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No discounts added yet.</p>
+                    }
+
                 </fieldset>
             }
 
             <fieldset class="border p-3 mb-3">
-                <legend>Discounts</legend>
                 
-                <!-- Liste bestehender Discounts -->
+                
+                @* <!-- Liste bestehender Discounts -->
                 @if (Model.ValidatedProduct.Discounts != null && Model.ValidatedProduct.Discounts.Any())
                 {
                     <div class="mb-3">
@@ -190,7 +262,7 @@
                 else
                 {
                     <p class="text-muted">No discounts added yet.</p>
-                }
+                } *@
             </fieldset>
             
 

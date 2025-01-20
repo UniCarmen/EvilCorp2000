@@ -2,6 +2,7 @@
 using EvilCorp2000.Models;
 using EvilCorp2000.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -48,7 +49,7 @@ namespace EvilCorp2000.Services
 
         public async Task<ProductForInternalUseDTO> GetProductForInternalUse(Guid id)
         {
-            var productEntity = await _productRepository.GetProductById(id);
+            var productEntity = await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(id);
 
             if (productEntity == null)
             {
@@ -146,7 +147,7 @@ namespace EvilCorp2000.Services
                 //markiert Die Kategorien im Context in den Categories als bereits existierend, damit nicht versucht wird, diese neu anzulegen
                 //categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
 
-                var productFromDB = await _productRepository.GetProductById(productToStore.ProductId);
+                var productFromDB = await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(productToStore.ProductId);
 
                 if (productFromDB == null)
                 {
@@ -177,6 +178,23 @@ namespace EvilCorp2000.Services
             await _productRepository.DeleteProduct(productId);
         }
 
+
+        public async Task SaveProductPicture(Guid productId, string encodedPicture)
+        {
+            var pictureStringInValid = string.IsNullOrEmpty(encodedPicture);
+            if (productId == Guid.Empty || pictureStringInValid)
+            { throw new ArgumentNullException(nameof(productId)); }
+
+            await _productRepository.SaveProductPicture(productId, encodedPicture);
+        }
+
+        public async Task DeleteProductPicture(Guid productId)
+        {
+            if (productId == Guid.Empty)
+            { throw new ArgumentNullException(nameof(productId)); }
+
+            await _productRepository.DeleteProductPicture(productId);
+        }
 
         public void ValidateProduct(ProductToStoreDTO productToStore, bool nameIsUnique)
         {
@@ -227,11 +245,5 @@ namespace EvilCorp2000.Services
                 throw new ValidationException(string.Join(" ", validationErrors));
             }
         }
-
-
-        //public async void DeleteProductAndItsDiscounts (Guid productId)
-        //{
-        //    await _productRepository.DeleteProduct(product);
-        //}
     }
 }

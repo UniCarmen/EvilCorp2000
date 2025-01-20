@@ -33,13 +33,13 @@ namespace EvilCorp2000.Pages.ProductManagement.Partials
         //von Backing Code Index empfangen
         public List<CategoryDTO> Categories { get; set; }
 
+        //TODO: check if BindProp necessary
         [BindProperty]
         public ValidatedDiscount? NewDiscount { get; set; }
 
         [BindProperty]
         public string DiscountsJson { get; set; }
 
-        //[BindProperty]
         public bool DiscountOverlap { get; set; }
 
         [BindProperty]
@@ -47,6 +47,11 @@ namespace EvilCorp2000.Pages.ProductManagement.Partials
 
         [BindProperty]
         public string CategoryIdsJson { get; set; }
+
+        //brauche ich nicht binden?
+        //[BindProperty]
+        [Display(Name = "Upload Produktbild")]
+        public IFormFile? ImageFile { get; set; }
 
 
         public async Task OnGet()

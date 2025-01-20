@@ -52,7 +52,7 @@ namespace EvilCorp2000.Services
 
         public async Task<ProductForSaleDTO> GetProductForSale(Guid id)
         {
-            var productEntity = await _productRepository.GetProductById(id);
+            var productEntity = await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(id);
 
             if (productEntity == null)
             {

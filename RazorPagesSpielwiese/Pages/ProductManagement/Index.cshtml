@@ -65,9 +65,9 @@
         </tr>
     </thead>
     <tbody>
-        @if (Model.Products != null)
+        @if (Model.products != null)
         {
-            @foreach (ProductForInternalUseDTO product in Model.Products)
+            @foreach (ProductForInternalUseDTO product in Model.products)
             {
                 <tr>
                     <td>
@@ -76,8 +76,6 @@
                             @await Html.PartialAsync("Partials/ProductDetailsModalPartial", new ProductDetailsModalPartialModel { Product = product })
                         </p>
 
-                        <p>@product.ProductId</p>
-
                         @* Button öffnet Modal zum Ändern der Daten *@
                         <form method="post" asp-page-handler="ShowNewAndAlterProductModal">
                             <input type="hidden" name="SelectedProductId" value="@product.ProductId" />
@@ -85,7 +83,12 @@
                         </form>
                     </td>
                     <td>
-                        <p>@product.ProductPicture</p>
+                        <p>
+                            @if(!string.IsNullOrEmpty(@product.ProductPicture))
+                            {
+                                <img src="data:image/png;base64,@product.ProductPicture" class="custom-list-image" style="max-width:100px; max-height:100px; height:auto; width:auto;" />
+                            }
+                        </p>
                     </td>
                     <td>
                         <p>@product.Description</p>

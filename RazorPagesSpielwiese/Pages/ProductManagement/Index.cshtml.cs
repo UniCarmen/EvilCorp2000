@@ -11,6 +11,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.Design.Serialization;
 using System.Security.Cryptography.Xml;
 using System.Text.Json;
+using Microsoft.Identity.Client;
+using static System.Net.Mime.MediaTypeNames;
+using SixLabors.ImageSharp;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -23,7 +26,11 @@ namespace EvilCorp2000.Pages.ProductManagement
         private readonly IInternalProductManager _internalProductManager;
         private readonly ILogger<ProductManagementModel> _logger;
 
-        public List<ProductForInternalUseDTO>? Products;
+        public List<ProductForInternalUseDTO>? products;
+
+        [BindProperty]
+        public IFormFile ImageFile { get; set; }
+
         public List<CategoryDTO>? Categories { get; set; }
 
         [BindProperty]
@@ -68,7 +75,6 @@ namespace EvilCorp2000.Pages.ProductManagement
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-
         public async Task OnGet()
         {
             try
@@ -90,7 +96,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             {
                 try
                 {
-                    var selectedProduct = Products.FirstOrDefault(p => p.ProductId == selectedProductId);
+                    var selectedProduct = products.FirstOrDefault(p => p.ProductId == selectedProductId);
                     var categoryIds = selectedProduct.Categories.Select(c => c.CategoryId).ToList();
 
 
@@ -136,7 +142,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             {
                 ShowModal = true;
                 await LoadDataAsync();
-                return Page();
+                return await ReInitializeModalWithProduct(ValidatedProduct, ValidatedProduct.SelectedCategoryIds, ValidatedProduct.Discounts);
             }
 
 
@@ -223,7 +229,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             if (validatedProductError != null) return validatedProductError;
             ValidatedProduct = validatedProduct;
 
-            var newSelectedProduct = Products.FirstOrDefault(p => p.ProductId == ValidatedProduct.ProductId);
+            var newSelectedProduct = products.FirstOrDefault(p => p.ProductId == ValidatedProduct.ProductId);
             ValidatedProduct.Discounts = newSelectedProduct.Discounts;
 
             // Load SelectedCategories to fill Fields after Reload of the Modal after Saving the Discount - if not done, there are na categories in the product
@@ -254,19 +260,108 @@ namespace EvilCorp2000.Pages.ProductManagement
 
 
             // neues Product mit allen Discounts inkl. dem Neuem Laden
-            var selectedProduct = Products.FirstOrDefault(p => p.ProductId == ValidatedProduct.ProductId);
+            var selectedProduct = products.FirstOrDefault(p => p.ProductId == ValidatedProduct.ProductId);
 
             return await ReInitializeModalWithProduct(ValidatedProduct, categoryIds, selectedProduct.Discounts);
 
         }
 
 
+        private async Task<IActionResult> ModelError(string Message, ValidatedProduct validatedProduct, List<Guid> categoryIds, List<DiscountDTO> discountDtos)
+        {
+            ModelState.AddModelError(string.Empty, "Please select a valid image file.");
+            return await ReInitializeModalWithProduct(ValidatedProduct, categoryIds, discountDtos);
+        }
 
 
+
+        public async Task<IActionResult> OnPostImageUpload()
+        {
+            //TODO: ich muss diese Hiddenfields einfügen, damit im Falle eines ModelErrors die Felder wieder gefüllt werden können: Validated Product, CategoryIds, Discounts
+
+            (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) =
+                await DeserializeWithTryCatchAsync<List<Guid>>(CategoryIdsJson, "Failed to parse CategoryIds.", "Discount couldn't be added.");
+            if (categoryIdsJsonError != null) return categoryIdsJsonError;
+
+            (ValidatedProduct validatedProduct, IActionResult? validatedProductError) =
+                await DeserializeWithTryCatchAsync<ValidatedProduct>(ValidatedProductJson, "Failed to parse ValidatedProduct.", "Discount couldn't be added.");
+            if (validatedProductError != null) return validatedProductError;
+
+            (List<DiscountDTO> deserializedDiscounts, IActionResult? discountDTOJsonError) =
+                    await DeserializeWithTryCatchAsync<List<DiscountDTO>>(DiscountsJson, "Failed to parse DiscountDTO List.", "Product couldn't be added.");
+            if (discountDTOJsonError != null) return discountDTOJsonError;
+
+
+            //TODO: Validations -> auslagern?
+            if (ImageFile == null || ImageFile.Length == 0)
+            {
+                await ModelError("Please select a valid image file.", validatedProduct, categoryIds, deserializedDiscounts);
+            }
+
+            // Dateigrößenprüfung (z. B. maximal 2 MB)
+            if (ImageFile.Length > 2 * 1024 * 1024) // 2 MB
+            {
+                await ModelError("The file size exceeds the 2 MB limit.", validatedProduct, categoryIds, deserializedDiscounts);
+            }
+
+            // MIME-Typ-Prüfung
+            var allowedFileTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+
+            if (!allowedFileTypes.Contains(ImageFile.ContentType))
+            {
+                await ModelError("Only JPEG, PNG, and GIF formats are allowed.", validatedProduct, categoryIds, deserializedDiscounts);
+            }
+
+            // Dateierweiterung prüfen
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var extension = Path.GetExtension(ImageFile.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                await ModelError("Invalid file extension. Only .jpg, .jpeg, .png, and .gif are allowed.", validatedProduct, categoryIds, deserializedDiscounts);
+            }
+
+            // Bildinhalt validieren --> ins Backend? bzw. den Service??
+            try
+            {
+                using var image = SixLabors.ImageSharp.Image.Load(ImageFile.OpenReadStream());
+            }
+            catch
+            {
+                await ModelError("The uploaded file is not a valid image.", validatedProduct, categoryIds, deserializedDiscounts);
+            }
+
+            string productPictureToSave;
+
+            // Konvertiere das Bild in einen Base64-String
+            using (var memoryStream = new MemoryStream())
+            {
+                await ImageFile.CopyToAsync(memoryStream);
+                var imageBytes = memoryStream.ToArray();
+                productPictureToSave = Convert.ToBase64String(imageBytes);
+            }
+
+            validatedProduct.ProductPicture = productPictureToSave;
+
+            try
+            {
+                await _internalProductManager.SaveProductPicture(validatedProduct.ProductId, productPictureToSave);
+            }
+            catch (Exception ex)
+            {
+                return await ExecuteOnExceptionCatch("Error adding the discount.  {0}", "Discount couldn't be added.", ex);
+            }
+
+            //TODO: Rückmeldung anzeigen, ob geklappt oder nicht?
+            //Seite mit allem neu laden / bzw. auch mit Modal
+            return await ReInitializeModalWithProduct(validatedProduct, categoryIds, deserializedDiscounts);
+            //return Page();
+        }
 
 
         public async Task<IActionResult> OnPostDeleteProduct(Guid productId)
         {
+            //TODO: Rückmeldung anzeigen, ob geklappt oder nicht?
             try
             {
                 await _internalProductManager.DeleteProduct(productId);
@@ -293,6 +388,9 @@ namespace EvilCorp2000.Pages.ProductManagement
             var loadedProduct = await _internalProductManager.GetProductForInternalUse(productId);
 
             var selectedCategories = loadedProduct.Categories.Select(c => c.CategoryId).ToList();
+
+            //var IFormFile image =
+            //convert loadedProduct.ProductPicture to IFile irgendwas
 
             var newValidatedProduct = new ValidatedProduct
             {
@@ -379,7 +477,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         {
             try
             {
-                Products = await _internalProductManager.GetProductsForInternalUse();
+                products = await _internalProductManager.GetProductsForInternalUse();
                 Categories = await _internalProductManager.GetCategories();
             }
             catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }
@@ -461,8 +559,8 @@ namespace EvilCorp2000.Pages.ProductManagement
         private bool IsModelStateValidForProduct(Guid productId)
         {
             var keysToValidate = productId == Guid.Empty
-                ? new[] { "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", "ValidatedProduct.ProductPicture", "ValidatedProduct.SelectedCategoryIds" }
-                : new[] {/* "DiscountsJson",*/ "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", "ValidatedProduct.ProductPicture", "ValidatedProduct.SelectedCategoryIds", "ValidatedProductJson", "CategoryIdsJson" };
+                ? new[] { "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", /*"ValidatedProduct.ProductPicture",*/ "ValidatedProduct.SelectedCategoryIds" }
+                : new[] {/* "DiscountsJson",*/ "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", /*"ValidatedProduct.ProductPicture",*/ "ValidatedProduct.SelectedCategoryIds", "ValidatedProductJson", "CategoryIdsJson" };
 
             return keysToValidate.All(key => ModelState[key]?.ValidationState == ModelValidationState.Valid);
         }
