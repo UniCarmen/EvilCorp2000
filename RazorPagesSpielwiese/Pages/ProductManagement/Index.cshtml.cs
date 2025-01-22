@@ -14,6 +14,9 @@ using System.Text.Json;
 using Microsoft.Identity.Client;
 using static System.Net.Mime.MediaTypeNames;
 using SixLabors.ImageSharp;
+using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -25,10 +28,11 @@ namespace EvilCorp2000.Pages.ProductManagement
 
         private readonly IInternalProductManager _internalProductManager;
         private readonly ILogger<ProductManagementModel> _logger;
+        private readonly IWebHostEnvironment _environment;
 
         public List<ProductForInternalUseDTO>? products;
 
-        [BindProperty]
+        [BindProperty(SupportsGet = true)]
         public IFormFile ImageFile { get; set; }
 
         public List<CategoryDTO>? Categories { get; set; }
@@ -69,10 +73,11 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger)
+        public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger, IWebHostEnvironment environment)
         {
             _internalProductManager = internalProductManager ?? throw new ArgumentNullException(nameof(internalProductManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _environment = environment;
         }
 
         public async Task OnGet()
@@ -88,6 +93,9 @@ namespace EvilCorp2000.Pages.ProductManagement
 
         public async Task<IActionResult> OnPostShowNewAndAlterProductModal(Guid selectedProductId)
         {
+            //Remove auto-required-validation of ImageFile
+            ModelState.Remove(nameof(ImageFile));
+
             SelectedProductId = selectedProductId;
 
             await LoadDataAsync();
@@ -267,10 +275,10 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        private async Task<IActionResult> ModelError(string Message, ValidatedProduct validatedProduct, List<Guid> categoryIds, List<DiscountDTO> discountDtos)
+        private async Task<IActionResult> ImageModelError(string key, string message, ValidatedProduct validatedProduct, List<Guid> categoryIds, List<DiscountDTO> discountDtos)
         {
-            ModelState.AddModelError(string.Empty, "Please select a valid image file.");
-            return await ReInitializeModalWithProduct(ValidatedProduct, categoryIds, discountDtos);
+            ModelState.AddModelError(key, message);
+            return await ReInitializeModalWithProduct(validatedProduct, categoryIds, discountDtos);
         }
 
 
@@ -291,17 +299,18 @@ namespace EvilCorp2000.Pages.ProductManagement
                     await DeserializeWithTryCatchAsync<List<DiscountDTO>>(DiscountsJson, "Failed to parse DiscountDTO List.", "Product couldn't be added.");
             if (discountDTOJsonError != null) return discountDTOJsonError;
 
+            ModelState.Remove(nameof(ImageFile));
 
             //TODO: Validations -> auslagern?
             if (ImageFile == null || ImageFile.Length == 0)
             {
-                await ModelError("Please select a valid image file.", validatedProduct, categoryIds, deserializedDiscounts);
+                return await ImageModelError((nameof(ImageFile)),"Please select a valid image file.", validatedProduct, categoryIds, deserializedDiscounts);
             }
 
             // Dateigrößenprüfung (z. B. maximal 2 MB)
             if (ImageFile.Length > 2 * 1024 * 1024) // 2 MB
             {
-                await ModelError("The file size exceeds the 2 MB limit.", validatedProduct, categoryIds, deserializedDiscounts);
+                return await ImageModelError((nameof(ImageFile)), "The file size exceeds the 2 MB limit.", validatedProduct, categoryIds, deserializedDiscounts);
             }
 
             // MIME-Typ-Prüfung
@@ -309,7 +318,7 @@ namespace EvilCorp2000.Pages.ProductManagement
 
             if (!allowedFileTypes.Contains(ImageFile.ContentType))
             {
-                await ModelError("Only JPEG, PNG, and GIF formats are allowed.", validatedProduct, categoryIds, deserializedDiscounts);
+                return await ImageModelError((nameof(ImageFile)), "Only JPEG, PNG, and GIF formats are allowed.", validatedProduct, categoryIds, deserializedDiscounts);
             }
 
             // Dateierweiterung prüfen
@@ -318,7 +327,7 @@ namespace EvilCorp2000.Pages.ProductManagement
 
             if (!allowedExtensions.Contains(extension))
             {
-                await ModelError("Invalid file extension. Only .jpg, .jpeg, .png, and .gif are allowed.", validatedProduct, categoryIds, deserializedDiscounts);
+                return await ImageModelError((nameof(ImageFile)), "Invalid file extension. Only .jpg, .jpeg, .png, and .gif are allowed.", validatedProduct, categoryIds, deserializedDiscounts);
             }
 
             // Bildinhalt validieren --> ins Backend? bzw. den Service??
@@ -328,24 +337,39 @@ namespace EvilCorp2000.Pages.ProductManagement
             }
             catch
             {
-                await ModelError("The uploaded file is not a valid image.", validatedProduct, categoryIds, deserializedDiscounts);
+                return await ImageModelError((nameof(ImageFile)), "The uploaded file is not a valid image.", validatedProduct, categoryIds, deserializedDiscounts);
             }
 
-            string productPictureToSave;
+            // 1. Generiere einen eindeutigen Dateinamen
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
 
-            // Konvertiere das Bild in einen Base64-String
-            using (var memoryStream = new MemoryStream())
+            // 2. Speicherpfad im Projekt
+            var savePath = Path.Combine(_environment.WebRootPath, "images", fileName);
+
+            // 3. Datei im Dateisystem speichern
+            using (var fileStream = new FileStream(savePath, FileMode.Create))
             {
-                await ImageFile.CopyToAsync(memoryStream);
-                var imageBytes = memoryStream.ToArray();
-                productPictureToSave = Convert.ToBase64String(imageBytes);
+                await ImageFile.CopyToAsync(fileStream);
             }
 
-            validatedProduct.ProductPicture = productPictureToSave;
+            // 4. Bildpfad in der Datenbank speichern
+            validatedProduct.ProductPicture = $"/images/{fileName}";
+            
+            //string productPictureToSave;
+
+            //// Konvertiere das Bild in einen Base64-String
+            //using (var memoryStream = new MemoryStream())
+            //{
+            //    await ImageFile.CopyToAsync(memoryStream);
+            //    var imageBytes = memoryStream.ToArray();
+            //    productPictureToSave = Convert.ToBase64String(imageBytes);
+            //}
+
+            //validatedProduct.ProductPicture = productPictureToSave;
 
             try
             {
-                await _internalProductManager.SaveProductPicture(validatedProduct.ProductId, productPictureToSave);
+                await _internalProductManager.SaveProductPicture(validatedProduct.ProductId, validatedProduct.ProductPicture);
             }
             catch (Exception ex)
             {

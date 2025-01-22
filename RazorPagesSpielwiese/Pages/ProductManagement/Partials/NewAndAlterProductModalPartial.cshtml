@@ -8,7 +8,7 @@
                 @(Model.ValidatedProduct.ProductId == Guid.Empty ? "New Product" : "Alter Product")
             </h5>
 
-            @if (ViewData.ModelState["ProductValidation"]?.Errors.Any() == true)
+            @* @if (ViewData.ModelState["ProductValidation"]?.Errors.Any() == true)
             {
                 <div class="alert alert-danger">
                     @foreach (var error in ViewData.ModelState["ProductValidation"].Errors)
@@ -16,7 +16,7 @@
                         <p>@error.ErrorMessage</p>
                     }
                 </div>
-            }
+            } *@
 
             <form method="post" asp-page-handler="CloseModal">
                 <button type="submit" class="btn-close" aria-label="Close"></button>
@@ -26,8 +26,11 @@
 
             @if (Model.ValidatedProduct.ProductPicture != null)
             {
-                <div class="mb-3 d-flex justify-content-center align-items-center">
+                @* <div class="mb-3 d-flex justify-content-center align-items-center">
                     <img src="data:image/png;base64,@Model.ValidatedProduct.ProductPicture" class="custom-display-image" style="max-width:100px; max-height:100px; height:auto; width:auto;" />
+                </div> *@
+                <div class="mb-3 d-flex justify-content-center align-items-center">
+                    <img src="@Model.ValidatedProduct.ProductPicture" class="custom-display-image" style="max-width:300px; max-height:300px; height:auto; width:auto;" />
                 </div>
             }
           
@@ -47,7 +50,7 @@
 
                 <div class="mb-3">
                     <label asp-for="@Model.ValidatedProduct.Description" class="form-label"></label>
-                    <textarea asp-for="@Model.ValidatedProduct.Description" class="form-control"></textarea>
+                    <textarea asp-for="@Model.ValidatedProduct.Description" class="form-control" style="resize: both; overflow: auto;" rows="4"></textarea>
                     <span asp-validation-for="@Model.ValidatedProduct.Description" class="text-danger"></span>
                 </div>
 
@@ -98,27 +101,34 @@
 
 
             @* ProductPicture *@
-            @* EncodingType because ImageUploads needs specific meta data  *@
-            <form method="post" class="border p-4 rounded shadow-sm bg-light mb-4" enctype="multipart/form-data" asp-page-handler="ImageUpload">
-                @* <input asp-for="ValidatedProduct.ProductId" type="hidden" /> *@
-                <input asp-for="CategoryIdsJson" type="hidden" />
-                <input asp-for="DiscountsJson" type="hidden" />
-                <input asp-for="ValidatedProductJson" type="hidden" />
-                
-                <div class="mb-3">
-                    <label asp-for="@Model.ImageFile" class="form-label"></label>
-                    <input asp-for="@Model.ImageFile" class="form-control" type="file" />
-                    @* <label for="imageFile" class="form-label">Upload Image</label>
+            @if (Model.ValidatedProduct.ProductId != Guid.Empty)
+            {
+                @* EncodingType because ImageUploads needs specific meta data  *@
+                <form method="post" class="border p-4 rounded shadow-sm bg-light mb-4" enctype="multipart/form-data" asp-page-handler="ImageUpload">
+                    @* <input asp-for="ValidatedProduct.ProductId" type="hidden" /> *@
+                    <input asp-for="CategoryIdsJson" type="hidden" />
+                    <input asp-for="DiscountsJson" type="hidden" />
+                    <input asp-for="ValidatedProductJson" type="hidden" />
+
+                    <div class="mb-3">
+                        <label asp-for="@Model.ImageFile" class="form-label"></label>
+                        <input asp-for="@Model.ImageFile" class="form-control" type="file" />
+                        <span asp-validation-for="@Model.ImageFile" class="text-danger"></span>
+                        @* <label for="imageFile" class="form-label">Upload Image</label>
                     <input type="file" class="form-control" name="imageFile" id="imageFile" /> *@
-                </div>
-                <p>
-                    By uploading a new product picture the old one is going to be overwritten.
-                </p>
-                <div class="d-flex justify-content-end mt-3">
-                    <button type="submit" class="btn btn-primary">Upload</button>
-                    @Html.AntiForgeryToken()
-                </div>
-            </form>
+                    </div>
+                    <p>
+                        By uploading a new product picture the old one is going to be overwritten.
+                    </p>
+
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                        @Html.AntiForgeryToken()
+                    </div>
+                </form>
+            }
+            
 
 
 

@@ -51,6 +51,7 @@ namespace EvilCorp2000.Pages.ProductManagement.Partials
         //brauche ich nicht binden?
         //[BindProperty]
         [Display(Name = "Upload Produktbild")]
+        //[BindProperty(SupportsGet = true)]
         public IFormFile? ImageFile { get; set; }
 
 

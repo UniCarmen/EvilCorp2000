@@ -16,7 +16,7 @@ namespace EvilCorp2000.Repositories
 
         public async Task<List<Product>> GetAllProductsAsync()
         {
-            return await _context.Products.Include(p => p.Categories).Include(c => c.Categories)./*AsNoTracking().*/ToListAsync();
+            return await _context.Products.Include(p => p.Categories).Include(c => c.Categories).Include(p => p.Discounts).AsNoTracking().ToListAsync();
         }
 
         public async Task<Product?> GetProductByIdWithCategoriesAnsdDiscounts(Guid id)

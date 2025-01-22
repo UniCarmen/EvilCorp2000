@@ -31,10 +31,10 @@ namespace EvilCorp2000.Services
 
             foreach (Product product in products)
             {
-                var currentDiscountEntities = await _discoutRepository.GetDiscountsByProductId(product.ProductId);
+                //var currentDiscountEntities = await _discoutRepository.GetDiscountsByProductId(product.ProductId);
 
                 var discountMapper = new Mappings.DiscountMappings();
-                var currentDiscounts = currentDiscountEntities.Select(de => discountMapper.DiscountToDiscountDTO(de)).ToList();
+                var currentDiscounts = /*currentDiscountEntities*/product.Discounts.Select(de => discountMapper.DiscountToDiscountDTO(de)).ToList();
 
                 var categorieMapper = new Mappings.CategoryMappings();
                 var categories = product.Categories.Select(c => categorieMapper.CategoryEntityToCategoryModel(c)).ToList();

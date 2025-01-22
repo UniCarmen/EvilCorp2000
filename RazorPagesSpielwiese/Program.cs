@@ -52,20 +52,20 @@ app.UseHttpsRedirection();
 app.Use(async (context, next) =>
 {
     // X-Content-Type-Options Header setzen
-    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    //context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
 
-    // X-Frame-Options Header setzen
-    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    //// X-Frame-Options Header setzen
+    //context.Response.Headers.Append("X-Frame-Options", "DENY");
 
     // Content Security Policy setzen
     //context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'");    zu streng, Bootstrap funktioniert nicht richtig
-    context.Response.Headers.Append("Content-Security-Policy",
-    "default-src 'self'; " +
-    "script-src 'self' https://cdn.jsdelivr.net; " +
-    "style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
-    "font-src 'self' https://cdnjs.cloudflare.com; " +
-    "connect-src 'self' http://localhost:* ws://localhost:* wss://localhost:*; " +
-    "img-src 'self' data:;");
+    //context.Response.Headers.Append("Content-Security-Policy",
+    //"default-src 'self'; " +
+    //"script-src 'self' https://cdn.jsdelivr.net; " +
+    //"style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+    //"font-src 'self' https://cdnjs.cloudflare.com; " +
+    //"connect-src 'self' http://localhost:* ws://localhost:* wss://localhost:*; " +
+    //"img-src 'self' data:;");
 
     await next();
 });
