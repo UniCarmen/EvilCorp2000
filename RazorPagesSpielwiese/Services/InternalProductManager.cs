@@ -77,11 +77,14 @@ namespace EvilCorp2000.Services
             return categoryEntities.Select(c => Mapping.CategoryEntityToCategoryModel(c)).ToList();
         }
 
-        //TODO Save NEW Product
+
         public async Task SaveProductToStore(ProductToStoreDTO productToStore)
         {
             if (productToStore != null)
             {
+                //Fkt muss GUID miteinbeziehen, wenn nicht Empty, dann müssen alle geprüft werden, die nicht die gleiche ID haben, wie die das producttoStore
+                //ist für das ändern des products, das soll ja auch keine doppelten Namen produzieren, aber auch keinen Fehler werfen, wenn ich das Produkt mit gleichbleibenden 
+                //Namen speichere
                 var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName);
                 ValidateProduct(productToStore, nameIsUnique);
 
@@ -113,9 +116,7 @@ namespace EvilCorp2000.Services
                 throw new ArgumentNullException(nameof(discount));
             }
 
-            //var existingDiscounts = await _discoutRepository.GetDiscountsByProductId(productToStore.ProductId);
             ValidateDiscountAsync(discount, productToStore.Discounts);
-
 
             var discountMapper = new Mappings.DiscountMappings();
             var newDiscount = discountMapper.SetDiscountId(discount);

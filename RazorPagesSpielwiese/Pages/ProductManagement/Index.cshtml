@@ -3,6 +3,7 @@
 @using EvilCorp2000.Models
 @using EvilCorp2000.Pages.ProductManagement
 @using EvilCorp2000.Pages.ProductManagement.Partials
+@using static EvilCorp2000.Pages.Utilities.Utilities
 
 @{
     ViewData["Title"] = "Product Management";
@@ -100,14 +101,17 @@
                         <p>@product.Description</p>
                     </td>
                     <td>
-                        <p>@product.Price</p>
+                        <p>@FormatAsEuro(product.Price)</p>
                     </td>
                     <td>
                         @foreach (DiscountDTO discount in @product.Discounts)
                         {
-                            //TODO: price in euro oder so
                             <p>@discount.StartDate.ToShortDateString() - @discount.EndDate.ToShortDateString() -@discount.DiscountPercentage%</p>
-                            <p>Discounted Price: @(@product.Price / 100.0m * (100.0m - ((decimal)discount.DiscountPercentage)))</p>
+                            {
+                                var discountedPrice = @product.Price / 100.0m * (100.0m - ((decimal)discount.DiscountPercentage));
+                                <p>Discounted Price: @FormatAsEuro(@discountedPrice)</p>
+                            }
+                            
                         }
                     </td>
                     <td>
@@ -118,7 +122,6 @@
                     </td>
                     <td>
                         <p>@product.Rating</p>
-                        @*<i class="bi bi-star-fill"></i>*@
                     </td>
                     <td>
                         <p>@product.AmountOnStock</p>

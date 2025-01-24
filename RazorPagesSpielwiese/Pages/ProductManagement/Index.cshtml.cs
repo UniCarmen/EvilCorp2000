@@ -10,12 +10,14 @@ using System.Text.Json;
 using SixLabors.ImageSharp;
 using Microsoft.EntityFrameworkCore;
 using FluentResults;
+using static EvilCorp2000.Pages.Utilities.Utilities;
+using System.Collections.Generic;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
 
 
-    public class ProductManagementModel : PageModel
+    public partial class ProductManagementModel : PageModel
     {
         public bool ShowModal { get; set; } = false;
 
@@ -45,7 +47,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         public string DiscountsJson { get; set; }
 
         [BindProperty]
-        public bool DiscountOverlap { get; set; } // = false;
+        public bool DiscountOverlap { get; set; }
 
         [BindProperty]
         public string ValidatedProductJson { get; set; }
@@ -69,13 +71,6 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger, IWebHostEnvironment environment)
-        {
-            _internalProductManager = internalProductManager ?? throw new ArgumentNullException(nameof(internalProductManager));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _environment = environment;
-        }
-
         public async Task OnGet()
         {
             try
@@ -85,7 +80,6 @@ namespace EvilCorp2000.Pages.ProductManagement
             catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }
 
         }
-
 
         //public async Task<IActionResult> OnPostShowDeletionConfirmationModal(Guid productId, string productName)
         //{
@@ -99,7 +93,6 @@ namespace EvilCorp2000.Pages.ProductManagement
 
         //    return Page();
         //}
-
 
         public async Task<IActionResult> OnPostShowNewAndAlterProductModal(Guid selectedProductId)
         {
@@ -162,7 +155,6 @@ namespace EvilCorp2000.Pages.ProductManagement
 
 
             //Zusammenstellen des ProductToStoreDTO
-
             List<CategoryDTO> categories;
 
             try
@@ -187,36 +179,7 @@ namespace EvilCorp2000.Pages.ProductManagement
 
             var newProduct = CreateProductToStoreDTO(ValidatedProduct, selectedCategories);
 
-
-            //Speichern des ProductToStoreDTO
-            try
-            {
-                if (ValidatedProduct.ProductId == Guid.Empty)
-                {
-                    await _internalProductManager.SaveProductToStore(newProduct);
-                }
-
-                else
-                {
-                    await _internalProductManager.UpdateProductToStore(newProduct);
-                }
-            }
-
-            catch (ValidationException ex)
-            {
-                // Fehlermeldung zur ModelState hinzufügen
-                ModelState.AddModelError("ProductValidation", ex.Message);
-                return await ReInitializeModalWithProduct(ValidatedProduct, ValidatedProduct.SelectedCategoryIds, ValidatedProduct.Discounts);
-            }
-
-            catch (Exception ex)
-            {
-
-                return await ExecuteOnExceptionCatch("Failed to save the product. {0}", "Failed to save the product.", ex);
-            }
-
-            ShowModal = false;
-            return RedirectToPage();
+            return await SaveProduct(newProduct, ValidatedProduct);
         }
 
 
@@ -238,7 +201,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             };
 
 
-            // Load Product from DB to get all Discounts, if one has already been entered            
+            // find Product from DBContext to get all current Discounts
             (ValidatedProduct validatedProduct, IActionResult? validatedProductError) =
                 await DeserializeWithTryCatchAsync<ValidatedProduct>(ValidatedProductJson, "Failed to parse ValidatedProduct.", "Discount couldn't be added.");
             if (validatedProductError != null) return validatedProductError;
@@ -247,7 +210,8 @@ namespace EvilCorp2000.Pages.ProductManagement
             var newSelectedProduct = products.FirstOrDefault(p => p.ProductId == ValidatedProduct.ProductId);
             ValidatedProduct.Discounts = newSelectedProduct.Discounts;
 
-            // Load SelectedCategories to fill Fields after Reload of the Modal after Saving the Discount - if not done, there are na categories in the product
+
+            // get SelectedCategories to fill Fields after Reload of the Modal after Saving the Discount
             (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) =
                 await DeserializeWithTryCatchAsync<List<Guid>>(CategoryIdsJson, "Failed to parse CategoryIds.", "Discount couldn't be added.");
             if (categoryIdsJsonError != null) return categoryIdsJsonError;
@@ -255,18 +219,23 @@ namespace EvilCorp2000.Pages.ProductManagement
             var selectedCategories = Categories.FindAll(c => categoryIds.Exists(id => id == c.CategoryId));
 
 
-
+            //add new Discount
             var newProduct = CreateProductToStoreDTO(ValidatedProduct, selectedCategories);
 
+            return await AddDiscount(newDiscount, newProduct, validatedProduct, products, categoryIds);
+        }
+
+
+        private async Task<IActionResult>AddDiscount(DiscountDTO newDiscount, ProductToStoreDTO newProduct, ValidatedProduct validatedProduct, List<ProductForInternalUseDTO> products, List<Guid> categoryIds)
+        {
             try
             {
-                //separate function because a guid is added in the backend
                 await _internalProductManager.AddDiscount(newDiscount, newProduct);
             }
             catch (ValidationException ex)
             {
                 ModelState.AddModelError("DiscountValidation", ex.Message);
-                return await ReInitializeModalWithProduct(ValidatedProduct, ValidatedProduct.SelectedCategoryIds, ValidatedProduct.Discounts);
+                return await ReInitializeModalWithProduct(validatedProduct, validatedProduct.SelectedCategoryIds, validatedProduct.Discounts);
             }
             catch (Exception ex)
             {
@@ -274,11 +243,10 @@ namespace EvilCorp2000.Pages.ProductManagement
             }
 
 
-            // neues Product mit allen Discounts inkl. dem Neuem Laden
-            var selectedProduct = products.FirstOrDefault(p => p.ProductId == ValidatedProduct.ProductId);
+            // neues Product mit allen Discounts inkl. dem Neuem von DBContext holen (hat jetzt eine GUID)
+            var selectedProduct = products.FirstOrDefault(p => p.ProductId == validatedProduct.ProductId);
 
-            return await ReInitializeModalWithProduct(ValidatedProduct, categoryIds, selectedProduct.Discounts);
-
+            return await ReInitializeModalWithProduct(validatedProduct, categoryIds, selectedProduct.Discounts);
         }
 
 
@@ -370,7 +338,8 @@ namespace EvilCorp2000.Pages.ProductManagement
             }
 
             validatedProduct.ProductPicture = $"/images/{fileName}";
-            
+
+            #region
             //ALTE HERANSGEHENSWEISE, hat aber alles verlangsamt:
             //string productPictureToSave;
 
@@ -383,6 +352,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             //}
 
             //validatedProduct.ProductPicture = productPictureToSave;
+            #endregion
 
             try
             {
@@ -410,9 +380,6 @@ namespace EvilCorp2000.Pages.ProductManagement
                 return await ExecuteOnExceptionCatch("Failed to delete the product. {0}", "Failed to delete the product.", ex);
             }
         }
-
-
-
 
 
         public async Task<IActionResult> OnPostDeleteDiscount(Guid discountId, Guid productId) 
@@ -447,11 +414,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             {
                 return await ExecuteOnExceptionCatch("Failed to remove Discount from Discounts", "An error occured", ex);
             }
-
-            //wird in Reinitialize gemacht
-            //DiscountsJson = JsonSerializer.Serialize(ValidatedProduct.Discounts);
-            //ValidatedProductJson = JsonSerializer.Serialize(ValidatedProduct);
-
+            
             // Load SelectedCategories to fill Fields after Reload of the Modal after Saving the Discount
             (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) =
                 await DeserializeWithTryCatchAsync<List<Guid>>(CategoryIdsJson, "Failed to parse CategoryIds.", "Discount couldn't be added.");
@@ -469,213 +432,7 @@ namespace EvilCorp2000.Pages.ProductManagement
                 return await ExecuteOnExceptionCatch("Error adding the discount.  {0}", "Discount couldn't be deleted.", ex);
             }
 
-            //soll ich das Product neu laden???
-            //var products = await _internalProductManager.GetProductsForInternalUse();
-            //var selectedProduct = products.FirstOrDefault(p => p.ProductId == ValidatedProduct.ProductId);
-
             return await ReInitializeModalWithProduct(ValidatedProduct, categoryIds, ValidatedProduct.Discounts);
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        public IActionResult OnPostDismiss()
-        {
-            // Logik beim Dismiss-Button
-            ViewData["ModalDismissed"] = true; // Beispielhafte Änderung
-            return Page();
-        }
-
-
-        public async Task LoadDataAsync()
-        {
-            try
-            {
-                products = await _internalProductManager.GetProductsForInternalUse();
-                Categories = await _internalProductManager.GetCategories();
-            }
-            catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }
-
-        }
-
-
-
-
-
-
-
-
-
-
-        //Hilfsfunktionen - Auslagern in separate klasse, wie ist das dann mit dem IActionResult???
-
-        public async Task<IActionResult> ReInitializeModalWithProduct(ValidatedProduct validatedProduct, List<Guid> categoryIds, List<DiscountDTO> discounts)
-        {
-            validatedProduct.SelectedCategoryIds = categoryIds;
-            validatedProduct.Discounts = discounts;
-
-            if (!validatedProduct.Discounts.IsNullOrEmpty())
-            {
-                validatedProduct.Discounts = validatedProduct.Discounts.OrderBy(d => d.StartDate).ToList();
-            }
-
-            await LoadDataAsync();
-
-            //TODO: funktioniert nicht, Felder sind immer noch gefüllt
-            //NewDiscount = new ValidatedDiscount { DiscountPercentage = 0, StartDate = null, EndDate = null};
-            SelectedProductId = validatedProduct.ProductId;
-            ValidatedProduct = validatedProduct;
-            DiscountsJson = JsonSerializer.Serialize(validatedProduct.Discounts);
-
-            ShowModal = true;
-
-            return Page();
-        }
-
-
-        public async Task<IActionResult> ReInitializeModalAfterDiscountValidationError(string categoryIdsJson, List<CategoryDTO> categories, string validatedProductJson)
-        {
-            (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) =
-                await DeserializeWithTryCatchAsync<List<Guid>>(CategoryIdsJson, "Failed to parse CategoryIds.", "Discount couldn't be added.");
-            if (categoryIdsJsonError != null) return categoryIdsJsonError;
-
-            var productCategories = categories.FindAll(c => categoryIds.Exists(id => id == c.CategoryId));
-
-            (ValidatedProduct validatedProduct, IActionResult? validatedProductError) =
-                await DeserializeWithTryCatchAsync<ValidatedProduct>(ValidatedProductJson, "Failed to parse ValidatedProduct.", "Discount couldn't be added.");
-            if (validatedProductError != null) return validatedProductError;
-            ValidatedProduct = validatedProduct;
-
-            validatedProduct.SelectedCategoryIds = productCategories.Select(c => c.CategoryId).ToList();
-            SelectedProductId = validatedProduct.ProductId;
-            ValidatedProduct = validatedProduct;
-            ValidatedProductJson = ValidatedProductJson;
-            CategoryIdsJson = CategoryIdsJson;
-            ShowModal = true;
-            return Page();
-        }
-
-
-        public IActionResult ReInitializeAfterFailiedDiscountOverlapValidtion(List<CategoryDTO> selectedCategories, ValidatedProduct validatedProduct, string validatedProductJson, string categoryIdsJson)
-        {
-            {
-                ValidatedProduct.SelectedCategoryIds = selectedCategories.Select(c => c.CategoryId).ToList();
-                SelectedProductId = validatedProduct.ProductId;
-                ValidatedProductJson = validatedProductJson;
-                CategoryIdsJson = categoryIdsJson;
-                ShowModal = true;
-                DiscountOverlap = true;
-                return Page();
-            }
-        }
-
-
-        private bool IsModelStateValidForProduct(Guid productId)
-        {
-            var keysToValidate = productId == Guid.Empty
-                ? new[] { "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", /*"ValidatedProduct.ProductPicture",*/ "ValidatedProduct.SelectedCategoryIds" }
-                : new[] {/* "DiscountsJson",*/ "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", /*"ValidatedProduct.ProductPicture",*/ "ValidatedProduct.SelectedCategoryIds", "ValidatedProductJson", "CategoryIdsJson" };
-
-            return keysToValidate.All(key => ModelState[key]?.ValidationState == ModelValidationState.Valid);
-        }
-
-
-        private bool IsModelStateIsInvalidForDiscount(ModelStateDictionary modelState)
-        {
-            return modelState["NewDiscount.EndDate"]?.ValidationState != ModelValidationState.Valid ||
-                modelState["NewDiscount.StartDate"]?.ValidationState != ModelValidationState.Valid ||
-                modelState["NewDiscount.DiscountPercentage"]?.ValidationState != ModelValidationState.Valid ||
-                modelState["ValidatedProductJson"]?.ValidationState != ModelValidationState.Valid ||
-                modelState["CategoryIdsJson"]?.ValidationState != ModelValidationState.Valid;
-        }
-
-
-        private async Task<(T? Result, IActionResult? Error)> DeserializeWithTryCatchAsync<T>(string json, string logError, string modelStateError)
-        {
-            try
-            {
-                var result = JsonSerializer.Deserialize<T>(json);
-                return (result, null);
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogError(logError);
-                ModelState.AddModelError(string.Empty, modelStateError);
-                ShowModal = true;
-                await LoadDataAsync();
-                return (default, Page());
-            }
-        }
-
-
-        private async Task<IActionResult> ExecuteOnExceptionCatch(string logError, string modelStateError, Exception ex)
-        {
-            _logger.LogError(logError, ex);
-            ModelState.AddModelError(string.Empty, modelStateError);
-            ShowModal = true;
-            await LoadDataAsync();
-            return Page();
-        }
-
-        private ProductToStoreDTO CreateProductToStoreDTO(ValidatedProduct validatedProduct, List<CategoryDTO> categories)
-        {
-            return new ProductToStoreDTO
-            {
-                ProductName = validatedProduct.ProductName,
-                ProductPicture = validatedProduct.ProductPicture,
-                AmountOnStock = validatedProduct.AmountOnStock.Value,
-                Description = validatedProduct.Description,
-                Categories = categories,
-                Discounts = validatedProduct.Discounts,
-                Price = validatedProduct.Price.Value,
-                ProductId = validatedProduct.ProductId,
-            };
-        }
-
-        private ValidatedProduct CreateValidatedProduct(ProductForInternalUseDTO selectedProduct, List<Guid> categoryIds)
-        {
-            return new ValidatedProduct
-            {
-                ProductId = selectedProduct.ProductId,
-                ProductPicture = selectedProduct.ProductPicture,
-                ProductName = selectedProduct.ProductName,
-                AmountOnStock = selectedProduct.AmountOnStock,
-                SelectedCategoryIds = categoryIds,
-                Description = selectedProduct.Description,
-                Discounts = selectedProduct.Discounts,
-                Price = selectedProduct.Price
-            };
-        }
-
-
-
-        // TODO Edit Discount
-        //public IActionResult OnPostEditDiscount(Guid discountId)
-        //{
-        //    // hier muss ein Dialog zum Ändern geöffnet werden in der UI / sowas wie zur Eingabe, aber irgendwie unter dem Discount, man kann keine vergangenen Discounts ändern
-
-        //    // Discount bearbeiten (Logik zur Anzeige der Edit-Werte)
-
-        //    //Prüfen, ob Überlappung
-
-        //    //Save Product incl CreateProductToStoreDTO(ValidatedProduct, selectedCategories)
-
-        //    //neues Product mit allem Drum und dran laden.
-        //    return Page();
-        //}
-
-
     }
 }

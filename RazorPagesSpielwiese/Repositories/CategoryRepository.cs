@@ -62,38 +62,24 @@ namespace EvilCorp2000.Repositories
 
         public List<Category> AttachCategoriesIfNeeded(List<Category> categories)
         {
-
-            //foreach (var category in categories)
-            //{
-            //    var trackedCategory = _context.ChangeTracker.Entries<Category>()
-            //        .FirstOrDefault(e => e.Entity.CategoryId == category.CategoryId);
-
-            //    if (trackedCategory == null)
-            //    {
-            //        // Nur attachen, wenn nicht bereits getrackt
-            //        _context.Attach(category); // Verhindert das Hinzufügen neuer Kategorien in der Datenbank
-            //    }
-            //    //_context.Attach(category); 
-            //}
-            //return categories;
-
             var attachedCategories = new List<Category>();
 
             foreach (var category in categories)
             {
                 var existingCategory = _context.Category
+                    //keine erneute DB Abfrage, sondern Zugriff auf den ChangeTracker
                     .Local
                     .FirstOrDefault(c => c.CategoryId == category.CategoryId);
 
                 if (existingCategory == null)
                 {
-                    // Füge hinzu, falls nicht lokal
+                    // Hinzufügen, falls Category noch nicht in Liste
                     _context.Attach(category);
                     attachedCategories.Add(category);
                 }
                 else
                 {
-                    // Nutze die bestehende Instanz
+                    // Nur bereits vorhandene Categories in Liste
                     attachedCategories.Add(existingCategory);
                 }
             }
