@@ -1,0 +1,40 @@
+﻿@* Momentan nicht verwendet - Produktanzeige muss erst komplett umgeschrieben werden - Problem mit zu vieln, zu komplexe Modals *@
+
+@model ConfirmDeleteModel
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@* <div class="modal fade" id="confirmDelete-@Model.ProductId" tabindex="-1" aria-labelledby="confirmDelete" aria-hidden="true"> *@
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Confirm Deletion
+                </h5>
+                <form method="post" asp-page-handler="CloseModal">
+                    <button type="submit" class="btn-close" aria-label="Close"></button>
+                </form>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="container">
+                    <div class="row mb-3">
+                        <p>Are you sure you want to delete the product "<strong>@Model.ProductName</strong>"?</p>
+
+                        <form method="post">
+                        <input type="hidden" name="productId" value="@Model.SelectedProductId" />
+                            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                            <a asp-page="/Index" class="btn btn-secondary">Cancel</a>
+                        </form>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+@* </div> *@
+
+

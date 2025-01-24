@@ -5,18 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.IdentityModel.Tokens;
-using EvilCorp2000.Entities;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.Design.Serialization;
-using System.Security.Cryptography.Xml;
 using System.Text.Json;
-using Microsoft.Identity.Client;
-using static System.Net.Mime.MediaTypeNames;
 using SixLabors.ImageSharp;
-using System;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using FluentResults;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -26,6 +19,8 @@ namespace EvilCorp2000.Pages.ProductManagement
     {
         public bool ShowModal { get; set; } = false;
 
+        //public bool ShowDeletionConfirmation { get; set; } = false;
+
         private readonly IInternalProductManager _internalProductManager;
         private readonly ILogger<ProductManagementModel> _logger;
         private readonly IWebHostEnvironment _environment;
@@ -33,7 +28,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         public List<ProductForInternalUseDTO>? products;
 
         [BindProperty(SupportsGet = true)]
-        public IFormFile ImageFile { get; set; }
+        public IFormFile? ImageFile { get; set; }
 
         public List<CategoryDTO>? Categories { get; set; }
 
@@ -41,6 +36,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         public ValidatedDiscount? NewDiscount { get; set; }
 
         public Guid SelectedProductId { get; set; }
+        public string ProductName { get; set; }
 
         [BindProperty]
         public ValidatedProduct ValidatedProduct { get; set; }
@@ -91,11 +87,22 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
+        //public async Task<IActionResult> OnPostShowDeletionConfirmationModal(Guid productId, string productName)
+        //{
+        //    SelectedProductId = productId;
+
+        //    ProductName = productName;
+
+        //    await LoadDataAsync();
+
+        //    ShowDeletionConfirmation = true;
+
+        //    return Page();
+        //}
+
+
         public async Task<IActionResult> OnPostShowNewAndAlterProductModal(Guid selectedProductId)
         {
-            //Remove auto-required-validation of ImageFile
-            ModelState.Remove(nameof(ImageFile));
-
             SelectedProductId = selectedProductId;
 
             await LoadDataAsync();
@@ -280,13 +287,54 @@ namespace EvilCorp2000.Pages.ProductManagement
             ModelState.AddModelError(key, message);
             return await ReInitializeModalWithProduct(validatedProduct, categoryIds, discountDtos);
         }
+        
+
+        private Result ImageValidations (IFormFile imageFile)
+        {
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                return Result.Fail("Please select a valid image file.");
+            }
+
+            // Dateigrößenprüfung (z. B. maximal 2 MB)
+            if (imageFile.Length > 2 * 1024 * 1024) // 2 MB
+            {
+                return Result.Fail("The file size exceeds the 2 MB limit.");
+            }
+
+            // MIME-Typ-Prüfung
+            var allowedFileTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+
+            if (!allowedFileTypes.Contains(imageFile.ContentType))
+            {
+                return Result.Fail("Only JPEG, PNG, and GIF formats are allowed.");
+            }
+
+            // Dateierweiterung prüfen
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                return Result.Fail("Invalid file extension. Only .jpg, .jpeg, .png, and .gif are allowed.");
+            }
+
+            // Bildinhalt validieren --> ins Backend? bzw. den Service??
+            try
+            {
+                using var image = SixLabors.ImageSharp.Image.Load(imageFile.OpenReadStream());
+            }
+            catch
+            {
+                return Result.Fail("The uploaded file is not a valid image.");
+            }
+            return Result.Ok();
+        }
 
 
 
         public async Task<IActionResult> OnPostImageUpload()
         {
-            //TODO: ich muss diese Hiddenfields einfügen, damit im Falle eines ModelErrors die Felder wieder gefüllt werden können: Validated Product, CategoryIds, Discounts
-
             (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) =
                 await DeserializeWithTryCatchAsync<List<Guid>>(CategoryIdsJson, "Failed to parse CategoryIds.", "Discount couldn't be added.");
             if (categoryIdsJsonError != null) return categoryIdsJsonError;
@@ -299,62 +347,31 @@ namespace EvilCorp2000.Pages.ProductManagement
                     await DeserializeWithTryCatchAsync<List<DiscountDTO>>(DiscountsJson, "Failed to parse DiscountDTO List.", "Product couldn't be added.");
             if (discountDTOJsonError != null) return discountDTOJsonError;
 
-            ModelState.Remove(nameof(ImageFile));
 
-            //TODO: Validations -> auslagern?
-            if (ImageFile == null || ImageFile.Length == 0)
+            //Validierung
+            var validImageResult = ImageValidations(ImageFile);
+
+            if (validImageResult.IsFailed)
             {
-                return await ImageModelError((nameof(ImageFile)),"Please select a valid image file.", validatedProduct, categoryIds, deserializedDiscounts);
-            }
+                var errors = validImageResult.Errors.ConvertAll(e => e.Message).Aggregate((a, b) => $"{a} {b}");
+                return await ImageModelError((nameof(ImageFile)), errors, validatedProduct, categoryIds, deserializedDiscounts);
+            }                           
 
-            // Dateigrößenprüfung (z. B. maximal 2 MB)
-            if (ImageFile.Length > 2 * 1024 * 1024) // 2 MB
-            {
-                return await ImageModelError((nameof(ImageFile)), "The file size exceeds the 2 MB limit.", validatedProduct, categoryIds, deserializedDiscounts);
-            }
 
-            // MIME-Typ-Prüfung
-            var allowedFileTypes = new[] { "image/jpeg", "image/png", "image/gif" };
-
-            if (!allowedFileTypes.Contains(ImageFile.ContentType))
-            {
-                return await ImageModelError((nameof(ImageFile)), "Only JPEG, PNG, and GIF formats are allowed.", validatedProduct, categoryIds, deserializedDiscounts);
-            }
-
-            // Dateierweiterung prüfen
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-            var extension = Path.GetExtension(ImageFile.FileName).ToLowerInvariant();
-
-            if (!allowedExtensions.Contains(extension))
-            {
-                return await ImageModelError((nameof(ImageFile)), "Invalid file extension. Only .jpg, .jpeg, .png, and .gif are allowed.", validatedProduct, categoryIds, deserializedDiscounts);
-            }
-
-            // Bildinhalt validieren --> ins Backend? bzw. den Service??
-            try
-            {
-                using var image = SixLabors.ImageSharp.Image.Load(ImageFile.OpenReadStream());
-            }
-            catch
-            {
-                return await ImageModelError((nameof(ImageFile)), "The uploaded file is not a valid image.", validatedProduct, categoryIds, deserializedDiscounts);
-            }
-
-            // 1. Generiere einen eindeutigen Dateinamen
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
 
-            // 2. Speicherpfad im Projekt
             var savePath = Path.Combine(_environment.WebRootPath, "images", fileName);
 
-            // 3. Datei im Dateisystem speichern
+            //Filestream öffnet eine neue Datei im Pfad
             using (var fileStream = new FileStream(savePath, FileMode.Create))
             {
+                //kopiert den Inhalt des ImageFile in den FileStream
                 await ImageFile.CopyToAsync(fileStream);
             }
 
-            // 4. Bildpfad in der Datenbank speichern
             validatedProduct.ProductPicture = $"/images/{fileName}";
             
+            //ALTE HERANSGEHENSWEISE, hat aber alles verlangsamt:
             //string productPictureToSave;
 
             //// Konvertiere das Bild in einen Base64-String
@@ -376,16 +393,12 @@ namespace EvilCorp2000.Pages.ProductManagement
                 return await ExecuteOnExceptionCatch("Error adding the discount.  {0}", "Discount couldn't be added.", ex);
             }
 
-            //TODO: Rückmeldung anzeigen, ob geklappt oder nicht?
-            //Seite mit allem neu laden / bzw. auch mit Modal
             return await ReInitializeModalWithProduct(validatedProduct, categoryIds, deserializedDiscounts);
-            //return Page();
         }
 
 
         public async Task<IActionResult> OnPostDeleteProduct(Guid productId)
         {
-            //TODO: Rückmeldung anzeigen, ob geklappt oder nicht?
             try
             {
                 await _internalProductManager.DeleteProduct(productId);
@@ -402,19 +415,12 @@ namespace EvilCorp2000.Pages.ProductManagement
 
 
 
-        public async Task<IActionResult> OnPostDeleteDiscount(Guid discountId, Guid productId) // hier gleich auch die Product Id mitgeben
+        public async Task<IActionResult> OnPostDeleteDiscount(Guid discountId, Guid productId) 
         {
-
-            // productliste in der Hauptseite nicht mehr sichtbar
-
-
             //Product neu laden, da es Probleme gibt, wenn ich mit dem alten ValidatedProduct weiterarbeiten würde
             var loadedProduct = await _internalProductManager.GetProductForInternalUse(productId);
 
             var selectedCategories = loadedProduct.Categories.Select(c => c.CategoryId).ToList();
-
-            //var IFormFile image =
-            //convert loadedProduct.ProductPicture to IFile irgendwas
 
             var newValidatedProduct = new ValidatedProduct
             {
@@ -443,19 +449,15 @@ namespace EvilCorp2000.Pages.ProductManagement
             }
 
             //wird in Reinitialize gemacht
-            DiscountsJson = JsonSerializer.Serialize(ValidatedProduct.Discounts);
-            ValidatedProductJson = JsonSerializer.Serialize(ValidatedProduct);
+            //DiscountsJson = JsonSerializer.Serialize(ValidatedProduct.Discounts);
+            //ValidatedProductJson = JsonSerializer.Serialize(ValidatedProduct);
 
             // Load SelectedCategories to fill Fields after Reload of the Modal after Saving the Discount
             (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) =
                 await DeserializeWithTryCatchAsync<List<Guid>>(CategoryIdsJson, "Failed to parse CategoryIds.", "Discount couldn't be added.");
             if (categoryIdsJsonError != null) return categoryIdsJsonError;
 
-            //Categories = await _internalProductManager.GetCategories(); --> beim Reinitialize geladen
-
-            //var selectedCategories = Categories.FindAll(c => categoryIds.Exists(id => id == c.CategoryId)); --> oben geändert
-
-            var productToStore = CreateProductToStoreDTO(ValidatedProduct, loadedProduct.Categories);//brauche ich die categories, sind die im ValidatedProducts leer?
+            var productToStore = CreateProductToStoreDTO(ValidatedProduct, loadedProduct.Categories);
 
             //neues Product speichern
             try
