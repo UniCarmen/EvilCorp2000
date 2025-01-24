@@ -35,7 +35,9 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * Produktstate as a Property of Product: aktiv / inaktiv?
 * Change Discounts??
 * Restoration of deleted Discounts / Products - Event Sourcing??
+* Completely Change the New/Alter-Product-Views because it's causing to many problems: These should not be partials
 
 
 ### Known Problems
 * After entering a new Discount, the Modal is refreshed automatically but the fields are still filled
+* Invisible Modal after "exiting" the Modal with Esc-Button
