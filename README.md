@@ -10,24 +10,26 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * Enter, view, delete and change products (name, description, categories, price, amount on stock) with UI Validation
 * Add and delete product discounts
 * Product + Discount Backend Validation
-* Saving and Loading Product Images (there are problems in Firefox + Brave browser though)
+* Saving and Loading Product Images (path is stored in DB, images in the project as an indermediate step to storing them in a blob storage)
 
 ### Programming concepts included 
 * Data is stored in a MS SQL Server DB
 * Seperation of concerns (DAL, BL, UI)
 
 
-### Planned
+### Planned next
+* Cleaning up project
+* UI / BL / DAL in different projects
+* Errorlogging in Db
+* Implementation of Identity - Log In, Log Out
+* ErrorPages - 403 Unauthorized, if not logged in, Link to Mainpage / 404, Link to Mainpage
+* Unit Tests
 
+### Planned in the future
 * Add, alter, delete(?) Categories
 * Sorting Product List
-* Unit Tests
-* Logging in DB
-* Use of Identity - Log In, Log Out, Error Pages
-
 * Add Shop: MainPage, Product Pages
 * Add Paging in ProductManagement and ShoppingSite
-
 * Make UI more appealing
 * Customize Currency?
 * Produktstate as a Property of Product: aktiv / inaktiv?
@@ -37,7 +39,3 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 
 ### Known Problems
 * After entering a new Discount, the Modal is refreshed automatically but the fields are still filled
-* Error when deleting two discounts after another
-
-
-
