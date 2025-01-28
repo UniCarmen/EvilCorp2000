@@ -37,7 +37,7 @@ namespace EvilCorp2000.Pages.Utilities
         }
 
 
-        @* Es wird immer Euro verwendet *@
+        //Es wird immer Euro verwendet
         public static string FormatAsEuro(decimal price)
         {
             return price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));

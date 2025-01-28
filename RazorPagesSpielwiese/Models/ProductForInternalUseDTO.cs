@@ -1,6 +1,6 @@
 ﻿namespace EvilCorp2000.Models
 {
-    public class ProductForInternalUseDTO //TODO: wird das eigentlich gebraucht, inwiefern unterscheidet sich das vom Validatedd Product?
+    public class ProductForInternalUseDTO //INFO Business Objekt
     {
         public string ProductName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;

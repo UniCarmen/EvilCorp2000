@@ -12,6 +12,6 @@ namespace EvilCorp2000.Repositories
         Task UpdateProduct (Product productToStore, Product productFromDB);
         Task SaveProductPicture (Guid productId,  string picture);
         Task DeleteProductPicture(Guid productId);
-        Task<bool> IsProductNameUniqueAsync(string name);
+        Task<bool> IsProductNameUniqueAsync(string name, Guid productId);
     }
 }

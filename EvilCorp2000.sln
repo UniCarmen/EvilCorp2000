@@ -10,6 +10,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseTests", "DatabaseTe
 		{C2040339-765D-402D-871C-56EA6FABEE96} = {C2040339-765D-402D-871C-56EA6FABEE96}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{8DB1257F-7247-40F2-A594-5687C8CFDDCE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,10 @@ Global
 		{A2AAF6F3-AC83-4218-A613-96B0CD10CAD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2AAF6F3-AC83-4218-A613-96B0CD10CAD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2AAF6F3-AC83-4218-A613-96B0CD10CAD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DB1257F-7247-40F2-A594-5687C8CFDDCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DB1257F-7247-40F2-A594-5687C8CFDDCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DB1257F-7247-40F2-A594-5687C8CFDDCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DB1257F-7247-40F2-A594-5687C8CFDDCE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

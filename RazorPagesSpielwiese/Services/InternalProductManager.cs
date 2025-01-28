@@ -31,10 +31,8 @@ namespace EvilCorp2000.Services
 
             foreach (Product product in products)
             {
-                //var currentDiscountEntities = await _discoutRepository.GetDiscountsByProductId(product.ProductId);
-
                 var discountMapper = new Mappings.DiscountMappings();
-                var currentDiscounts = /*currentDiscountEntities*/product.Discounts.Select(de => discountMapper.DiscountToDiscountDTO(de)).ToList();
+                var currentDiscounts = product.Discounts.Select(de => discountMapper.DiscountToDiscountDTO(de)).ToList();
 
                 var categorieMapper = new Mappings.CategoryMappings();
                 var categories = product.Categories.Select(c => categorieMapper.CategoryEntityToCategoryModel(c)).ToList();
@@ -82,10 +80,7 @@ namespace EvilCorp2000.Services
         {
             if (productToStore != null)
             {
-                //Fkt muss GUID miteinbeziehen, wenn nicht Empty, dann müssen alle geprüft werden, die nicht die gleiche ID haben, wie die das producttoStore
-                //ist für das ändern des products, das soll ja auch keine doppelten Namen produzieren, aber auch keinen Fehler werfen, wenn ich das Produkt mit gleichbleibenden 
-                //Namen speichere
-                var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName);
+                var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName, productToStore.ProductId);
                 ValidateProduct(productToStore, nameIsUnique);
 
                 var productMapper = new Mappings.ProductMappings();
@@ -133,8 +128,8 @@ namespace EvilCorp2000.Services
         {
             if (productToStore != null)
             {
-                //var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName);
-                //ValidateProduct(productToStore, nameIsUnique);
+                var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName, productToStore.ProductId);
+                ValidateProduct(productToStore, nameIsUnique);
 
                 var productMapper = new Mappings.ProductMappings();
                 var discountMapper = new Mappings.DiscountMappings();
@@ -143,10 +138,6 @@ namespace EvilCorp2000.Services
                 var discounts = productToStore.Discounts.Select(d => discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
 
                 var categories = productToStore.Categories.Select(c => categoryMapper.CategoryDtoToCategory(c)).ToList();
-
-                //noch nötig? ich update die categorien ja jetzt separat vom Product
-                //markiert Die Kategorien im Context in den Categories als bereits existierend, damit nicht versucht wird, diese neu anzulegen
-                //categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
 
                 var productFromDB = await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(productToStore.ProductId);
 
@@ -197,29 +188,55 @@ namespace EvilCorp2000.Services
             await _productRepository.DeleteProductPicture(productId);
         }
 
-        public void ValidateProduct(ProductToStoreDTO productToStore, bool nameIsUnique)
+        //public void ValidateProduct(ProductToStoreDTO productToStore, bool nameIsUnique)
+        //{
+        //    var validationErrors = new List<string>();
+
+        //    if (!nameIsUnique)
+        //    {
+        //        validationErrors.Add("Product name must be unique.");
+        //    }
+
+        //    if (productToStore.Price <= 0.0m)
+        //    {
+        //        validationErrors.Add("Price must be greater than 0.");
+        //    }
+
+        //    if (productToStore.AmountOnStock < 0)
+        //    {
+        //        validationErrors.Add("Amount on stock cannot be negative.");
+        //    }
+
+        //    if (validationErrors.Any())
+        //    {
+        //        throw new ValidationException(string.Join(" ", validationErrors));
+        //    }
+        //}
+
+        public Dictionary<string, string> ValidateProduct(ProductToStoreDTO productToStore, bool nameIsUnique)
         {
-            var validationErrors = new List<string>();
+            var validationErrors = new Dictionary<string, string>();
 
             if (!nameIsUnique)
             {
-                validationErrors.Add("Product name must be unique.");
+                validationErrors.Add("UniqueProductName", "Product name must be unique.");
             }
 
             if (productToStore.Price <= 0.0m)
             {
-                validationErrors.Add("Price must be greater than 0.");
+                validationErrors.Add("Price", "Price must be greater than 0.");
             }
 
             if (productToStore.AmountOnStock < 0)
             {
-                validationErrors.Add("Amount on stock cannot be negative.");
+                validationErrors.Add("AmountOnStock", "Amount on stock cannot be negative.");
             }
 
             if (validationErrors.Any())
             {
-                throw new ValidationException(string.Join(" ", validationErrors));
+                throw new ValidationException(string.Join(";", validationErrors));
             }
+            return validationErrors;
         }
 
 

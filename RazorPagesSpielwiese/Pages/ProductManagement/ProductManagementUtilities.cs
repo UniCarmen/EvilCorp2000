@@ -5,6 +5,8 @@ using System.Text.Json;
 using System.ComponentModel.DataAnnotations;
 using EvilCorp2000.Services;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Collections.Generic;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -149,6 +151,18 @@ namespace EvilCorp2000.Pages.ProductManagement
 
             catch (ValidationException ex)
             {
+                var errorString = ex.Message.Split(";");
+
+                var dictionary = errorString
+                    .Select(item => item.Trim('[', ']')) 
+                    .Select(item => item.Split(',', 2)) // Splitte in zwei Teile am ersten Komma -> theoretische Key, Value pairs
+                    .ToDictionary(parts => parts[0].Trim(), parts => parts[1].Trim());
+
+                if (dictionary.Keys.Contains("UniqueProductName"))
+                {
+                    var message = dictionary.GetValueOrDefault("UniqueProductName");
+                    ModelState.AddModelError("UniqueProductName", message);
+                }
                 ModelState.AddModelError("ProductValidation", ex.Message);
                 return await ReInitializeModalWithProduct(validatedProduct, validatedProduct.SelectedCategoryIds, validatedProduct.Discounts);
             }

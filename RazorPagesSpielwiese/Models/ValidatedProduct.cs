@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using static EvilCorp2000.Models.NewProductValidations;
-//TODO: momentan wird nur die GUID Liste validert, benötige ich den Rest später für Grenzwerte?
 
 namespace EvilCorp2000.Models
 {
@@ -17,12 +16,11 @@ namespace EvilCorp2000.Models
         [Display(Name = "Description")]
         public string? Description { get; set; } = "";
 
-        //[Required(ErrorMessage = "Category required")] //- funktioniert nicht weil GuidList
+        //[Required(ErrorMessage = "Category required")] //- funktioniert nicht bei GuidList
         [GuidListValidation(ErrorMessage = "Please select at least one category.")]
         [Display(Name = "Category")]
         public List<Guid> SelectedCategoryIds { get; set; } = [];
 
-        //nur für die Anzeige
         public string? ProductPicture { get; set; }
 
         [Required(ErrorMessage = "Price required")]
@@ -35,7 +33,6 @@ namespace EvilCorp2000.Models
         [Display(Name = "Amount on Stock")]
         public int? AmountOnStock { get; set; }
 
-        //TODO: ...später Abfrage möglich, bei einem längeren Zeitraum als... 2 Wochen?
         [Display(Name = "Discounts")]
         public List<DiscountDTO> Discounts { get; set; } = new List<DiscountDTO>();
 

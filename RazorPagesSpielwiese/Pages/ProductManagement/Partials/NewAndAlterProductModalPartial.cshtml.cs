@@ -30,10 +30,8 @@ namespace EvilCorp2000.Pages.ProductManagement.Partials
             //}
         }
 
-        //von Backing Code Index empfangen
         public List<CategoryDTO> Categories { get; set; }
 
-        //TODO: check if BindProp necessary
         [BindProperty]
         public ValidatedDiscount? NewDiscount { get; set; }
 

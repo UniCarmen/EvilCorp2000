@@ -90,9 +90,23 @@ namespace EvilCorp2000.Repositories
         }
 
 
-        public async Task<bool> IsProductNameUniqueAsync(string name)
+        public async Task<bool> IsProductNameUniqueAsync(string name, Guid id)
         {
-            return !await _context.Products.AnyAsync(p => p.ProductName == name);
+            if (Guid.Empty == id)
+            {
+                return !await _context.Products.AnyAsync(p => p.ProductName == name);
+            }
+
+            //wenn nicht Empty, dann müssen alle geprüft werden, die nicht die gleiche ID haben, wie die das producttoStore
+            //ist für das ändern des products, das soll ja auch keine doppelten Namen produzieren, aber auch keinen Fehler werfen, wenn ich das Produkt mit gleichbleibenden 
+            //Namen speichere
+            //var a = _context.Products.ToList();
+            //var p = a.Where(p => p.ProductId != id);
+            //var b = !p.Any(p => p.ProductName == name);
+            //return
+            //    b;
+            return !await _context.Products.Where(p => p.ProductId != id).AnyAsync(p => p.ProductName == name);
+            
         }
     }
 }
