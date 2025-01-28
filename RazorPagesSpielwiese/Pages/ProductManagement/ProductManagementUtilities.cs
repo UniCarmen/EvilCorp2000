@@ -1,12 +1,13 @@
-﻿using EvilCorp2000.Models;
+﻿using BusinessLayer.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.ComponentModel.DataAnnotations;
-using EvilCorp2000.Services;
+using BusinessLayer.Services;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Collections.Generic;
+using EvilCorp2000.UIModels;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -134,7 +135,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        private async Task<IActionResult> SaveProduct(ProductToStoreDTO newProduct, ValidatedProduct validatedProduct)
+        private async Task<IActionResult> SaveProduct(InternalProduct newProduct, ValidatedProduct validatedProduct)
         {
             try
             {

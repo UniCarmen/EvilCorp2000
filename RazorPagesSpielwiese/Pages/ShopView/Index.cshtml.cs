@@ -1,8 +1,8 @@
-using EvilCorp2000.Models;
-using EvilCorp2000.Services;
+using BusinessLayer.Models;
+using BusinessLayer.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using EvilCorp2000.Repositories;
+using DataAccess.Repositories;
 
 namespace EvilCorp2000.Pages
 {

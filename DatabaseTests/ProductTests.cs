@@ -1,6 +1,6 @@
-using EvilCorp2000.DBContexts;
-using EvilCorp2000.Entities;
-using EvilCorp2000.Repositories;
+using DataAccess.DBContexts;
+using DataAccess.Entities;
+using DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
 

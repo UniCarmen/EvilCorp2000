@@ -1,6 +1,6 @@
-using EvilCorp2000.Models;
+using BusinessLayer.Models;
 using EvilCorp2000.Pages.ProductManagement.Partials;
-using EvilCorp2000.Services;
+using BusinessLayer.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using FluentResults;
 using static EvilCorp2000.Pages.Utilities.Utilities;
 using System.Collections.Generic;
+using EvilCorp2000.UIModels;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -27,7 +28,9 @@ namespace EvilCorp2000.Pages.ProductManagement
         private readonly ILogger<ProductManagementModel> _logger;
         private readonly IWebHostEnvironment _environment;
 
-        public List<ProductForInternalUseDTO>? products;
+        //TODO: Ich brauche ein UI Objekt, dass genauso aussieht, wie InternalProduct, aber nur in der UI verwendet wird -> UI Service oder so, der Mappings durchführt
+        //Evtl auch für Category und DiscountDTO
+        public List<InternalProduct>? products;
 
         [BindProperty(SupportsGet = true)]
         public IFormFile? ImageFile { get; set; }
@@ -226,7 +229,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        private async Task<IActionResult>AddDiscount(DiscountDTO newDiscount, ProductToStoreDTO newProduct, ValidatedProduct validatedProduct, List<ProductForInternalUseDTO> products, List<Guid> categoryIds)
+        private async Task<IActionResult>AddDiscount(DiscountDTO newDiscount, InternalProduct newProduct, ValidatedProduct validatedProduct, List<InternalProduct> products, List<Guid> categoryIds)
         {
             try
             {

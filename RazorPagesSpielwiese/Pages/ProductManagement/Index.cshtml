@@ -1,6 +1,7 @@
 ﻿@page
 @model ProductManagementModel
-@using EvilCorp2000.Models
+@using BusinessLayer.Models
+@using EvilCorp2000.UIModels
 @using EvilCorp2000.Pages.ProductManagement
 @using EvilCorp2000.Pages.ProductManagement.Partials
 @using static EvilCorp2000.Pages.Utilities.Utilities
@@ -73,7 +74,7 @@
     <tbody>
         @if (Model.products != null)
         {
-            @foreach (ProductForInternalUseDTO product in Model.products)
+            @foreach (InternalProduct product in Model.products)
             {
                 <tr>
                     <td>

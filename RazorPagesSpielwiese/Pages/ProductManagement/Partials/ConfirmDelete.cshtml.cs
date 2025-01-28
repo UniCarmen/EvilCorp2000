@@ -1,4 +1,4 @@
-using EvilCorp2000.Models;
+using BusinessLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 

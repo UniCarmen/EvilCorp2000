@@ -1,6 +1,6 @@
-using EvilCorp2000.DBContexts;
-using EvilCorp2000.Repositories;
-using EvilCorp2000.Services;
+using DataAccess.DBContexts;
+using DataAccess.Repositories;
+using BusinessLayer.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
