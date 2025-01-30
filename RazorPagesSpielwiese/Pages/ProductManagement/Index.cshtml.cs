@@ -79,6 +79,14 @@ namespace EvilCorp2000.Pages.ProductManagement
             try
             {
                 await LoadDataAsync();
+                //_logger.LogInformation("Test-Log: Dies ist ein Test für Logging.");
+                //_logger.LogWarning("Test-Log: Warnung für Logging.");
+                //_logger.LogError("Test-Log: Fehler für Logging.");
+            }
+            catch (DbUpdateException ex)
+            {
+                // Hier NICHT loggen, weil DAL das bereits gemacht hat
+                ModelState.AddModelError("", "Es gab einen Fehler in der Datenbank.");
             }
             catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }
 
@@ -164,7 +172,10 @@ namespace EvilCorp2000.Pages.ProductManagement
             {
                 categories = await _internalProductManager.GetCategories();
             }
-
+            catch (DbUpdateException ex)
+            {
+                return await ExecuteOnDBExceptionCatch("Fehler in der Datenbank", ex);
+            }
             catch (Exception ex)
             {
                 return await ExecuteOnExceptionCatch("Failed to load categories. {0}", "Failed to load categories.", ex);
@@ -234,6 +245,10 @@ namespace EvilCorp2000.Pages.ProductManagement
             try
             {
                 await _internalProductManager.AddDiscount(newDiscount, newProduct);
+            }
+            catch (DbUpdateException ex)
+            {
+                return await ExecuteOnDBExceptionCatch("Fehler in der Datenbank", ex);
             }
             catch (ValidationException ex)
             {
@@ -361,6 +376,10 @@ namespace EvilCorp2000.Pages.ProductManagement
             {
                 await _internalProductManager.SaveProductPicture(validatedProduct.ProductId, validatedProduct.ProductPicture);
             }
+            catch (DbUpdateException ex)
+            {
+                return await ExecuteOnDBExceptionCatch("Fehler in der Datenbank", ex);
+            }
             catch (Exception ex)
             {
                 return await ExecuteOnExceptionCatch("Error adding the discount.  {0}", "Discount couldn't be added.", ex);
@@ -378,6 +397,10 @@ namespace EvilCorp2000.Pages.ProductManagement
                 ShowModal = false;
                 return RedirectToPage();
             }
+            catch (DbUpdateException ex)
+            {
+                return await ExecuteOnDBExceptionCatch("Fehler in der Datenbank", ex);
+            }
             catch (Exception ex)
             {
                 return await ExecuteOnExceptionCatch("Failed to delete the product. {0}", "Failed to delete the product.", ex);
@@ -387,55 +410,51 @@ namespace EvilCorp2000.Pages.ProductManagement
 
         public async Task<IActionResult> OnPostDeleteDiscount(Guid discountId, Guid productId) 
         {
-            //Product neu laden, da es Probleme gibt, wenn ich mit dem alten ValidatedProduct weiterarbeiten würde
-            var loadedProduct = await _internalProductManager.GetProductForInternalUse(productId);
-
-            var selectedCategories = loadedProduct.Categories.Select(c => c.CategoryId).ToList();
-
-            var newValidatedProduct = new ValidatedProduct
-            {
-                ProductId = loadedProduct.ProductId,
-                AmountOnStock = loadedProduct.AmountOnStock,
-                Description = loadedProduct.Description,
-                Discounts = loadedProduct.Discounts,
-                Price = loadedProduct.Price,
-                ProductName = loadedProduct.ProductName,
-                ProductPicture = loadedProduct.ProductPicture,
-                SelectedCategoryIds = selectedCategories
-            };
-
-            ValidatedProduct = newValidatedProduct;
-
-            // Discount löschen from List
             try
             {
+                //Product neu laden, da es Probleme gibt, wenn ich mit dem alten ValidatedProduct weiterarbeiten würde
+                var loadedProduct = await _internalProductManager.GetProductForInternalUse(productId);
+
+                var selectedCategories = loadedProduct.Categories.Select(c => c.CategoryId).ToList();
+
+                var newValidatedProduct = new ValidatedProduct
+                {
+                    ProductId = loadedProduct.ProductId,
+                    AmountOnStock = loadedProduct.AmountOnStock,
+                    Description = loadedProduct.Description,
+                    Discounts = loadedProduct.Discounts,
+                    Price = loadedProduct.Price,
+                    ProductName = loadedProduct.ProductName,
+                    ProductPicture = loadedProduct.ProductPicture,
+                    SelectedCategoryIds = selectedCategories
+                };
+
+                ValidatedProduct = newValidatedProduct;
+
+                // Discount löschen from List
                 var newDisounts = ValidatedProduct.Discounts.FindAll(d => d.DiscountId != discountId);
                 ValidatedProduct.Discounts = newDisounts;
-            }
 
-            catch (Exception ex)
-            {
-                return await ExecuteOnExceptionCatch("Failed to remove Discount from Discounts", "An error occured", ex);
-            }
-            
-            // Load SelectedCategories to fill Fields after Reload of the Modal after Saving the Discount
-            (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) =
-                await DeserializeWithTryCatchAsync<List<Guid>>(CategoryIdsJson, "Failed to parse CategoryIds.", "Discount couldn't be added.");
-            if (categoryIdsJsonError != null) return categoryIdsJsonError;
+                // Load SelectedCategories to fill Fields after Reload of the Modal after Saving the Discount
+                (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) =
+                    await DeserializeWithTryCatchAsync<List<Guid>>(CategoryIdsJson, "Failed to parse CategoryIds.", "Discount couldn't be added.");
+                if (categoryIdsJsonError != null) return categoryIdsJsonError;
 
-            var productToStore = CreateProductToStoreDTO(ValidatedProduct, loadedProduct.Categories);
+                var productToStore = CreateProductToStoreDTO(ValidatedProduct, loadedProduct.Categories);
 
-            //neues Product speichern
-            try
-            {
+                //neues Product speichern
                 await _internalProductManager.UpdateProductToStore(productToStore);
+
+                return await ReInitializeModalWithProduct(ValidatedProduct, categoryIds, ValidatedProduct.Discounts);
+            }
+            catch (DbUpdateException ex)
+            {
+                return await ExecuteOnDBExceptionCatch("Fehler in der Datenbank", ex);
             }
             catch (Exception ex)
             {
                 return await ExecuteOnExceptionCatch("Error adding the discount.  {0}", "Discount couldn't be deleted.", ex);
             }
-
-            return await ReInitializeModalWithProduct(ValidatedProduct, categoryIds, ValidatedProduct.Discounts);
         }
     }
 }

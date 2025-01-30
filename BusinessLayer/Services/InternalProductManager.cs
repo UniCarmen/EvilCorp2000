@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Contracts;
+using Microsoft.Extensions.Logging;
 
 namespace BusinessLayer.Services
 {
@@ -143,7 +144,7 @@ namespace BusinessLayer.Services
 
                 if (productFromDB == null)
                 {
-                    { throw new InvalidOperationException(nameof(productFromDB)); };
+                    throw new InvalidOperationException(nameof(productFromDB));
                 }
 
                 //das product hat weder categories noch discounts

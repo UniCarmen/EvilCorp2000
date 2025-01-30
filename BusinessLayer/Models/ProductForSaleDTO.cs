@@ -1,6 +1,5 @@
 ﻿namespace BusinessLayer.Models
 
-//TODO: muss in die UI
 {
     public class ProductForSaleDTO
     {

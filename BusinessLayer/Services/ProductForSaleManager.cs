@@ -4,10 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using DataAccess.Repositories;
 using DataAccess.Entities;
 using BusinessLayer.Models;
+using Microsoft.Extensions.Logging;
 
 namespace BusinessLayer.Services
 {
     //TODO: muss umgeschrieben werden, sodass mit InternalProduct gearbeitet wird, in der UI muss dann zu ProductForSale gemappt werden 
+    //Klasse üerprüfen -> geplante Änderungen, try catches mit
+    //sollte Fehler in die DB schreiben
+    // _logger.LogError(ex, "Fehler beim Verarbeiten von Produkt: {ProductName}", productName);
     public class ProductForSaleManager : IProductForSaleManager
     {
         private readonly IDiscountRepository _discoutRepository;

@@ -2,7 +2,7 @@
 
 namespace BusinessLayer.Models
 {
-    //BL Layer Klasse des Objekts
+    //BL Layer Klasse des Products, wird aber auch in der UI verwendet - theoretisch neue Klasse für UI erstellen
     public class InternalProduct
     {
         public Guid ProductId { get; set; }

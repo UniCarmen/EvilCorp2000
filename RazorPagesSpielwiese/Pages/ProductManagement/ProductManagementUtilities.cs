@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Collections.Generic;
 using EvilCorp2000.UIModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -135,6 +136,14 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
+        private async Task<IActionResult> ExecuteOnDBExceptionCatch(string modelStateError, Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, modelStateError);
+            ShowModal = true;
+            await LoadDataAsync();
+            return Page();
+        }
+
         private async Task<IActionResult> SaveProduct(InternalProduct newProduct, ValidatedProduct validatedProduct)
         {
             try
@@ -148,6 +157,11 @@ namespace EvilCorp2000.Pages.ProductManagement
                 {
                     await _internalProductManager.UpdateProductToStore(newProduct);
                 }
+            }
+
+            catch (DbUpdateException ex)
+            {
+                return await ExecuteOnDBExceptionCatch("Fehler in der Datenbank", ex);
             }
 
             catch (ValidationException ex)

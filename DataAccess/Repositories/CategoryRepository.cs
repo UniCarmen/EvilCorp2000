@@ -1,62 +1,98 @@
 ﻿using DataAccess.DBContexts;
 using DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace DataAccess.Repositories
 {
     public class CategoryRepository : ICategoryRepository
     {
         private readonly EvilCorp2000Context _context;
+        private readonly ILogger<CategoryRepository> _logger;    
 
-        public CategoryRepository(EvilCorp2000Context context)
+        public CategoryRepository(EvilCorp2000Context context, ILogger<CategoryRepository>logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<List<Category>> GetAllCategories()
         {
-            return await _context.Category.AsNoTracking().ToListAsync();
+            try
+            {
+                return await _context.Category.AsNoTracking().ToListAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, $"Datenbankfehler beim Abrufen der Categories");
+                throw;
+            }
         }
 
         public async Task SaveNewCategory(Category category)
         {
-            if (category == null) { throw new ArgumentNullException("keine Productclass"); }
-            _context.Category.Add(category);
-            await _context.SaveChangesAsync();
+            try
+            {
+                if (category == null) { throw new ArgumentNullException("keine Productclass"); }
+                _context.Category.Add(category);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, $"Datenbankfehler beim Speichern der Category mit der ID {category.CategoryId}");
+                throw;
+            }
         }
 
         public async Task UpdateCategories(Product productFromDB, List<Category>categories)
         {
-            var categoriesToRemove = productFromDB.Categories
+            try
+            {
+                var categoriesToRemove = productFromDB.Categories
                     .Where(c => !categories.Any(uc => uc.CategoryId == c.CategoryId))
                     .ToList();
-            foreach (var category in categoriesToRemove)
-            {
-                productFromDB.Categories.Remove(category);
-            }
-            var categoriesToAdd = categories
-                .Where(uc => !productFromDB.Categories.Any(c => c.CategoryId == uc.CategoryId))
-                .ToList();
-            foreach (var category in categoriesToAdd)
-            {
-                productFromDB.Categories.Add(category);
-            }
+                foreach (var category in categoriesToRemove)
+                {
+                    productFromDB.Categories.Remove(category);
+                }
+                var categoriesToAdd = categories
+                    .Where(uc => !productFromDB.Categories.Any(c => c.CategoryId == uc.CategoryId))
+                    .ToList();
+                foreach (var category in categoriesToAdd)
+                {
+                    productFromDB.Categories.Add(category);
+                }
 
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, $"Datenbankfehler beim Updaten der Categories des Produkts mit der ID {productFromDB.ProductId}");
+                throw;
+            }
         }
 
         public async Task DeleteCategory(Category categoryToDelete)
         {
-            if (categoryToDelete == null) { throw new ArgumentNullException("keine Productclass"); }
-
-            var oldClass = await _context.Category.FirstAsync(p => p.CategoryId == categoryToDelete.CategoryId);
-
-            if (oldClass == null)
+            try
             {
-                throw new ArgumentNullException("keine alte Klasse vorhanden");
+                if (categoryToDelete == null) { throw new ArgumentNullException("keine Productclass"); }
+
+                var oldClass = await _context.Category.FirstAsync(p => p.CategoryId == categoryToDelete.CategoryId);
+
+                if (oldClass == null)
+                {
+                    throw new ArgumentNullException("keine alte Klasse vorhanden");
+                }
+                _context.Category.Remove(oldClass);
+                await _context.SaveChangesAsync();
             }
-            _context.Category.Remove(oldClass);
-            await _context.SaveChangesAsync();
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, $"Datenbankfehler beim Löschen der Category mit der ID {categoryToDelete.CategoryId}");
+                throw;
+            }
+
         }
 
         public List<Category> AttachCategoriesIfNeeded(List<Category> categories)

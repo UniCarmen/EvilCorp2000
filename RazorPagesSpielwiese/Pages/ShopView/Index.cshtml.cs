@@ -3,6 +3,8 @@ using BusinessLayer.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using DataAccess.Repositories;
+using EvilCorp2000.UIModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace EvilCorp2000.Pages
 {
@@ -28,10 +30,18 @@ namespace EvilCorp2000.Pages
             {
                 ProductsForSale = await _productForSaleManager.GetProductsForSale();
             }
+            catch (DbUpdateException ex)
+            {
+                ExecuteOnDBExceptionCatch("Fehler in der Datenbank", ex);
+            }
             catch (Exception ex) { _logger.LogError(ex, "Error getting the products from the database"); }
 
         }
 
-
+        private IActionResult ExecuteOnDBExceptionCatch(string modelStateError, Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, modelStateError);
+            return Page();
+        }
     }
 }

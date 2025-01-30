@@ -1,10 +1,18 @@
 using DataAccess.DBContexts;
 using DataAccess.Repositories;
 using BusinessLayer.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog-Konfiguration aus der appsettings.json laden
+builder.Host.UseSerilog((context, config) =>
+{
+    config.ReadFrom.Configuration(context.Configuration);
+});
+
 
 builder.Services.AddDbContext<EvilCorp2000Context>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -34,6 +42,9 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+
+
+app.UseSerilogRequestLogging();
 
 if (!app.Environment.IsDevelopment())
 {

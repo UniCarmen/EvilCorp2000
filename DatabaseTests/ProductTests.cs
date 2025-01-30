@@ -2,6 +2,8 @@ using DataAccess.DBContexts;
 using DataAccess.Entities;
 using DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 
 namespace DatabaseTests
@@ -56,7 +58,8 @@ namespace DatabaseTests
             // Act
             using (var context = new EvilCorp2000Context(_dbContextOptions))
             {
-                var repo = new ProductRepository(context);
+                var logger = NullLogger<ProductRepository>.Instance; // der macht nichts, da auch nichts geloggt werden soll, ich den aber brauche
+                var repo = new ProductRepository(context, logger);
                 var product = await context.Products.Include(p => p.Discounts)
                     .FirstOrDefaultAsync(p => p.ProductName == "Test Product");
 
