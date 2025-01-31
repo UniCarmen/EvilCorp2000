@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - RazorPagesSpielwiese</title>
+    <title>@ViewData["Title"] - EvilCorp2000</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @* <link rel="stylesheet" href="~/EvilCorp2000.styles.css" asp-append-version="true" /> *@
@@ -17,7 +17,7 @@
         <header>
             <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
                 <div class="container">
-                    <a class="navbar-brand" asp-area="" asp-page="/Index">RazorPagesSpielwiese</a>
+                    <a class="navbar-brand" asp-area="" asp-page="/Index">EvilCorp2000</a>
                     @*Zeigt auf kleinen Bildschirmen ein Menu für die beiden unteren Links an*@
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                             aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,19 @@
                             </li>
                         </ul>
                     </div>
+                    @* Für Login und Logout *@
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                    <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                            <button type="submit" class="btn btn-danger">Logout</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-page="/Account/Login" class="btn btn-primary">Login</a>
+                    }
                 </div>
+            
             </nav>
         </header>
         <div class="container">
@@ -46,7 +58,7 @@
 
         <footer class="border-top footer text-muted">
             <div class="container">
-                &copy; 2024 - RazorPagesSpielwiese - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; 2024 - EvilCorp2000 - <a asp-area="" asp-page="/Privacy">Privacy</a>
             </div>
         </footer>
     @* </div> *@

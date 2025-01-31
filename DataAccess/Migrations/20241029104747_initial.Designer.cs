@@ -25,7 +25,7 @@ namespace DataAccess.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("RazorPagesSpielwiese.Entities.Category", b =>
+            modelBuilder.Entity("EvilCorp2000.Entities.Category", b =>
                 {
                     b.Property<Guid>("CategoryId")
                         .ValueGeneratedOnAdd()
@@ -113,7 +113,7 @@ namespace DataAccess.Migrations
                         });
                 });
 
-            modelBuilder.Entity("RazorPagesSpielwiese.Entities.Discount", b =>
+            modelBuilder.Entity("EvilCorp2000.Entities.Discount", b =>
                 {
                     b.Property<Guid>("DiscountId")
                         .ValueGeneratedOnAdd()
@@ -156,7 +156,7 @@ namespace DataAccess.Migrations
                         });
                 });
 
-            modelBuilder.Entity("RazorPagesSpielwiese.Entities.Product", b =>
+            modelBuilder.Entity("EvilCorp2000.Entities.Product", b =>
                 {
                     b.Property<Guid>("ProductId")
                         .ValueGeneratedOnAdd()
@@ -383,7 +383,7 @@ namespace DataAccess.Migrations
                         });
                 });
 
-            modelBuilder.Entity("RazorPagesSpielwiese.Entities.ProductCategoryMapping", b =>
+            modelBuilder.Entity("EvilCorp2000.Entities.ProductCategoryMapping", b =>
                 {
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
@@ -530,9 +530,9 @@ namespace DataAccess.Migrations
                         });
                 });
 
-            modelBuilder.Entity("RazorPagesSpielwiese.Entities.Discount", b =>
+            modelBuilder.Entity("EvilCorp2000.Entities.Discount", b =>
                 {
-                    b.HasOne("RazorPagesSpielwiese.Entities.Product", "Product")
+                    b.HasOne("EvilCorp2000.Entities.Product", "Product")
                         .WithMany("Discounts")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -541,15 +541,15 @@ namespace DataAccess.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("RazorPagesSpielwiese.Entities.ProductCategoryMapping", b =>
+            modelBuilder.Entity("EvilCorp2000.Entities.ProductCategoryMapping", b =>
                 {
-                    b.HasOne("RazorPagesSpielwiese.Entities.Category", "Category")
+                    b.HasOne("EvilCorp2000.Entities.Category", "Category")
                         .WithMany("ProductCategoryMappings")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RazorPagesSpielwiese.Entities.Product", "Product")
+                    b.HasOne("EvilCorp2000.Entities.Product", "Product")
                         .WithMany("ProductCategoryMappings")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -560,12 +560,12 @@ namespace DataAccess.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("RazorPagesSpielwiese.Entities.Category", b =>
+            modelBuilder.Entity("EvilCorp2000.Entities.Category", b =>
                 {
                     b.Navigation("ProductCategoryMappings");
                 });
 
-            modelBuilder.Entity("RazorPagesSpielwiese.Entities.Product", b =>
+            modelBuilder.Entity("EvilCorp2000.Entities.Product", b =>
                 {
                     b.Navigation("Discounts");
 
