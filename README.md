@@ -14,13 +14,10 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 
 ### Programming concepts included 
 * Data is stored in a MS SQL Server DB
-* Seperation of concerns (DAL, BL, UI)
-
+* Seperation of concerns (DAL, BL, UI): different projects (there is still a relic of which I wanted to take care and DTOs which are used in both UI and BL)
+* Errorlogging with Serilog in Console (Debug), File (Warning) and Db (Error)
 
 ### Planned next
-* Cleaning up project
-* UI / BL / DAL in different projects
-* Errorlogging in Db
 * Implementation of Identity - Log In, Log Out
 * ErrorPages - 403 Unauthorized, if not logged in, Link to Mainpage / 404, Link to Mainpage
 * Unit Tests
