@@ -11,6 +11,7 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * Add and delete product discounts
 * Product + Discount Backend Validation
 * Saving and Loading Product Images (path is stored in DB, images in the project as an indermediate step to storing them in a blob storage)
+* Implementation of Identity - Log In, Log Out
 
 ### Programming concepts included 
 * Data is stored in a MS SQL Server DB
@@ -18,7 +19,6 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * Errorlogging with Serilog in Console (Debug), File (Warning) and Db (Error)
 
 ### Planned next
-* Implementation of Identity - Log In, Log Out
 * ErrorPages - 403 Unauthorized, if not logged in, Link to Mainpage / 404, Link to Mainpage
 * Unit Tests
 
