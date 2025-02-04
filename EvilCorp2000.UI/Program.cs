@@ -24,6 +24,11 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 .AddDefaultTokenProviders() //tokenbasierte Features: PasswortR�cksetzung, Emailbest�t. (falls aktiviert), 2FA
 .AddDefaultUI(); //nutzt vorgefertige Login/out/Register seiten
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.ClaimsIdentity.RoleClaimType = "role"; // Stellt sicher, dass die Rollen geladen / verwendet werden
+});
+
 builder.Services.AddAuthorization();
 
 
@@ -131,7 +136,7 @@ app.Run();
 
 
 
-
+//TODO: wenn man das nicht hardcoded, was macht man denn damit???
 async Task CreateRolesAndAdmin(IServiceProvider serviceProvider)
 {
     {
@@ -140,7 +145,7 @@ async Task CreateRolesAndAdmin(IServiceProvider serviceProvider)
         var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>(); //Benutzer anlegen, Rollen zuweisen
 
         //Erstellen der Rollen
-        string[] roles = { "CEOofDoom", "TaskDrone" };
+        string[] roles = { "CEOofDoom", "TaskDrone", "Overseer" };
 
 
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();

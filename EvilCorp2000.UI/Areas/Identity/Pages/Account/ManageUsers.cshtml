@@ -1,0 +1,55 @@
+﻿
+@page
+@model ManageUsersModel
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<h2 class="mb-4">User Management</h2>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h4 class="card-title">Create a New User</h4>
+        <form method="post">
+            <div class="mb-3">
+                <label asp-for="NewUserEmail" class="form-label">User Email</label>
+                <input asp-for="NewUserEmail" class="form-control" placeholder="Enter user email" required /> @* value="@Model.NewUserEmail" *@
+                <span asp-validation-for="NewUserEmail" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="SelectedRole" class="form-label">User Role</label>
+                <select asp-for="SelectedRole" class="form-select">
+                    <option value="TaskDrone" selected>TaskDrone (Default)</option>
+                    <option value="Overseer">Overseer</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" formnovalidate>Create User</button>
+        </form>
+    </div>
+</div>
+
+@if (Model.UsersWithRoles?.Any() == true)
+{
+    <h3 class="mt-5">Existing Users</h3>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mt-3">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.UsersWithRoles)
+                {
+                    <tr>
+                        <td>@user.Email</td>
+                        <td>@user.Role</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

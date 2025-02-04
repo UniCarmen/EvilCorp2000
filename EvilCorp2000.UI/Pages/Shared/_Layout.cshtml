@@ -31,8 +31,23 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-page="/ProductManagement/Index">ProductManagement</a>
                             </li>
+                        @* @if (User.Identity?.IsAuthenticated ?? true && User.IsInRole("CEOofDoom")) *@
+                        @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && c.Value == "CEOofDoom"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/ManageUsers">User Management</a>
+                            </li>
+                        }
+                            
                         </ul>
                     </div>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <p style="color: #000">Angemeldet als: @User.Identity.Name</p>
+                    }
+
+
                     @* Für Login und Logout *@
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
