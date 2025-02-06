@@ -13,11 +13,12 @@ using FluentResults;
 using static EvilCorp2000.Pages.Utilities.Utilities;
 using System.Collections.Generic;
 using EvilCorp2000.UIModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
 
-
+    [Authorize(Roles = "CEOofDoom, Overseer, TaskDrone")]
     public partial class ProductManagementModel : PageModel
     {
         public bool ShowModal { get; set; } = false;
@@ -27,6 +28,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         private readonly IInternalProductManager _internalProductManager;
         private readonly ILogger<ProductManagementModel> _logger;
         private readonly IWebHostEnvironment _environment;
+        private readonly IAuthorizationService _authorizationService;
 
         //TODO: Ich brauche ein UI Objekt, dass genauso aussieht, wie InternalProduct, aber nur in der UI verwendet wird -> UI Service oder so, der Mappings durchführt
         //Evtl auch für Category und DiscountDTO
@@ -388,9 +390,18 @@ namespace EvilCorp2000.Pages.ProductManagement
             return await ReInitializeModalWithProduct(validatedProduct, categoryIds, deserializedDiscounts);
         }
 
-
+        
         public async Task<IActionResult> OnPostDeleteProduct(Guid productId)
         {
+            var authResult = await _authorizationService.AuthorizeAsync(User, "CanDeleteProducts");
+
+            if (authResult == null || !authResult.Succeeded)
+            {
+                //return new ContentResult { Content = "ACCESS DENIED - 403", StatusCode = 403 };
+                return Forbid(); 
+            }
+
+
             try
             {
                 await _internalProductManager.DeleteProduct(productId);

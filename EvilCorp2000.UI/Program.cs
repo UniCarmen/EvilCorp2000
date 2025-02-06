@@ -29,7 +29,11 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.ClaimsIdentity.RoleClaimType = "role"; // Stellt sicher, dass die Rollen geladen / verwendet werden
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("CanDeleteProducts", policy =>
+        policy.RequireRole("Overseer", "CEOofDoom"));
+});
 
 
 // Serilog-Konfiguration aus der appsettings.json laden

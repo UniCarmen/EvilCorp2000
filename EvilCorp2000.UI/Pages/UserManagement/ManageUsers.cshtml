@@ -5,12 +5,20 @@
     ViewData["Title"] = "User Management";
 }
 
+@if (Model.ShowDeletionConfirmation)
+{
+    <div class="custom-modal visible">
+        @await Html.PartialAsync("ConfirmDeletePartial", new ConfirmDeletePartialModel { UserId = Model.UserId, UserEmail = Model.UserEmail })
+    </div> 
+    <div class="custom-modal-overlay"></div>
+}
+
 <h2 class="mb-4">User Management</h2>
 
 <div class="card shadow-sm">
     <div class="card-body">
         <h4 class="card-title">Create a New User</h4>
-        <form method="post">
+        <form method="post" asp-page-handler="NewUser">
             <div class="mb-3">
                 <label asp-for="NewUserEmail" class="form-label">User Email</label>
                 <input asp-for="NewUserEmail" class="form-control" placeholder="Enter user email" required /> @* value="@Model.NewUserEmail" *@
@@ -39,6 +47,7 @@
                 <tr>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Activity</th>
                 </tr>
             </thead>
             <tbody>
@@ -47,9 +56,23 @@
                     <tr>
                         <td>@user.Email</td>
                         <td>@user.Role</td>
+                        <td>
+                            <div class="d-flex justify-content-end">
+                                User löschen
+                                
+                                <form method="post" asp-page-handler="ShowDeletionInformation">
+                                    <input type="hidden" name="UserEmail" value="@user.Email"/>
+                                    <button type="submit" class="btn-close"></button>
+                                </form>
+                            </div>
+                            
+                        </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
 }
+
+
+

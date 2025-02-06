@@ -68,7 +68,9 @@
             <th>Categories</th>
             <th>Rating</th>
             <th>Amount on Stock</th>
-            <th></th>
+            @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && (c.Value == "CEOofDoom" || c.Value == "Overseer")))
+            {<th></th>}
+            
         </tr>
     </thead>
     <tbody>
@@ -127,13 +129,19 @@
                     <td>
                         <p>@product.AmountOnStock</p>
                     </td>
+                    
+                    @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && (c.Value == "CEOofDoom" || c.Value == "Overseer")))
+                    {
                     <td>
                         <form method="post" asp-page-handler="DeleteProduct">
                             <input type="hidden" name="productId" value="@product.ProductId" />
                             <button type="submit" class="btn btn-danger">Delete Product</button>
                         </form>
-
                     </td>
+                    }
+                        
+
+                    
                 </tr>
             }
         }

@@ -1,11 +1,13 @@
+using DataAccess.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 
-namespace EvilCorp2000.Areas.Identity.Pages.Account
+namespace EvilCorp2000.Pages.UserManagement
 {
     [Authorize(Roles = "CEOofDoom")]
     public class ManageUsersModel : PageModel
@@ -19,6 +21,10 @@ namespace EvilCorp2000.Areas.Identity.Pages.Account
         public List<UserWithRole> UsersWithRoles { get; set; } = new();
         [BindProperty] public string SelectedRole { get; set; } = "TaskDrone";
 
+        public bool ShowDeletionConfirmation { get; set; }// = false;
+        [BindProperty] public string UserEmail { get; set; }
+        [BindProperty] public Guid UserId { get; set; }
+
 
         public ManageUsersModel(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, ILogger<ManageUsersModel> logger)
         {
@@ -27,13 +33,11 @@ namespace EvilCorp2000.Areas.Identity.Pages.Account
             _logger = logger;
         }
 
-        
-
-        public async Task<IActionResult> OnGet()
-        {      
+        public async Task LoadDataAsync()
+        {
             try
             {
-                Users = _userManager.Users.ToList();
+                Users = await _userManager.Users.ToListAsync();
 
                 foreach (var user in Users)
                 {
@@ -44,17 +48,51 @@ namespace EvilCorp2000.Areas.Identity.Pages.Account
                         Role = roles.FirstOrDefault()
                     });
                 }
-
-                return Page();
             }
             catch (Exception ex)
             {
-                _logger.LogError("There was a problem getting the users.", ex);
+                _logger.LogError("There was a problem loading the users.", ex);
+            }
+        }
+
+        public async Task<IActionResult> OnGet()
+        {
+            ShowDeletionConfirmation = false;
+            await LoadDataAsync();
+            return Page();
+        }
+
+
+        public async Task<IActionResult> OnPostDeleteUser()
+        {
+            try
+            {
+                if(UserEmail == null)
+                {
+                    ModelState.AddModelError(nameof(UserEmail), "Invalid user.");
+                    return await OnGet();
+                }
+
+                var existingUser = await _userManager.FindByEmailAsync(UserEmail);
+                if (existingUser == null)
+                {
+                    ModelState.AddModelError(nameof(UserEmail), "A user with this email already exists.");
+                    return await OnGet();
+                }
+                var roles = await _userManager.GetRolesAsync(existingUser);
+
+                await _userManager.DeleteAsync(existingUser);
+                //await _userManager.RemoveFromRolesAsync(existingUser, roles);
+                return await OnGet();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("There was a problem deleting the user.", ex);
                 return Page();
             }
         }
 
-        public async Task<IActionResult> OnPost()
+        public async Task<IActionResult> OnPostNewUser()
         {
             try
             {
@@ -97,7 +135,9 @@ namespace EvilCorp2000.Areas.Identity.Pages.Account
                     return await OnGet();
                 }
 
-                // TaskDrone created: drone123@evilcorp2000.com | Password: HDTr+6. 
+                // TaskDrone created: drone123@evilcorp2000.com | Password: HDTr+6 
+                //drone795@evilcorp2000.com | Password: 5-2MdC
+                //Overseer created: overseerBiggs@evilcorp2000.com | Password: D2*c6-
                 else
                 {
                     foreach (var error in result.Errors)
@@ -117,14 +157,26 @@ namespace EvilCorp2000.Areas.Identity.Pages.Account
         }
 
 
-
-
-
-        public class UserWithRole
+        public async Task<IActionResult> OnPostShowDeletionInformation()//(string userEmail)
         {
-            public string Email { get; set; } = string.Empty;
-            public string Role { get; set; } = string.Empty;
+            ModelState.Clear();
+            await LoadDataAsync();
+            ShowDeletionConfirmation = true;
+
+            var existingUser = await _userManager.FindByEmailAsync(UserEmail);
+            UserId = Guid.Parse(existingUser.Id);
+
+            return Page();
         }
+
+        public async Task<IActionResult> OnPostHideDeletionInformation()//(string userEmail)
+        {
+            ModelState.Clear();
+            await LoadDataAsync();
+            //ShowDeletionConfirmation = false; --> nicht nötig, weil standardmäßig auf false
+            return Page();
+        }
+
 
 
         public string GenerateSecurePassword()
@@ -155,6 +207,13 @@ namespace EvilCorp2000.Areas.Identity.Pages.Account
 
             // Passwort durchmischen und als String zurückgeben
             return new string(passwordChars.OrderBy(_ => rnd.Next()).ToArray());
+        }
+
+
+        public class UserWithRole
+        {
+            public string Email { get; set; } = string.Empty;
+            public string Role { get; set; } = string.Empty;
         }
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Collections.Generic;
 using EvilCorp2000.UIModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -192,11 +193,12 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger, IWebHostEnvironment environment)
+        public ProductManagementModel(IInternalProductManager internalProductManager, ILogger<ProductManagementModel> logger, IWebHostEnvironment environment, IAuthorizationService authorizationService)
         {
             _internalProductManager = internalProductManager ?? throw new ArgumentNullException(nameof(internalProductManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _environment = environment;
+            _authorizationService = authorizationService;
         }
     }
 }
