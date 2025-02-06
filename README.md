@@ -11,7 +11,7 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * Add and delete product discounts
 * Product + Discount Backend Validation
 * Saving and Loading Product Images (path is stored in DB, images in the project as an indermediate step to storing them in a blob storage)
-* Implementation of Identity - Log In, Log Out
+* Implementation of Identity - Log In, Log Out with different Roles and authorizations
 
 ### Programming concepts included 
 * Data is stored in a MS SQL Server DB
@@ -32,9 +32,9 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * Produktstate as a Property of Product: aktiv / inaktiv?
 * Change Discounts??
 * Restoration of deleted Discounts / Products - Event Sourcing??
-* Completely Change the New/Alter-Product-Views because it's causing to many problems: These should not be partials
+* Completely Change the New/Alter-Product-Views because it's causing to many problems: These should not be partials / modals
 
 
 ### Known Problems
-* After entering a new Discount, the Modal is refreshed automatically but the fields are still filled
-* Invisible Modal after "exiting" the Modal with Esc-Button
+* After entering a new Discount, the Modal is refreshed automatically but the fields are still filled - could be resolved by getting rid of the modals
+* Invisible Modal after "exiting" the Modal with Esc-Button - could be resolved by getting rid of the modals
