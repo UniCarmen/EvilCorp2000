@@ -3,6 +3,7 @@
 I was desperately in search of an idea for a project I could build. Of course a managing system would come to mind. But wouldn't it be boring to manage books or cakes or that ever ocurring stuff?
 And then I was inspired by a really, really old website (http://www.eviloverlord.com/lists/overlord.html) that has several Evil Overlord Lists that I found quite entertaining in my youth.
 
+The documentation is accessible under /docs/architecture
 
 ### Product Management (still in work)
 Since I don't use JS, a big challenge here is that the product overview opens in a modal written in  a partial.
