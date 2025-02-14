@@ -36,6 +36,14 @@ builder.Services.AddAuthorization(options =>
 
 Dann kannst du sie mit einem **Unit-Test** validieren:
 
+Installiere
+
+```sh
+dotnet add package Microsoft.AspNetCore.Authorization
+dotnet add package Microsoft.Extensions.DependencyInjection
+dotnet add package Microsoft.Extensions.Logging
+´´´
+
 ```csharp
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
