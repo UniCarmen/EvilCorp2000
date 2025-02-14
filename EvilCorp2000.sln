@@ -14,6 +14,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\Da
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLayer", "BusinessLayer\BusinessLayer.csproj", "{949CF9D2-6548-40BA-9172-D199F58AF1CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EvilCorp2000 UI Tests", "EvilCorp2000 UI Tests\EvilCorp2000 UI Tests.csproj", "{268FE64D-AE60-404A-802F-0FF8B8B08C74}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C2040339-765D-402D-871C-56EA6FABEE96} = {C2040339-765D-402D-871C-56EA6FABEE96}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +41,10 @@ Global
 		{949CF9D2-6548-40BA-9172-D199F58AF1CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{949CF9D2-6548-40BA-9172-D199F58AF1CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{949CF9D2-6548-40BA-9172-D199F58AF1CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{268FE64D-AE60-404A-802F-0FF8B8B08C74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{268FE64D-AE60-404A-802F-0FF8B8B08C74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{268FE64D-AE60-404A-802F-0FF8B8B08C74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{268FE64D-AE60-404A-802F-0FF8B8B08C74}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,109 @@
+﻿@page "{code:int?}"
+@model EvilCorp2000.Pages.Error.ErrorNewModel
+
+@{
+    ViewData["Title"] = "Error";
+}
+
+@* 
+@if (Model.StatusCode == 403)
+{
+    <p>Access Denied. You do not have permission to view this page. Ätschibätsch</p>
+    <a href="/" class="btn btn-primary">Go to Home</a>
+}
+else if (Model.StatusCode == 404)
+{
+    <p>The page you requested was not found. (404)</p>
+    <a href="/" class="btn btn-primary">Back to Home</a>
+}
+else
+{
+    <p>An unexpected error occurred.</p>
+}
+ *@
+
+<style>
+    body {
+        background: url('/images/background.jpg') no-repeat center center fixed;
+        background-size: cover;
+        color: white;
+        font-family: 'Arial', sans-serif;
+        text-align: center;
+    }
+
+    .error-container {
+        max-width: 600px;
+        margin: 100px auto;
+        padding: 40px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 10px;
+        box-shadow: 0px 0px 20px rgba(255, 0, 0, 0.5);
+    }
+
+    h1 {
+        font-size: 48px;
+        font-weight: bold;
+        text-shadow: 0px 0px 10px red;
+    }
+
+    p {
+        font-size: 18px;
+        margin-top: 20px;
+    }
+
+    .btn-evil {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        background: red;
+        border: 2px solid darkred;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: 0.3s ease-in-out;
+    }
+
+        .btn-evil:hover {
+            background: darkred;
+            border-color: red;
+            color: black;
+            box-shadow: 0px 0px 10px rgba(255, 0, 0, 0.8);
+        }
+</style>
+
+<div class="error-container">
+    <h1>Error @Model.StatusCode</h1>
+
+    @if (Model.StatusCode == 400)
+    {
+        <p>**BAD REQUEST**</p>
+        <p>Your request was malformed and rejected by the Supreme AI.</p>
+    }
+    else if (Model.StatusCode == 401)
+    {
+        <p>**UNAUTHORIZED**</p>
+        <p>You are not authorized to view this page.</p>
+        
+        <a asp-area="Identity" asp-page="/Account/Login" class="btn-evil">Gain Access</a>
+        <p>or</p>
+    }
+    else if (Model.StatusCode == 403)
+    {
+        <p>**ACCESS DENIED**</p>
+        <p>Your status doesn't allow further proceeding.</p>        
+    }
+    else if (Model.StatusCode == 404)
+    {
+        <p>**PAGE NOT FOUND**</p>
+        <p>The page you seek has vanished into the void. Perhaps it never existed… or it was erased by the **Supreme AI Overlord**.</p>        
+    }
+    else
+    {
+        <p>**AN UNEXPECTED ERROR OCCURRED**</p>
+        <p>The **EvilCorp2000 Mainframe** encountered an anomaly. Perhaps an uprising? Our minions will check upon it.</p>
+        
+    }
+    <a href="/" class="btn-evil">Return to shop</a>
+</div>

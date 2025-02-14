@@ -398,7 +398,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             if (authResult == null || !authResult.Succeeded)
             {
                 //return new ContentResult { Content = "ACCESS DENIED - 403", StatusCode = 403 };
-                return Forbid(); 
+                return RedirectToPage("/Error", new { code = 403 }); //Forbid(); 
             }
 
 

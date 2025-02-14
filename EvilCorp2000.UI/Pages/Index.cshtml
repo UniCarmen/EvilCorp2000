@@ -1,43 +1,4 @@
-﻿@* @page
-@using BusinessLayer.Models
-@model IndexModel
-@{
-    ViewData["Title"] = "Home page";
-    var test = "<b>Hi</b>";
-}
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
-
-<p>@test</p>
-<p>@Html.Raw(test)</p>
-
-
-
-<h2>Products</h2>
-
-@foreach (ProductForSaleDTO product in Model.ProductsForSale)
-{
-    <div>
-        <p>
-            <h5>@product.ProductName.Trim()</h5>
-            @if (@product.Categories.Count != 0)
-            { 
-                var categoryLine = @product.Categories.Aggregate((c1, c2) => c1 + ", " + c2);
-                <b>@categoryLine</b>
-                
-            }
-        </p>
-        <p>@product.Price</p>
-        <p>@product.Description</p>
-    </div>
-    
-
-} *@
-
-@page
+﻿@page
 @model IndexModel
 @{
     ViewData["Title"] = "Villain Shop";

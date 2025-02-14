@@ -64,7 +64,6 @@ builder.Services.AddScoped<IInternalProductManager, InternalProductManager>();
 //    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
 //});
 
-//Serilog hinzuf�gen
 
 builder.Services.AddRazorPages()
     .AddRazorPagesOptions(options =>
@@ -82,12 +81,14 @@ if (!app.Environment.IsDevelopment())
 {
     //Error Handling - unerwartete Fehler
     app.UseExceptionHandler("/Pages/Error");
-    //Weiterleitung bei erwarteten Fehlern
-    app.UseStatusCodePagesWithReExecute("/Pages/Error/{0}"); 
+    //Weiterleitung bei erwarteten Fehlern an benutzerdefinierte Fehlerseiten
+    //app.UseStatusCodePagesWithReExecute("/Pages/ErrorNew/{0}"); 
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
+//Weiterleitung bei erwarteten Fehlern an benutzerdefinierte Fehlerseiten, auch Production
+app.UseStatusCodePagesWithReExecute("/Pages/ErrorNew/{0}");
 
 //F�r die Produktion muss auch ein SSL Zertifikat f�r HTTPS Seiten erstellt werden, z. B. �ber  Let's Encrypt
 //In Dev wird von VS automatisch eins eingerichtet
