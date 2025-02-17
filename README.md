@@ -3,6 +3,7 @@
 I was desperately in search of an idea for a project I could build. Of course a managing system would come to mind. But wouldn't it be boring to manage books or cakes or that ever ocurring stuff?
 And then I was inspired by a really, really old website (http://www.eviloverlord.com/lists/overlord.html) that has several Evil Overlord Lists that I found quite entertaining in my youth.
 
+The documentation is accessible under /docs/architecture.md
 
 ### Product Management (still in work)
 Since I don't use JS, a big challenge here is that the product overview opens in a modal written in  a partial.
@@ -11,7 +12,7 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * Add and delete product discounts
 * Product + Discount Backend Validation
 * Saving and Loading Product Images (path is stored in DB, images in the project as an indermediate step to storing them in a blob storage)
-* Implementation of Identity - Log In, Log Out with different Roles and authorizations
+* Implementation of Identity - Log In, Log Out with different Roles and authorizations, ErrorPages
 
 ### Programming concepts included 
 * Data is stored in a MS SQL Server DB
@@ -19,7 +20,6 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * Errorlogging with Serilog in Console (Debug), File (Warning) and Db (Error)
 
 ### Planned next
-* ErrorPages - 403 Unauthorized, if not logged in, Link to Mainpage / 404, Link to Mainpage
 * Unit Tests
 
 ### Planned in the future
