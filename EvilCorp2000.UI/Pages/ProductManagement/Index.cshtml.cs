@@ -32,7 +32,7 @@ namespace EvilCorp2000.Pages.ProductManagement
 
         //TODO: Ich brauche ein UI Objekt, dass genauso aussieht, wie InternalProduct, aber nur in der UI verwendet wird -> UI Service oder so, der Mappings durchführt
         //Evtl auch für Category und DiscountDTO
-        public List<InternalProduct>? products;
+        public List<ProductManagementProductDTO>? products;
 
         [BindProperty(SupportsGet = true)]
         public IFormFile? ImageFile { get; set; }
@@ -242,7 +242,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        private async Task<IActionResult>AddDiscount(DiscountDTO newDiscount, InternalProduct newProduct, ValidatedProduct validatedProduct, List<InternalProduct> products, List<Guid> categoryIds)
+        private async Task<IActionResult>AddDiscount(DiscountDTO newDiscount, ProductManagementProductDTO newProduct, ValidatedProduct validatedProduct, List<ProductManagementProductDTO> products, List<Guid> categoryIds)
         {
             try
             {

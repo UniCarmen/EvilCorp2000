@@ -7,7 +7,7 @@ namespace EvilCorp2000.Pages.ProductManagement.Partials
 {
     public class ProductDetailsModalPartialModel
     {
-        public InternalProduct Product { get; set; }
+        public ProductManagementProductDTO Product { get; set; }
 
         public void OnGet()
         {

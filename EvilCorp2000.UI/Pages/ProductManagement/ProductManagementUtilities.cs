@@ -145,7 +145,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             return Page();
         }
 
-        private async Task<IActionResult> SaveProduct(InternalProduct newProduct, ValidatedProduct validatedProduct)
+        private async Task<IActionResult> SaveProduct(ProductManagementProductDTO newProduct, ValidatedProduct validatedProduct)
         {
             try
             {

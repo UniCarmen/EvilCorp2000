@@ -24,11 +24,11 @@ namespace BusinessLayer.Services
             _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
-        public async Task<List<InternalProduct>> GetProductsForInternalUse()
+        public async Task<List<ProductManagementProductDTO>> GetProductsForInternalUse()
         {
             var products = await _productRepository.GetAllProductsAsync();
 
-            List<InternalProduct> productsForInternalUse = [];
+            List<ProductManagementProductDTO> productsForInternalUse = [];
 
             foreach (Product product in products)
             {
@@ -40,13 +40,13 @@ namespace BusinessLayer.Services
 
                 var productMapper = new Mappings.ProductMappings();
 
-                productsForInternalUse.Add(productMapper.ProductToProductForInternalUse(product, currentDiscounts, categories));
+                productsForInternalUse.Add(productMapper.ProductToProductManagementProduct(product, currentDiscounts, categories));
             }
 
             return productsForInternalUse;
         }
 
-        public async Task<InternalProduct> GetProductForInternalUse(Guid id)
+        public async Task<ProductManagementProductDTO> GetProductForInternalUse(Guid id)
         {
             var productEntity = await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(id);
 
@@ -65,7 +65,7 @@ namespace BusinessLayer.Services
 
             var productMapper = new Mappings.ProductMappings();
 
-            return productMapper.ProductToProductForInternalUse(productEntity, currentDiscounts, categories);
+            return productMapper.ProductToProductManagementProduct(productEntity, currentDiscounts, categories);
         }
 
         public async Task<List<CategoryDTO>> GetCategories()
@@ -77,7 +77,7 @@ namespace BusinessLayer.Services
         }
 
 
-        public async Task SaveProductToStore(InternalProduct productToStore)
+        public async Task SaveProductToStore(ProductManagementProductDTO productToStore)
         {
             if (productToStore != null)
             {
@@ -96,7 +96,12 @@ namespace BusinessLayer.Services
 
                 categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
 
+                //var newProductEntity= productMapper.MapProductManagementProductDTOToProductEntity(productToStore);
                 await _productRepository.AddProduct(productMapper.ProductToStoreToProductEntity(productToStore, categories, discounts));
+
+                //await _categoryRepository.UpdateCategories(newProductEntity, categories);
+
+                //await _discoutRepository.UpdateDiscounts(newProductEntity, discounts);
             }
             else
             {
@@ -105,7 +110,7 @@ namespace BusinessLayer.Services
         }
 
 
-        public async Task AddDiscount(DiscountDTO discount, InternalProduct productToStore)
+        public async Task AddDiscount(DiscountDTO discount, ProductManagementProductDTO productToStore)
         {
             if (discount == null)
             {
@@ -125,7 +130,7 @@ namespace BusinessLayer.Services
 
         }
 
-        public async Task UpdateProductToStore(InternalProduct productToStore)
+        public async Task UpdateProductToStore(ProductManagementProductDTO productToStore)
         {
             if (productToStore != null)
             {
@@ -148,7 +153,7 @@ namespace BusinessLayer.Services
                 }
 
                 //das product hat weder categories noch discounts
-                var newProductEntity = productMapper.MapProductToStoreDTOToProductEntity(productToStore);
+                var newProductEntity = productMapper.MapProductManagementProductDTOToProductEntity(productToStore);
                 //newProductEntity.Discounts = productFromDB.Discounts;
 
                 await _productRepository.UpdateProduct(newProductEntity, productFromDB);
@@ -214,7 +219,7 @@ namespace BusinessLayer.Services
         //    }
         //}
 
-        public Dictionary<string, string> ValidateProduct(InternalProduct productToStore, bool nameIsUnique)
+        public Dictionary<string, string> ValidateProduct(ProductManagementProductDTO productToStore, bool nameIsUnique)
         {
             var validationErrors = new Dictionary<string, string>();
 

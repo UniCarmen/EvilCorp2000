@@ -6,7 +6,7 @@ namespace EvilCorp2000.Pages.Utilities
 {
     public static class Utilities
     {
-        public static ValidatedProduct CreateValidatedProduct(InternalProduct selectedProduct, List<Guid> categoryIds)
+        public static ValidatedProduct CreateValidatedProduct(ProductManagementProductDTO selectedProduct, List<Guid> categoryIds)
         {
             return new ValidatedProduct
             {
@@ -22,9 +22,9 @@ namespace EvilCorp2000.Pages.Utilities
         }
 
 
-        public static InternalProduct CreateProductToStoreDTO(ValidatedProduct validatedProduct, List<CategoryDTO> categories)
+        public static ProductManagementProductDTO CreateProductToStoreDTO(ValidatedProduct validatedProduct, List<CategoryDTO> categories)
         {
-            return new InternalProduct
+            return new ProductManagementProductDTO
             {
                 ProductName = validatedProduct.ProductName,
                 ProductPicture = validatedProduct.ProductPicture,

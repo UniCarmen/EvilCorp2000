@@ -38,7 +38,8 @@ namespace BusinessLayer.Mappings
 
 
         //for update - brauche ich den Typen ProductToStore eigentlich noch??? veräderung für update direkt im repo
-       public Product MapProductToStoreDTOToProductEntity(InternalProduct productToStore)
+        //categories und discounts werden separat über ein update gespeichert??? warum???
+       public Product MapProductManagementProductDTOToProductEntity(ProductManagementProductDTO productToStore)
         {
             return new Product
             {
@@ -51,8 +52,9 @@ namespace BusinessLayer.Mappings
             };
         }
 
+        //save product, hier werden Categories und Discounts schon in EntityForm mitgegeben
         //Namen ändern?? in neues Product, oder andere Funktionen abändern, dass categorien und Listen separat verändert werden und dann obige Methode verwenden
-        public Product ProductToStoreToProductEntity(InternalProduct productToStore, List<Category> categories, List<Discount> dicsounts)
+        public Product ProductToStoreToProductEntity(ProductManagementProductDTO productToStore, List<Category> categories, List<Discount> dicsounts)
         {
             var newProductId = productToStore.ProductId;
             if (newProductId == Guid.Empty)
@@ -74,9 +76,9 @@ namespace BusinessLayer.Mappings
         }
 
 
-        public InternalProduct ProductToProductForInternalUse(Product product, List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories)
+        public ProductManagementProductDTO ProductToProductManagementProduct(Product product, List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories)
         {
-            return new InternalProduct
+            return new ProductManagementProductDTO
             {
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
