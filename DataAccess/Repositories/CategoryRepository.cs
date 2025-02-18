@@ -29,11 +29,12 @@ namespace DataAccess.Repositories
             }
         }
 
+        //TODO noch nicht implementiert
         public async Task SaveNewCategory(Category category)
         {
             try
             {
-                if (category == null) { throw new ArgumentNullException("keine Productclass"); }
+                if (category == null) { throw new ArgumentNullException("Category is missing"); }
                 _context.Category.Add(category);
                 await _context.SaveChangesAsync();
             }
@@ -44,34 +45,8 @@ namespace DataAccess.Repositories
             }
         }
 
-        public async Task UpdateCategories(Product productFromDB, List<Category>categories)
-        {
-            try
-            {
-                var categoriesToRemove = productFromDB.Categories
-                    .Where(c => !categories.Any(uc => uc.CategoryId == c.CategoryId))
-                    .ToList();
-                foreach (var category in categoriesToRemove)
-                {
-                    productFromDB.Categories.Remove(category);
-                }
-                var categoriesToAdd = categories
-                    .Where(uc => !productFromDB.Categories.Any(c => c.CategoryId == uc.CategoryId))
-                    .ToList();
-                foreach (var category in categoriesToAdd)
-                {
-                    productFromDB.Categories.Add(category);
-                }
 
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                _logger.LogError(ex, $"Datenbankfehler beim Updaten der Categories des Produkts mit der ID {productFromDB.ProductId}");
-                throw;
-            }
-        }
-
+        //TODO noch nicht implementiert, implementieren?
         public async Task DeleteCategory(Category categoryToDelete)
         {
             try
@@ -95,6 +70,7 @@ namespace DataAccess.Repositories
 
         }
 
+
         public List<Category> AttachCategoriesIfNeeded(List<Category> categories)
         {
             var attachedCategories = new List<Category>();
@@ -102,19 +78,19 @@ namespace DataAccess.Repositories
             foreach (var category in categories)
             {
                 var existingCategory = _context.Category
-                    //keine erneute DB Abfrage, sondern Zugriff auf den ChangeTracker
+                    //INFO: keine erneute DB Abfrage, sondern Zugriff auf den ChangeTracker
                     .Local
                     .FirstOrDefault(c => c.CategoryId == category.CategoryId);
 
                 if (existingCategory == null)
                 {
-                    // Hinzufügen, falls Category noch nicht in Liste
+                    //INFO: Hinzufügen, falls Category noch nicht in Liste
                     _context.Attach(category);
                     attachedCategories.Add(category);
                 }
                 else
                 {
-                    // Nur bereits vorhandene Categories in Liste
+                    //INFO: Nur bereits vorhandene Categories in Liste
                     attachedCategories.Add(existingCategory);
                 }
             }

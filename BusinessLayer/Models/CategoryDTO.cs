@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessLayer.Models;
-// wird auch in der UI verwendet - theoretisch neue Klasse für UI erstellen
 public partial class CategoryDTO
 {
     [StringLength(50)]

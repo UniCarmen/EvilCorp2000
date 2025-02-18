@@ -36,27 +36,9 @@ namespace BusinessLayer.Mappings
             };
         }
 
-
-        //for update - brauche ich den Typen ProductToStore eigentlich noch??? veräderung für update direkt im repo
-        //categories und discounts werden separat über ein update gespeichert??? warum???
-       public Product MapProductManagementProductDTOToProductEntity(ProductManagementProductDTO productToStore)
+        public Product ProductManagementProductToProductEntity(ProductManagementProductDTO pmProduct, List<Category> categories, List<Discount> dicsounts)
         {
-            return new Product
-            {
-                ProductId = productToStore.ProductId,
-                ProductName = productToStore.ProductName,
-                ProductPicture = productToStore.ProductPicture,
-                ProductDescription = productToStore.Description,
-                ProductPrice = productToStore.Price,
-                AmountOnStock = productToStore.AmountOnStock
-            };
-        }
-
-        //save product, hier werden Categories und Discounts schon in EntityForm mitgegeben
-        //Namen ändern?? in neues Product, oder andere Funktionen abändern, dass categorien und Listen separat verändert werden und dann obige Methode verwenden
-        public Product ProductToStoreToProductEntity(ProductManagementProductDTO productToStore, List<Category> categories, List<Discount> dicsounts)
-        {
-            var newProductId = productToStore.ProductId;
+            var newProductId = pmProduct.ProductId;
             if (newProductId == Guid.Empty)
             {
                 newProductId = Guid.NewGuid();
@@ -64,14 +46,14 @@ namespace BusinessLayer.Mappings
             return new Product
             {
                 ProductId = newProductId,
-                ProductName = productToStore.ProductName,
-                ProductPicture = productToStore.ProductPicture,
+                ProductName = pmProduct.ProductName,
+                ProductPicture = pmProduct.ProductPicture,
                 Categories = categories,
-                ProductDescription = productToStore.Description,
-                ProductPrice = productToStore.Price,
-                AmountOnStock = productToStore.AmountOnStock,
+                ProductDescription = pmProduct.Description,
+                ProductPrice = pmProduct.Price,
+                AmountOnStock = pmProduct.AmountOnStock,
                 Discounts = dicsounts,
-                Rating = productToStore.Rating
+                Rating = pmProduct.Rating
             };
         }
 

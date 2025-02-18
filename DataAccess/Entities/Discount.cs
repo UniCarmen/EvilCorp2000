@@ -17,6 +17,6 @@ public partial class Discount
     public double DiscountPercentage { get; set; }
 
     public Guid DiscountId { get; set; }
-    //die Product-Entität erst dann aus der Datenbank geladen wird, wenn du auf die Product-Eigenschaft zugreifst.
+    //INFO: Product-Entität wird erst aus der DB geladen, wenn ich auf die Product-Eigenschaft zugreife
     public virtual Product? Product { get; set; }
 }

@@ -18,19 +18,6 @@ namespace DataAccess.Repositories
             _logger = logger;
         }
 
-        public async Task<List<Discount>> GetAllDiscountsAsync()
-        {
-            try
-            {
-                return await _context.Discounts.ToListAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                _logger.LogError(ex, $"Datenbankfehler beim Abrufen der Discounts");
-                throw;
-            }
-        }
-
         public async Task<List<Discount>> GetDiscountsByProductId(Guid productId)
         {
             try
@@ -83,6 +70,10 @@ namespace DataAccess.Repositories
         {
             try 
             {
+                if (productFromDB == null)
+                {
+                    throw new ArgumentNullException(nameof(productFromDB));
+                }
                 var discountsToRemove = productFromDB.Discounts
                 .Where(d => !discounts.Any(ud => ud.DiscountId == d.DiscountId))
                 .ToList();
@@ -100,7 +91,7 @@ namespace DataAccess.Repositories
                     {
                         // Neuer Discount
                         productFromDB.Discounts.Add(updatedDiscount);
-                        //sagt dem EF, dass der Discount geadded werden soll, sonst wird er als modified getrackt und nicht gespeichert.
+                        //INFO: sagt dem EF, dass der Discount geadded werden soll, sonst wird er als modified getrackt und nicht gespeichert.
                         _context.Entry(updatedDiscount).State = EntityState.Added;
                     }
                     else

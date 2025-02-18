@@ -1,13 +1,9 @@
 ﻿using DataAccess.Entities;
 using BusinessLayer.Models;
 using DataAccess.Repositories;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Contracts;
-using Microsoft.Extensions.Logging;
+using BusinessLayer.Mappings;
+using static BusinessLayer.Services.ValidationService;
 
 namespace BusinessLayer.Services
 {
@@ -16,10 +12,16 @@ namespace BusinessLayer.Services
         private readonly IDiscountRepository _discoutRepository;
         private readonly IProductRepository _productRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ProductMappings _productMapper = new();
+        private readonly DiscountMappings _discountMapper = new();
+        private readonly CategoryMappings _categoryMapper = new();
 
-        public InternalProductManager(IDiscountRepository discoutRepository, IProductRepository productRepository, ICategoryRepository categoryRepository)
+        public InternalProductManager(
+            IDiscountRepository discountRepository,
+            IProductRepository productRepository,
+            ICategoryRepository categoryRepository)
         {
-            _discoutRepository = discoutRepository ?? throw new ArgumentNullException(nameof(discoutRepository));
+            _discoutRepository = discountRepository ?? throw new ArgumentNullException(nameof(discountRepository));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
             _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
@@ -32,15 +34,11 @@ namespace BusinessLayer.Services
 
             foreach (Product product in products)
             {
-                var discountMapper = new Mappings.DiscountMappings();
-                var currentDiscounts = product.Discounts.Select(de => discountMapper.DiscountToDiscountDTO(de)).ToList();
+                var currentDiscounts = product.Discounts.Select(de => _discountMapper.DiscountToDiscountDTO(de)).ToList();
 
-                var categorieMapper = new Mappings.CategoryMappings();
-                var categories = product.Categories.Select(c => categorieMapper.CategoryEntityToCategoryModel(c)).ToList();
+                var categories = product.Categories.Select(c => _categoryMapper.CategoryEntityToCategoryModel(c)).ToList();
 
-                var productMapper = new Mappings.ProductMappings();
-
-                productsForInternalUse.Add(productMapper.ProductToProductManagementProduct(product, currentDiscounts, categories));
+                productsForInternalUse.Add(_productMapper.ProductToProductManagementProduct(product, currentDiscounts, categories));
             }
 
             return productsForInternalUse;
@@ -57,56 +55,41 @@ namespace BusinessLayer.Services
 
             var currentDiscountEntities = await _discoutRepository.GetDiscountsByProductId(id);
 
-            var discountMapper = new Mappings.DiscountMappings();
-            var currentDiscounts = currentDiscountEntities.Select(de => discountMapper.DiscountToDiscountDTO(de)).ToList();
+            var currentDiscounts = currentDiscountEntities.Select(de => _discountMapper.DiscountToDiscountDTO(de)).ToList();
 
-            var categorieMapper = new Mappings.CategoryMappings();
-            var categories = productEntity.Categories.Select(c => categorieMapper.CategoryEntityToCategoryModel(c)).ToList();
+            var categories = productEntity.Categories.Select(c => _categoryMapper.CategoryEntityToCategoryModel(c)).ToList();
 
-            var productMapper = new Mappings.ProductMappings();
-
-            return productMapper.ProductToProductManagementProduct(productEntity, currentDiscounts, categories);
+            return _productMapper.ProductToProductManagementProduct(productEntity, currentDiscounts, categories);
         }
 
         public async Task<List<CategoryDTO>> GetCategories()
         {
             var categoryEntities = await _categoryRepository.GetAllCategories();
 
-            var Mapping = new Mappings.CategoryMappings();
-            return categoryEntities.Select(c => Mapping.CategoryEntityToCategoryModel(c)).ToList();
+            return categoryEntities.Select(c => _categoryMapper.CategoryEntityToCategoryModel(c)).ToList();
         }
 
 
         public async Task SaveProductToStore(ProductManagementProductDTO productToStore)
         {
-            if (productToStore != null)
-            {
-                var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName, productToStore.ProductId);
-                ValidateProduct(productToStore, nameIsUnique);
-
-                var productMapper = new Mappings.ProductMappings();
-                var discountMapper = new Mappings.DiscountMappings();
-                var categoryMapper = new Mappings.CategoryMappings();
-
-                var discounts = productToStore.Discounts.Select(d => discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
-
-                var categories = productToStore.Categories.Select(c =>
-                    categoryMapper.CategoryDtoToCategory(c)
-                ).ToList();
-
-                categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
-
-                //var newProductEntity= productMapper.MapProductManagementProductDTOToProductEntity(productToStore);
-                await _productRepository.AddProduct(productMapper.ProductToStoreToProductEntity(productToStore, categories, discounts));
-
-                //await _categoryRepository.UpdateCategories(newProductEntity, categories);
-
-                //await _discoutRepository.UpdateDiscounts(newProductEntity, discounts);
-            }
-            else
+            if (productToStore == null)
             {
                 throw new ArgumentNullException(nameof(productToStore));
             }
+
+            var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName, productToStore.ProductId);
+            ValidateProduct(productToStore, nameIsUnique);
+
+            var discounts = productToStore.Discounts.Select(d => _discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
+
+            var categories = productToStore.Categories.Select(c =>
+                _categoryMapper.CategoryDtoToCategory(c)
+            ).ToList();
+
+            categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
+
+            await _productRepository.AddProduct(_productMapper.ProductManagementProductToProductEntity(productToStore, categories, discounts));
+          
         }
 
 
@@ -119,12 +102,13 @@ namespace BusinessLayer.Services
 
             ValidateDiscountAsync(discount, productToStore.Discounts);
 
-            var discountMapper = new Mappings.DiscountMappings();
-            var newDiscount = discountMapper.SetDiscountId(discount);
+            var newDiscount = _discountMapper.SetDiscountId(discount);
 
             if (productToStore == null)
+            {
                 throw new ArgumentNullException(nameof(productToStore));
-
+            }
+            
             productToStore.Discounts.Add(newDiscount);
             await UpdateProductToStore(productToStore);
 
@@ -132,40 +116,34 @@ namespace BusinessLayer.Services
 
         public async Task UpdateProductToStore(ProductManagementProductDTO productToStore)
         {
-            if (productToStore != null)
-            {
-                var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName, productToStore.ProductId);
-                ValidateProduct(productToStore, nameIsUnique);
-
-                var productMapper = new Mappings.ProductMappings();
-                var discountMapper = new Mappings.DiscountMappings();
-                var categoryMapper = new Mappings.CategoryMappings();
-
-                var discounts = productToStore.Discounts.Select(d => discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
-
-                var categories = productToStore.Categories.Select(c => categoryMapper.CategoryDtoToCategory(c)).ToList();
-
-                var productFromDB = await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(productToStore.ProductId);
-
-                if (productFromDB == null)
-                {
-                    throw new InvalidOperationException(nameof(productFromDB));
-                }
-
-                //das product hat weder categories noch discounts
-                var newProductEntity = productMapper.MapProductManagementProductDTOToProductEntity(productToStore);
-                //newProductEntity.Discounts = productFromDB.Discounts;
-
-                await _productRepository.UpdateProduct(newProductEntity, productFromDB);
-
-                await _categoryRepository.UpdateCategories(productFromDB, categories);
-
-                await _discoutRepository.UpdateDiscounts(productFromDB, discounts);
-            }
-            else
+            if (productToStore == null)
             {
                 throw new ArgumentNullException(nameof(productToStore));
             }
+
+            var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName, productToStore.ProductId);
+            ValidateProduct(productToStore, nameIsUnique);
+
+            var discounts = productToStore.Discounts.Select(d => _discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
+
+            var categories = productToStore.Categories.Select(c => _categoryMapper.CategoryDtoToCategory(c)).ToList();
+
+            var productFromDB = await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(productToStore.ProductId);
+
+            if (productFromDB == null)
+            {
+                throw new InvalidOperationException(nameof(productFromDB));
+            }
+
+            productFromDB.ProductName = productToStore.ProductName;
+            productFromDB.ProductDescription = productToStore.Description;
+            productFromDB.ProductPicture = productToStore.ProductPicture;
+            productFromDB.ProductPrice = productToStore.Price;
+            productFromDB.AmountOnStock = productToStore.AmountOnStock;
+
+            //TODO 1: Warum mache ich das so? -> ein neues Objekt erstellen und damit das DB product updaten?
+            //var newProductEntity = (_productMapper.ProductManagementProductToProductEntity(productToStore, categories, discounts));
+            await _productRepository.UpdateProduct(/*newProductEntity,*/ productFromDB);
         }
 
 
@@ -192,82 +170,6 @@ namespace BusinessLayer.Services
             { throw new ArgumentNullException(nameof(productId)); }
 
             await _productRepository.DeleteProductPicture(productId);
-        }
-
-        //public void ValidateProduct(ProductToStoreDTO productToStore, bool nameIsUnique)
-        //{
-        //    var validationErrors = new List<string>();
-
-        //    if (!nameIsUnique)
-        //    {
-        //        validationErrors.Add("Product name must be unique.");
-        //    }
-
-        //    if (productToStore.Price <= 0.0m)
-        //    {
-        //        validationErrors.Add("Price must be greater than 0.");
-        //    }
-
-        //    if (productToStore.AmountOnStock < 0)
-        //    {
-        //        validationErrors.Add("Amount on stock cannot be negative.");
-        //    }
-
-        //    if (validationErrors.Any())
-        //    {
-        //        throw new ValidationException(string.Join(" ", validationErrors));
-        //    }
-        //}
-
-        public Dictionary<string, string> ValidateProduct(ProductManagementProductDTO productToStore, bool nameIsUnique)
-        {
-            var validationErrors = new Dictionary<string, string>();
-
-            if (!nameIsUnique)
-            {
-                validationErrors.Add("UniqueProductName", "Product name must be unique.");
-            }
-
-            if (productToStore.Price <= 0.0m)
-            {
-                validationErrors.Add("Price", "Price must be greater than 0.");
-            }
-
-            if (productToStore.AmountOnStock < 0)
-            {
-                validationErrors.Add("AmountOnStock", "Amount on stock cannot be negative.");
-            }
-
-            if (validationErrors.Any())
-            {
-                throw new ValidationException(string.Join(";", validationErrors));
-            }
-            return validationErrors;
-        }
-
-
-        public void ValidateDiscountAsync(DiscountDTO discount, List<DiscountDTO> discounts)
-        {
-            var validationErrors = new List<string>();
-
-            if (discount.StartDate < DateTime.Today || discount.EndDate < DateTime.Today)
-                validationErrors.Add("Start and End dates must not be in the past.");
-
-            if (discount.StartDate >= discount.EndDate)
-                validationErrors.Add("End Date must be after Start Date.");
-
-            if (discount.DiscountPercentage <= 0)
-                validationErrors.Add("Discount Percentage must be greater than 0.");
-
-            if (discounts.Any(d => discount.StartDate < d.EndDate && discount.EndDate > d.StartDate))
-            {
-                validationErrors.Add("Discount overlaps with an existing discount.");
-            }
-
-            if (validationErrors.Any())
-            {
-                throw new ValidationException(string.Join(" ", validationErrors));
-            }
         }
     }
 }

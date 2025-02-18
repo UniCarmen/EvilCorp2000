@@ -24,7 +24,6 @@ namespace DataAccess.Repositories
         {
             try
             {
-                //_logger.LogError("Test-Log: Fehler für Repo-Logging.");
                 return await _context.Products.Include(p => p.Categories).Include(c => c.Categories).Include(p => p.Discounts).AsNoTracking().ToListAsync();
             }
             catch (DbUpdateException ex)
@@ -39,10 +38,12 @@ namespace DataAccess.Repositories
             if (id == Guid.Empty) { throw new ArgumentNullException("Invalid Guid"); }
             try
             {
-                return await _context.Products
+                var product = await _context.Products
                     .Include(p => p.Categories)
                     .Include(p => p.Discounts)
                     .Where(p => p.ProductId == id).FirstOrDefaultAsync();
+                if (product == null) { throw new InvalidOperationException(nameof(product)); }
+                return product;
             }
             catch (DbUpdateException ex)
             {
@@ -86,23 +87,17 @@ namespace DataAccess.Repositories
             }
         }
 
-        public async Task UpdateProduct(Product productToStore, Product productFromDB)
+        public async Task UpdateProduct(Product productToBeUpdated)
         {
-            if (productToStore == null || productFromDB == null)
-            { throw new ArgumentNullException(nameof(productToStore)); }
+            if (productToBeUpdated == null)
+            { throw new ArgumentNullException(nameof(productToBeUpdated)); }
             try
             { 
-                productFromDB.ProductName = productToStore.ProductName;
-                productFromDB.ProductDescription = productToStore.ProductDescription;
-                productFromDB.ProductPicture = productToStore.ProductPicture;
-                productFromDB.ProductPrice = productToStore.ProductPrice;
-                productFromDB.AmountOnStock = productToStore.AmountOnStock;
-
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException ex)
 {
-                _logger.LogError(ex, $"Datenbankfehler beim Updaten des Produkts mit ID {productFromDB.ProductId}");
+                _logger.LogError(ex, $"Datenbankfehler beim Updaten des Produkts mit ID {productToBeUpdated.ProductId}");
                 throw;
             }
         }
@@ -112,14 +107,21 @@ namespace DataAccess.Repositories
         {
             try
             {
-                var product = await GetProductById(productId);
+                if (productId.Equals(Guid.Empty))
+                { throw new ArgumentNullException(nameof(productId)); }
 
+                var product = await GetProductById(productId);
+                if (product == null)
+                {
+                    _logger.LogWarning($"Attempted to delete a product that does not exist. ProductId: {productId}");
+                }
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation($"Successfully deleted {product.ProductName} with Id: {productId}.");
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"Datenbankfehler beim Löschen des Produktes mit ID {productId}");
+                _logger.LogError(ex, $"Database error when deleting product with ID {productId}");
                 throw;
             }
         }
@@ -129,7 +131,13 @@ namespace DataAccess.Repositories
         {
             try
             { 
+                if(productId.Equals(Guid.Empty))
+                { throw new ArgumentNullException(nameof(productId)); }
+
                 var product = await GetProductById(productId);
+
+                if(product == null)
+                { throw new InvalidOperationException(nameof(product)); }
 
                 product.ProductPicture = encodedPicture;
 
@@ -147,7 +155,13 @@ namespace DataAccess.Repositories
         {
             try
             {
+                if (productId.Equals(Guid.Empty))
+                { throw new ArgumentNullException(nameof(productId)); }
+
                 var product = await GetProductById(productId);
+
+                if (product == null)
+                { throw new InvalidOperationException(nameof(product)); }
 
                 product.ProductPicture = null;
 
@@ -163,19 +177,16 @@ namespace DataAccess.Repositories
 
         public async Task<bool> IsProductNameUniqueAsync(string name, Guid id)
         {
+            if (string.IsNullOrEmpty(name))
+            { throw new ArgumentNullException(nameof(name)); }
+            
+            //New Product
             if (Guid.Empty == id)
             {
                 return !await _context.Products.AnyAsync(p => p.ProductName == name);
             }
 
-            //wenn nicht Empty, dann müssen alle geprüft werden, die nicht die gleiche ID haben, wie die das producttoStore
-            //ist für das ändern des products, das soll ja auch keine doppelten Namen produzieren, aber auch keinen Fehler werfen, wenn ich das Produkt mit gleichbleibenden 
-            //Namen speichere
-            //var a = _context.Products.ToList();
-            //var p = a.Where(p => p.ProductId != id);
-            //var b = !p.Any(p => p.ProductName == name);
-            //return
-            //    b;
+            //Product alteration
             return !await _context.Products.Where(p => p.ProductId != id).AnyAsync(p => p.ProductName == name);
             
         }

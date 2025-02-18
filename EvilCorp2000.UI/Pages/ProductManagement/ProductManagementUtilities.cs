@@ -127,9 +127,10 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
+        //TODO 1: wenn die Fehler aus der BL / DAL kommen sollen sie dort geloggt werden und nicht in der UI!
         private async Task<IActionResult> ExecuteOnExceptionCatch(string logError, string modelStateError, Exception ex)
         {
-            _logger.LogError(logError, ex);
+            //_logger.LogError(logError, ex);
             ModelState.AddModelError(string.Empty, modelStateError);
             ShowModal = true;
             await LoadDataAsync();
