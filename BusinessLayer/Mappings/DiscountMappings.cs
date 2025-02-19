@@ -7,6 +7,8 @@ namespace BusinessLayer.Mappings
     {
         public DiscountDTO DiscountToDiscountDTO(Discount discount)
         {
+            if(discount == null)
+            { throw new ArgumentNullException (nameof(discount)); }
             return new DiscountDTO
             {
                 DiscountId = discount.DiscountId,
@@ -18,10 +20,20 @@ namespace BusinessLayer.Mappings
 
         public Discount DiscountDTOToDiscount(DiscountDTO discountDTO, Guid productId)
         {
-            Guid discountId = discountDTO.DiscountId;
-            if (discountDTO.DiscountId == Guid.Empty)
+            if(discountDTO == null)
             {
-                discountDTO.DiscountId = Guid.NewGuid();
+                throw new ArgumentNullException(nameof(discountDTO));
+            }
+
+            if(productId == Guid.Empty)
+            {
+                throw new ArgumentException("ProductId cannot be empty", nameof(productId));
+            }
+            
+            Guid discountId = discountDTO.DiscountId;
+            if (discountId == Guid.Empty)
+            {
+                discountId = Guid.NewGuid();
             }
 
             return new Discount
@@ -33,12 +45,5 @@ namespace BusinessLayer.Mappings
                 StartDate = discountDTO.StartDate,
             };
         }
-
-        public DiscountDTO SetDiscountId(DiscountDTO discount)
-        {
-            discount.DiscountId = Guid.NewGuid();
-            return discount;
-        }
-
     }
 }

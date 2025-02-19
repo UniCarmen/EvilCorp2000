@@ -26,6 +26,8 @@ namespace BusinessLayer.Services
             _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
+        //TODO: Nullprüfungen vor den Mappings
+
         public async Task<List<ProductManagementProductDTO>> GetProductsForInternalUse()
         {
             var products = await _productRepository.GetAllProductsAsync();
@@ -102,14 +104,14 @@ namespace BusinessLayer.Services
 
             ValidateDiscountAsync(discount, productToStore.Discounts);
 
-            var newDiscount = _discountMapper.SetDiscountId(discount);
+            discount.DiscountId = Guid.NewGuid();
 
             if (productToStore == null)
             {
                 throw new ArgumentNullException(nameof(productToStore));
             }
             
-            productToStore.Discounts.Add(newDiscount);
+            productToStore.Discounts.Add(discount);
             await UpdateProductToStore(productToStore);
 
         }

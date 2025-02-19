@@ -1,5 +1,6 @@
 ﻿using DataAccess.Entities;
 using BusinessLayer.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BusinessLayer.Mappings
 {
@@ -7,6 +8,9 @@ namespace BusinessLayer.Mappings
     {
         public ProductForSaleDTO ProductToProductForSale(Product productEntity, Discount currentDiscount)
         {
+            if (productEntity == null)
+            { throw new ArgumentNullException (nameof(productEntity)); }
+
             decimal discountedPrice = 0.0m;
             double discountedPercentage;
 
@@ -36,8 +40,14 @@ namespace BusinessLayer.Mappings
             };
         }
 
-        public Product ProductManagementProductToProductEntity(ProductManagementProductDTO pmProduct, List<Category> categories, List<Discount> dicsounts)
+        public Product ProductManagementProductToProductEntity(ProductManagementProductDTO pmProduct, List<Category> categories, List<Discount> discounts)
         {
+            if (pmProduct == null)
+            { throw new ArgumentNullException(nameof(pmProduct)); }
+
+            if(categories.IsNullOrEmpty())
+            {  throw new ArgumentException(nameof(categories)); }
+            
             var newProductId = pmProduct.ProductId;
             if (newProductId == Guid.Empty)
             {
@@ -52,7 +62,7 @@ namespace BusinessLayer.Mappings
                 ProductDescription = pmProduct.Description,
                 ProductPrice = pmProduct.Price,
                 AmountOnStock = pmProduct.AmountOnStock,
-                Discounts = dicsounts,
+                Discounts = discounts,
                 Rating = pmProduct.Rating
             };
         }
@@ -60,6 +70,12 @@ namespace BusinessLayer.Mappings
 
         public ProductManagementProductDTO ProductToProductManagementProduct(Product product, List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories)
         {
+            if (product == null)
+            { throw new ArgumentNullException(nameof(product)); }
+
+            if (categories.IsNullOrEmpty())
+            { throw new ArgumentException(nameof(categories)); }
+
             return new ProductManagementProductDTO
             {
                 ProductId = product.ProductId,

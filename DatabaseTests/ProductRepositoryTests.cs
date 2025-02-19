@@ -8,7 +8,7 @@ using System;
 
 namespace DatabaseTests
 {
-    public class ProductTests
+    public class ProductRepositoryTests
     {
         private EvilCorp2000Context CreateInMemoryDbContext()
         { var options = new DbContextOptionsBuilder<EvilCorp2000Context>()

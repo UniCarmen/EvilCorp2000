@@ -7,6 +7,7 @@ namespace BusinessLayer.Mappings
     {
         public CategoryDTO CategoryEntityToCategoryModel(Category category)
         {
+            if (category == null) throw new ArgumentNullException(nameof(category));
             return new CategoryDTO()
             {
                 CategoryId = category.CategoryId,
@@ -16,6 +17,7 @@ namespace BusinessLayer.Mappings
 
         public Category CategoryDtoToCategory(CategoryDTO category)
         {
+            if (category == null) throw new ArgumentNullException(nameof(category));
             return new Category()
             {
                 CategoryId = category.CategoryId,
