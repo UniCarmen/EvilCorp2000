@@ -1,6 +1,7 @@
 using BusinessLayer.Mappings;
 using BusinessLayer.Models;
 using DataAccess.Entities;
+using static BusinessLayerTests.TestFactory;
 
 namespace BusinessLayerTests
 {
@@ -9,80 +10,6 @@ namespace BusinessLayerTests
         private readonly CategoryMappings _categoryMapper = new();
         private readonly DiscountMappings _discountMapper = new();
         private readonly ProductMappings _productMapper = new();
-
-        public static class TestDataFactory
-        {
-            public static Category CreateCategory(string name)
-            {
-                return new Category
-                {
-                    CategoryId = Guid.NewGuid(),
-                    CategoryName = name
-                };
-            }
-
-            public static CategoryDTO CreateCategoryDTO(string name)
-            {
-                return new CategoryDTO
-                {
-                    CategoryId = Guid.NewGuid(),
-                    CategoryName = name
-                };
-            }
-
-            public static Discount CreateDiscount(double percentage)
-            {
-                return new Discount
-                {
-                    DiscountId = Guid.NewGuid(),
-                    DiscountPercentage = percentage,
-                    StartDate = DateTime.UtcNow,
-                    EndDate = DateTime.UtcNow.AddDays(5)
-                };
-            }
-
-            public static DiscountDTO CreateDiscountDTO(double percentage)
-            {
-                return new DiscountDTO
-                {
-                    DiscountId = Guid.NewGuid(),
-                    DiscountPercentage = percentage,
-                    StartDate = DateTime.UtcNow,
-                    EndDate = DateTime.UtcNow.AddDays(5)
-                };
-            }
-
-            public static Product CreateProduct(string name, decimal price, List<Category> categories = null, List<Discount> discounts = null)
-            {
-                return new Product
-                {
-                    ProductId = Guid.NewGuid(),
-                    ProductName = name,
-                    ProductPrice = price,
-                    ProductDescription = "Test Description",
-                    ProductPicture = "test.jpg",
-                    AmountOnStock = 10,
-                    Categories = categories ?? new List<Category> { CreateCategory("Weapons") },
-                    Discounts = discounts ?? new List<Discount> { CreateDiscount(10) }
-                };
-            }
-
-            public static ProductManagementProductDTO CreateProductManagementDTO(string name, decimal price, List<CategoryDTO> categories = null, List<DiscountDTO> discounts = null)
-            {
-                return new ProductManagementProductDTO
-                {
-                    ProductId = Guid.NewGuid(),
-                    ProductName = name,
-                    Price = price,
-                    Description = "Test Description",
-                    ProductPicture = "test.jpg",
-                    AmountOnStock = 10,
-                    Categories = categories ?? new List<CategoryDTO> { CreateCategoryDTO("Weapons") },
-                    Discounts = discounts ?? new List<DiscountDTO> { CreateDiscountDTO(10) }
-                };
-            }
-        }
-
 
         [Fact]
         public void CategoryEntityToCategoryModel_ShouldMapCorrectly()
