@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using BusinessLayer.Models;
-using static EvilCorp2000.UIModels.NewProductValidations;
+//using static EvilCorp2000.UIModels.NewProductValidations;
 
 namespace EvilCorp2000.UIModels
 {
@@ -40,5 +40,22 @@ namespace EvilCorp2000.UIModels
 
 
         //TODO: Status: Aktiv / nicht aktiv??
+
+        public class GuidListValidationAttribute : ValidationAttribute
+        {
+            //Nullable, weil Validation.Success null repräsentiert... zeigt einfach an, dass die Validierung erfolgreich war
+            protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+            {
+                var list = value as IList<Guid>;
+                if (list == null || !list.Any())
+                {
+                    return new ValidationResult(ErrorMessage);
+                }
+                return ValidationResult.Success;
+            }
+        }
+
     }
+
+
 }

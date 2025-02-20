@@ -16,8 +16,11 @@ namespace EvilCorp2000.Pages.UserManagement
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<ManageUsersModel> _logger;
 
+        //nur für Tests
+        //protected List<IdentityUser> GetUsers() => Users;
+
         [BindProperty] public string NewUserEmail { get; set; } = string.Empty;
-        private List<IdentityUser> Users { get; set; } = new();
+        protected List<IdentityUser> Users { get; set; } = new();
         public List<UserWithRole> UsersWithRoles { get; set; } = new();
         [BindProperty] public string SelectedRole { get; set; } = "TaskDrone";
 
@@ -76,7 +79,7 @@ namespace EvilCorp2000.Pages.UserManagement
                 var existingUser = await _userManager.FindByEmailAsync(UserEmail);
                 if (existingUser == null)
                 {
-                    ModelState.AddModelError(nameof(UserEmail), "A user with this email already exists.");
+                    ModelState.AddModelError(nameof(UserEmail), "User with this email does not exist.");
                     return await OnGet();
                 }
                 var roles = await _userManager.GetRolesAsync(existingUser);

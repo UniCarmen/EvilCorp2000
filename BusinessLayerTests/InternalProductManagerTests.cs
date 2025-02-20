@@ -9,7 +9,7 @@ namespace BusinessLayerTests
 {
     public class InternalProductManagerTests
     {
-        //Moq, um die Repos zu simulieren --> es wird nur die Logik InternalProductManagers getestet
+        //Moq, um die Repos zu simulieren --> es wird nur die Logik des InternalProductManagers getestet
         private readonly Mock<IProductRepository> _productRepositoryMock = new();
         private readonly Mock<IDiscountRepository> _discountRepositoryMock = new();
         private readonly Mock<ICategoryRepository> _categoryRepositoryMock = new();
@@ -34,6 +34,8 @@ namespace BusinessLayerTests
                 TestDataFactory.CreateCompleteProduct()
             };
 
+            //INFO: Setup Methoden sagen, was passieren soll, wenn die RepoFktn aufgerufen werden
+            //ReturnsAsync gibt hier eine Liste zurück, als würde sie aus einer Datenbank kommen
             _productRepositoryMock.Setup(repo => repo.GetAllProductsAsync()).ReturnsAsync(products);
 
             // Act

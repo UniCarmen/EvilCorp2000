@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EvilCorp2000.Pages
 {
+
+    //!!!NOCH KEINE TESTS
+
     public class ShopMainModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;

@@ -14,6 +14,7 @@ using static EvilCorp2000.Pages.Utilities.Utilities;
 using System.Collections.Generic;
 using EvilCorp2000.UIModels;
 using Microsoft.AspNetCore.Authorization;
+using System.Diagnostics;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -112,7 +113,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             SelectedProductId = selectedProductId;
 
             await LoadDataAsync();
-
+            Debug.WriteLine($"Products Count after LoadDataAsync: {products?.Count ?? 0}");
             if (selectedProductId != Guid.Empty)
             {
                 try
@@ -161,6 +162,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         {
             if (!IsModelStateValidForProduct(ValidatedProduct.ProductId))
             {
+
                 ShowModal = true;
                 await LoadDataAsync();
                 return await ReInitializeModalWithProduct(ValidatedProduct, ValidatedProduct.SelectedCategoryIds, ValidatedProduct.Discounts);
@@ -226,6 +228,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             var newSelectedProduct = products.FirstOrDefault(p => p.ProductId == ValidatedProduct.ProductId);
             ValidatedProduct.Discounts = newSelectedProduct.Discounts;
 
+            Debug.WriteLine($"CategoryIdsJson Inhalt: {CategoryIdsJson}");
 
             // get SelectedCategories to fill Fields after Reload of the Modal after Saving the Discount
             (List<Guid> categoryIds, IActionResult? categoryIdsJsonError) =
@@ -384,7 +387,8 @@ namespace EvilCorp2000.Pages.ProductManagement
             }
             catch (Exception ex)
             {
-                return await ExecuteOnExceptionCatch("Error adding the discount.  {0}", "Discount couldn't be added.", ex);
+                _logger.LogError(ex, "Error while saving the uploaded image for product {ProductId}", validatedProduct.ProductId);
+                return await ExecuteOnExceptionCatch("Error adding the picture.  {0}", "Picture couldn't be added.", ex);
             }
 
             return await ReInitializeModalWithProduct(validatedProduct, categoryIds, deserializedDiscounts);

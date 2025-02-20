@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using EvilCorp2000.UIModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using System.Diagnostics;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -58,7 +59,9 @@ namespace EvilCorp2000.Pages.ProductManagement
                 await DeserializeWithTryCatchAsync<List<Guid>>(CategoryIdsJson, "Failed to parse CategoryIds.", "Discount couldn't be added.");
             if (categoryIdsJsonError != null) return categoryIdsJsonError;
 
-            var productCategories = categories.FindAll(c => categoryIds.Exists(id => id == c.CategoryId));
+            //var productCategories = categories.FindAll(c => categoryIds.Exists(id => id == c.CategoryId));
+            var productCategories = categories?.Where(c => categoryIds?.Contains(c.CategoryId) == true).ToList() ?? new List<CategoryDTO>();
+
 
             (ValidatedProduct validatedProduct, IActionResult? validatedProductError) =
                 await DeserializeWithTryCatchAsync<ValidatedProduct>(ValidatedProductJson, "Failed to parse ValidatedProduct.", "Discount couldn't be added.");
@@ -88,18 +91,26 @@ namespace EvilCorp2000.Pages.ProductManagement
             }
         }
 
-
-        private bool IsModelStateValidForProduct(Guid productId)
+        //protected virtual für Test
+        protected virtual bool IsModelStateValidForProduct(Guid productId)
         {
             var keysToValidate = productId == Guid.Empty
                 ? new[] { "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", /*"ValidatedProduct.ProductPicture",*/ "ValidatedProduct.SelectedCategoryIds" }
                 : new[] {/* "DiscountsJson",*/ "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", /*"ValidatedProduct.ProductPicture",*/ "ValidatedProduct.SelectedCategoryIds", "ValidatedProductJson", "CategoryIdsJson" };
 
+            foreach (var key in keysToValidate)
+            {
+                var state = ModelState[key]?.ValidationState;
+                var a = key;
+                var b = state;
+                Debug.WriteLine($" {key}: {state}");
+            }
+
             return keysToValidate.All(key => ModelState[key]?.ValidationState == ModelValidationState.Valid);
         }
 
 
-        private bool IsModelStateIsInvalidForDiscount(ModelStateDictionary modelState)
+        protected virtual bool IsModelStateIsInvalidForDiscount(ModelStateDictionary modelState)
         {
             return modelState["NewDiscount.EndDate"]?.ValidationState != ModelValidationState.Valid ||
                 modelState["NewDiscount.StartDate"]?.ValidationState != ModelValidationState.Valid ||
