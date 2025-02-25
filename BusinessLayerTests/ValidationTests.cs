@@ -76,7 +76,7 @@ namespace BusinessLayerTests
             };
 
             // Act & Assert
-            var exception = Assert.Throws<ValidationException>(() => ValidationService.ValidateDiscountAsync(discount, new List<DiscountDTO>()));
+            var exception = Assert.Throws<ValidationException>(() => ValidationService.ValidateDiscount(discount, new List<DiscountDTO>()));
             Assert.Contains("Start and End dates must not be in the past.", exception.Message);
         }
 
@@ -93,7 +93,7 @@ namespace BusinessLayerTests
             };
 
             // Act & Assert
-            var exception = Assert.Throws<ValidationException>(() => ValidationService.ValidateDiscountAsync(discount, new List<DiscountDTO>()));
+            var exception = Assert.Throws<ValidationException>(() => ValidationService.ValidateDiscount(discount, new List<DiscountDTO>()));
             Assert.Contains("End Date must be after Start Date.", exception.Message);
         }
 
@@ -110,7 +110,7 @@ namespace BusinessLayerTests
             };
 
             // Act & Assert
-            var exception = Assert.Throws<ValidationException>(() => ValidationService.ValidateDiscountAsync(discount, new List<DiscountDTO>()));
+            var exception = Assert.Throws<ValidationException>(() => ValidationService.ValidateDiscount(discount, new List<DiscountDTO>()));
             Assert.Contains("Discount Percentage must be greater than 0.", exception.Message);
         }
 
@@ -138,7 +138,7 @@ namespace BusinessLayerTests
             };
 
             // Act & Assert
-            var exception = Assert.Throws<ValidationException>(() => ValidationService.ValidateDiscountAsync(newDiscount, existingDiscounts));
+            var exception = Assert.Throws<ValidationException>(() => ValidationService.ValidateDiscount(newDiscount, existingDiscounts));
             Assert.Contains("Discount overlaps with an existing discount.", exception.Message);
         }
 
@@ -166,7 +166,7 @@ namespace BusinessLayerTests
             };
 
             // Act & Assert
-            var exception = Record.Exception(() => ValidationService.ValidateDiscountAsync(newDiscount, existingDiscounts));
+            var exception = Record.Exception(() => ValidationService.ValidateDiscount(newDiscount, existingDiscounts));
             Assert.Null(exception);
         }
     }

@@ -50,7 +50,7 @@ namespace BusinessLayer.Services
         /// Discount percentage is greater than 0
         /// </summary>
         /// <returns>A Dictionary with validationErrors</returns>
-        public static void ValidateDiscountAsync(DiscountDTO discount, List<DiscountDTO> discounts)
+        public static void ValidateDiscount(DiscountDTO discount, List<DiscountDTO> discounts)
         {
             var validationErrors = new Dictionary<string, string>();
 

@@ -6,7 +6,7 @@ namespace BusinessLayer.Mappings
 {
     public class ProductMappings
     {
-        public ProductForSaleDTO ProductToProductForSale(Product productEntity, Discount currentDiscount)
+        public ProductForSaleDTO ProductToProductForSaleDto(Product productEntity, Discount currentDiscount)
         {
             if (productEntity == null)
             { throw new ArgumentNullException (nameof(productEntity)); }
@@ -25,6 +25,17 @@ namespace BusinessLayer.Mappings
                 discountedPercentage = 0.0;
             }
 
+            //TODO1: Besser
+            //INFO: ?: Null Conditional Operator. wenn currentDiscount = 0, dann wird DiscountPercentage nicht aufgerufen
+            //INFO: ??: Null Coalescing Operator. Wenn currentDiscount = 0, dann Standardwerd 0.0
+            //INFO: Ansonsten discountPercentage
+            //double discount = currentDiscount?.DiscountPercentage ?? 0.0;
+
+            //INFO: ?: -> ternärer Operator (=if ?=true, :false)
+            //decimal discountedPrice = discount > 0
+            //    ? productEntity.ProductPrice * (decimal)((100 - discount) / 100)
+            //    : 0.0m;
+
             return new ProductForSaleDTO
             {
                 ProductId = productEntity.ProductId,
@@ -40,7 +51,7 @@ namespace BusinessLayer.Mappings
             };
         }
 
-        public Product ProductManagementProductToProductEntity(ProductManagementProductDTO pmProduct, List<Category> categories, List<Discount> discounts)
+        public Product ProductManagementProductDtoToProductEntity(ProductManagementProductDTO pmProduct, List<Category> categories, List<Discount> discounts)
         {
             if (pmProduct == null)
             { throw new ArgumentNullException(nameof(pmProduct)); }
@@ -68,7 +79,7 @@ namespace BusinessLayer.Mappings
         }
 
 
-        public ProductManagementProductDTO ProductToProductManagementProduct(Product product, List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories)
+        public ProductManagementProductDTO ProductToProductManagementProductDto(Product product, List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories)
         {
             if (product == null)
             { throw new ArgumentNullException(nameof(product)); }

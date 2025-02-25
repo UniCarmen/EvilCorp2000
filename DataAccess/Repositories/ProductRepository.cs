@@ -16,7 +16,7 @@ namespace DataAccess.Repositories
         public ProductRepository(EvilCorp2000Context context, ILogger<ProductRepository>logger)
         {
             _context = context;
-            //Logging in DAL, da Db-Fehler nicht explizit an die UI weitergeben werden, bzw. nur ungenau
+            //INFO: Logging in DAL, da Db-Fehler nicht explizit an die UI weitergeben werden, bzw. nur ungenau
             _logger = logger;
         }
 
@@ -24,7 +24,11 @@ namespace DataAccess.Repositories
         {
             try
             {
-                return await _context.Products.Include(p => p.Categories).Include(c => c.Categories).Include(p => p.Discounts).AsNoTracking().ToListAsync();
+                return await _context.Products
+                    .Include(p => p.Categories)
+                    .Include(p => p.Discounts)
+                    .AsNoTracking()
+                    .ToListAsync();
             }
             catch (DbUpdateException ex)
 {
@@ -42,7 +46,7 @@ namespace DataAccess.Repositories
                     .Include(p => p.Categories)
                     .Include(p => p.Discounts)
                     .Where(p => p.ProductId == id).FirstOrDefaultAsync();
-                if (product == null) { throw new InvalidOperationException(nameof(product)); }
+                if (product == null) { throw new KeyNotFoundException(nameof(product)); }
                 return product;
             }
             catch (DbUpdateException ex)
@@ -92,7 +96,10 @@ namespace DataAccess.Repositories
             if (productToBeUpdated == null)
             { throw new ArgumentNullException(nameof(productToBeUpdated)); }
             try
-            { 
+            {
+                //INFO: falls das Product irgendwann untracked wurde, ansonsten kann es sein, dass EF Core die Änderung nicht durchführt
+                //INFO: aktuell sollte es noch getrackt werden
+                _context.Entry(productToBeUpdated).State = EntityState.Modified; 
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException ex)
@@ -114,6 +121,7 @@ namespace DataAccess.Repositories
                 if (product == null)
                 {
                     _logger.LogWarning($"Attempted to delete a product that does not exist. ProductId: {productId}");
+                    throw new InvalidOperationException(nameof(product));
                 }
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
@@ -131,6 +139,7 @@ namespace DataAccess.Repositories
         {
             try
             { 
+                //TODO1 doppelter Code wit bei DeleteProductPicture
                 if(productId.Equals(Guid.Empty))
                 { throw new ArgumentNullException(nameof(productId)); }
 
@@ -179,15 +188,17 @@ namespace DataAccess.Repositories
         {
             if (string.IsNullOrEmpty(name))
             { throw new ArgumentNullException(nameof(name)); }
-            
-            //New Product
-            if (Guid.Empty == id)
-            {
-                return !await _context.Products.AnyAsync(p => p.ProductName == name);
-            }
 
-            //Product alteration
-            return !await _context.Products.Where(p => p.ProductId != id).AnyAsync(p => p.ProductName == name);
+            //INFO: Wenn Name schon vorhanden und es handelt sich um anderes Produkt = !true = nicht Unique
+            //INFO: Wenn Name schon vorhanden und es handelt sich um dasselbe Produkt = !false = Unique
+            return !await _context.Products.AnyAsync(p => p.ProductName == name && p.ProductId != id);
+
+            //Dasselbe wie:
+            //if (Guid.Empty == id)
+            //{
+            //    return !await _context.Products.AnyAsync(p => p.ProductName == name);
+            //}
+            //return !await _context.Products.Where(p => p.ProductId != id).AnyAsync(p => p.ProductName == name);
             
         }
 

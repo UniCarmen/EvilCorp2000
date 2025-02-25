@@ -18,7 +18,7 @@ namespace BusinessLayerTests
             var category = TestDataFactory.CreateCategory("Weapons");
 
             // Act
-            var result = _categoryMapper.CategoryEntityToCategoryModel(category);
+            var result = _categoryMapper.CategoryToCategoryDto(category);
 
             // Assert
             Assert.NotNull(result);
@@ -45,7 +45,7 @@ namespace BusinessLayerTests
         public void CategoryEntityToCategoryModel_ShouldThrowException_WhenInputIsNull()
         {
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _categoryMapper.CategoryEntityToCategoryModel(null));
+            Assert.Throws<ArgumentNullException>(() => _categoryMapper.CategoryToCategoryDto(null));
         }
 
         [Fact]
@@ -141,7 +141,7 @@ namespace BusinessLayerTests
         public void ProductToProductForSale_ShouldThrowException_WhenProductEntityIsNull()
         {
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _productMapper.ProductToProductForSale(null, new Discount()));
+            Assert.Throws<ArgumentNullException>(() => _productMapper.ProductToProductForSaleDto(null, new Discount()));
         }
 
         [Fact]
@@ -153,7 +153,7 @@ namespace BusinessLayerTests
             var discount = TestDataFactory.CreateDiscount(10);
 
             // Act
-            var result = _productMapper.ProductToProductForSale(product, discount);
+            var result = _productMapper.ProductToProductForSaleDto(product, discount);
 
             // Assert
             Assert.NotNull(result);
@@ -168,7 +168,7 @@ namespace BusinessLayerTests
             var product = TestDataFactory.CreateProduct("Test Product", 100, new List<Category> { new Category { CategoryName = "Weapons" } });
 
             // Act
-            var result = _productMapper.ProductToProductForSale(product, null);
+            var result = _productMapper.ProductToProductForSaleDto(product, null);
 
             // Assert
             Assert.Equal(0, result.DiscountedPrice); // Kein Rabatt
@@ -181,7 +181,7 @@ namespace BusinessLayerTests
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() 
-                => _productMapper.ProductManagementProductToProductEntity(null, new List<Category>(), new List<Discount>()));
+                => _productMapper.ProductManagementProductDtoToProductEntity(null, new List<Category>(), new List<Discount>()));
         }
 
         [Fact]
@@ -192,7 +192,7 @@ namespace BusinessLayerTests
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() 
-                => _productMapper.ProductManagementProductToProductEntity(pmProduct, new List<Category>(), new List<Discount>()));
+                => _productMapper.ProductManagementProductDtoToProductEntity(pmProduct, new List<Category>(), new List<Discount>()));
         }
 
         [Fact]
@@ -204,7 +204,7 @@ namespace BusinessLayerTests
             var discounts = new List<Discount>();
 
             // Act
-            var result = _productMapper.ProductManagementProductToProductEntity(pmProduct, categories, discounts);
+            var result = _productMapper.ProductManagementProductDtoToProductEntity(pmProduct, categories, discounts);
 
             // Assert
             Assert.NotEqual(Guid.Empty, result.ProductId);
@@ -214,7 +214,7 @@ namespace BusinessLayerTests
         public void ProductToProductManagementProduct_ShouldThrowException_WhenProductIsNull()
         {
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _productMapper.ProductToProductManagementProduct(null, new List<DiscountDTO>(), new List<CategoryDTO>()));
+            Assert.Throws<ArgumentNullException>(() => _productMapper.ProductToProductManagementProductDto(null, new List<DiscountDTO>(), new List<CategoryDTO>()));
         }
 
         [Fact]
@@ -224,7 +224,7 @@ namespace BusinessLayerTests
             var product = new Product { ProductId = Guid.NewGuid(), ProductName = "Test" };
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => _productMapper.ProductToProductManagementProduct(product, new List<DiscountDTO>(), new List<CategoryDTO>()));
+            Assert.Throws<ArgumentException>(() => _productMapper.ProductToProductManagementProductDto(product, new List<DiscountDTO>(), new List<CategoryDTO>()));
         }
 
         [Fact]
@@ -237,7 +237,7 @@ namespace BusinessLayerTests
             var discounts = new List<DiscountDTO>();
 
             // Act
-            var result = _productMapper.ProductToProductManagementProduct(product, discounts, categories);
+            var result = _productMapper.ProductToProductManagementProductDto(product, discounts, categories);
 
             // Assert
             Assert.NotNull(result);

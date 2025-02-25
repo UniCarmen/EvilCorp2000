@@ -74,6 +74,15 @@ namespace DataAccess.Repositories
                 {
                     throw new ArgumentNullException(nameof(productFromDB));
                 }
+                //INFO: alle weg, die NICHT in der neuen DiscountListe vorhanden sind, kann bei vielen Disounts ineffizient werden
+                //INFO: effektiver wäre die Verwendung eines HashSets (für Lookup optimiert)
+                //INFO: verstehen wäre gut.
+                //var updatedDiscountIds = discounts.Select(d => d.DiscountId).ToHashSet();
+
+                //var discountsToRemove = productFromDB.Discounts
+                //    .Where(d => !updatedDiscountIds.Contains(d.DiscountId))
+                //    .ToList();
+
                 var discountsToRemove = productFromDB.Discounts
                 .Where(d => !discounts.Any(ud => ud.DiscountId == d.DiscountId))
                 .ToList();
@@ -130,5 +139,62 @@ namespace DataAccess.Repositories
         }
 
 
+        //TODO1: try catches in generische Funktionen auslagern!, evtl. umbennennen: ExecuteWithLoggingAsync
+
+        //private async Task<T> ExecuteDbOperationAsync<T>(Func<Task<T>> operation, string errorMessage)
+        //{
+        //    try
+        //    {
+        //        return await operation();
+        //    }
+        //    catch (DbUpdateException ex)
+        //    {
+        //        _logger.LogError(ex, errorMessage);
+        //        throw;
+        //    }
+        //}
+
+        //private async Task ExecuteDbOperationAsync(Func<Task> operation, string errorMessage)
+        //{
+        //    try
+        //    {
+        //        await operation();
+        //    }
+        //    catch (DbUpdateException ex)
+        //    {
+        //        _logger.LogError(ex, errorMessage);
+        //        throw;
+        //    }
+        //}
+
+        //TODO1: Bsp neue DeleteMethode:
+        //public async Task DeleteDiscount(Discount discount)
+        //{
+        //    if (discount == null) { throw new ArgumentNullException(nameof(discount)); }
+
+        //    await ExecuteDbOperationAsync(async () =>
+        //    {
+        //        var existingDiscount = await _context.Discounts.FirstOrDefaultAsync(d => d.DiscountId == discount.DiscountId);
+        //        if (existingDiscount == null)
+        //        {
+        //            _logger.LogWarning($"Discount mit ID {discount.DiscountId} nicht gefunden.");
+        //            return;
+        //        }
+
+        //        _context.Discounts.Remove(existingDiscount);
+        //        await _context.SaveChangesAsync();
+        //    }, $"Datenbankfehler beim Löschen des Discounts mit ID {discount.DiscountId}");
+        //}
+
+        //TODO1: Bsp neue GetDiscountsByProductId (mit Rückgabewert):
+        //public async Task<List<Discount>> GetDiscountsByProductId(Guid productId)
+        //{
+        //    if (productId == Guid.Empty) throw new ArgumentException("ProductId cannot be empty", nameof(productId));
+
+        //    return await ExecuteDbOperationAsync(
+        //        async () => await _context.Discounts.Where(p => p.ProductId == productId).ToListAsync(),
+        //        $"Datenbankfehler beim Abrufen der Discounts für Produkt ID {productId}"
+        //    );
+        //}
     }
 }

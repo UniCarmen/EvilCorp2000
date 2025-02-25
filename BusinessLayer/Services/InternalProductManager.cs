@@ -34,13 +34,14 @@ namespace BusinessLayer.Services
 
             List<ProductManagementProductDTO> productsForInternalUse = [];
 
+            //TODO1: LINQ!
             foreach (Product product in products)
             {
                 var currentDiscounts = product.Discounts.Select(de => _discountMapper.DiscountToDiscountDTO(de)).ToList();
 
-                var categories = product.Categories.Select(c => _categoryMapper.CategoryEntityToCategoryModel(c)).ToList();
+                var categories = product.Categories.Select(c => _categoryMapper.CategoryToCategoryDto(c)).ToList();
 
-                productsForInternalUse.Add(_productMapper.ProductToProductManagementProduct(product, currentDiscounts, categories));
+                productsForInternalUse.Add(_productMapper.ProductToProductManagementProductDto(product, currentDiscounts, categories));
             }
 
             return productsForInternalUse;
@@ -49,9 +50,12 @@ namespace BusinessLayer.Services
         public async Task<ProductManagementProductDTO> GetProductForInternalUse(Guid id)
         {
             var productEntity = await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(id);
+            //TODO1: KeyNotFoundException, da ein Null-Product ein loguscher Fehler ist, kein fehlerhafter Parameter - noch woanders?
+            //TODO1: direkt bei productEntity mit ?? throw new, damit der Fehler gleich abgefangen wird
 
             if (productEntity == null)
             {
+                
                 throw new ArgumentNullException(nameof(productEntity));
             }
 
@@ -59,16 +63,16 @@ namespace BusinessLayer.Services
 
             var currentDiscounts = currentDiscountEntities.Select(de => _discountMapper.DiscountToDiscountDTO(de)).ToList();
 
-            var categories = productEntity.Categories.Select(c => _categoryMapper.CategoryEntityToCategoryModel(c)).ToList();
+            var categories = productEntity.Categories.Select(c => _categoryMapper.CategoryToCategoryDto(c)).ToList();
 
-            return _productMapper.ProductToProductManagementProduct(productEntity, currentDiscounts, categories);
+            return _productMapper.ProductToProductManagementProductDto(productEntity, currentDiscounts, categories);
         }
 
         public async Task<List<CategoryDTO>> GetCategories()
         {
             var categoryEntities = await _categoryRepository.GetAllCategories();
 
-            return categoryEntities.Select(c => _categoryMapper.CategoryEntityToCategoryModel(c)).ToList();
+            return categoryEntities.Select(c => _categoryMapper.CategoryToCategoryDto(c)).ToList();
         }
 
 
@@ -90,7 +94,7 @@ namespace BusinessLayer.Services
 
             categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
 
-            await _productRepository.AddProduct(_productMapper.ProductManagementProductToProductEntity(productToStore, categories, discounts));
+            await _productRepository.AddProduct(_productMapper.ProductManagementProductDtoToProductEntity(productToStore, categories, discounts));
           
         }
 
@@ -102,7 +106,7 @@ namespace BusinessLayer.Services
                 throw new ArgumentNullException(nameof(discount));
             }
 
-            ValidateDiscountAsync(discount, productToStore.Discounts);
+            ValidateDiscount(discount, productToStore.Discounts);
 
             discount.DiscountId = Guid.NewGuid();
 
@@ -152,7 +156,7 @@ namespace BusinessLayer.Services
         public async Task DeleteProduct (Guid productId)
         {
             if (productId == Guid.Empty)
-            { throw new ArgumentNullException(nameof(productId)); }
+            { throw new ArgumentException("Ungültige Produkt-ID.", nameof(productId)); }
             await _productRepository.DeleteProduct(productId);
         }
 

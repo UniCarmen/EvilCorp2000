@@ -50,7 +50,7 @@ namespace BusinessLayer.Services
 
                 var productMapper = new Mappings.ProductMappings();
 
-                productsForSale.Add(productMapper.ProductToProductForSale(product, currentDiscount));
+                productsForSale.Add(productMapper.ProductToProductForSaleDto(product, currentDiscount));
             }
 
             return productsForSale;
@@ -73,7 +73,7 @@ namespace BusinessLayer.Services
 
             var productMapper = new Mappings.ProductMappings();
 
-            return productMapper.ProductToProductForSale(productEntity, currentDiscount);
+            return productMapper.ProductToProductForSaleDto(productEntity, currentDiscount);
         }
     }
 }
