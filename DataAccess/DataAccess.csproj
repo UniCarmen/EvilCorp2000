@@ -21,4 +21,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Shared.Utilities\Shared.Utilities.csproj" />
+    <ProjectReference Include="..\Shart.Utilities\Shared.Utilities.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -34,7 +34,7 @@ namespace BusinessLayer.Mappings
         //INFO: bei Werttypen steht T? in den Parametern
 
         //INFO: für Reftypen: string, eigene Objekte
-        private static T ThrowExceptionWhenNull<T> (T value, string parameterName) where T: class
+        private static T ThrowExceptionWhenNull<T> (T value, Exception exception, string parameterName) where T: class
         {
             //INFO: gibt entweder den Eingangwert zurück oder wirft einen Fehler, falls es keinen gibt = null
             return value ?? throw new ArgumentNullException(nameof(parameterName));
@@ -45,5 +45,7 @@ namespace BusinessLayer.Mappings
         {
             return value ?? throw new ArgumentNullException(paramName);
         }
+
+        
     }
 }

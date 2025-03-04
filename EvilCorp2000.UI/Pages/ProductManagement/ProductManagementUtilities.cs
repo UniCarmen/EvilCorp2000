@@ -201,6 +201,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             }
 
             ShowModal = false;
+
             return RedirectToPage();
         }
 

@@ -3,6 +3,7 @@ using DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
+using Shared.Utilities;
 using System.Linq.Expressions;
 using System.Runtime.ConstrainedExecution;
 
@@ -32,53 +33,56 @@ namespace DataAccess.Repositories
             }
             catch (DbUpdateException ex)
 {
-                _logger.LogError(ex, $"Datenbankfehler beim Abrufen der Produkte");
+                _logger.LogError(ex, $"Database error while getting the products");
                 throw;
             }
         }
 
-        public async Task<Product?> GetProductByIdWithCategoriesAnsdDiscounts(Guid id)
+        //INFO: Product ist nullable, damit die Methode weiß, dass etwas nullable zurückgegeben werden kann
+        //INFO: Der Aufrufer entscheidet, was passiert, wenn Null kommt -> Business-Entscheidung.
+        public async Task<Product?> GetProductByIdWithCategoriesAnsdDiscounts(Guid productId)
         {
-            if (id == Guid.Empty) { throw new ArgumentNullException("Invalid Guid"); }
+            productId = Utilities.ThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
+
             try
             {
                 var product = await _context.Products
+                    //.AsNoTracking()
                     .Include(p => p.Categories)
                     .Include(p => p.Discounts)
-                    .Where(p => p.ProductId == id).FirstOrDefaultAsync();
-                if (product == null) { throw new KeyNotFoundException(nameof(product)); }
+                    //.AsNoTracking()
+                    .Where(p => p.ProductId == productId).FirstOrDefaultAsync();
                 return product;
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"Datenbankfehler beim Abrufen des Produkts mit der ID {id}");
+                _logger.LogError(ex, $"Database error while getting product with id {productId}");
                 throw;
             }
         }
 
-        public async Task<Product> GetProductById (Guid productId)
+        public async Task<Product?> GetProductById (Guid productId)
         {
-            if (productId == Guid.Empty) { throw new ArgumentNullException(nameof(productId)); }
+            productId = Utilities.ThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
 
             try
             {
                 var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
 
-                if (product == null) { throw new InvalidOperationException(nameof(product)); }
-
                 return product;
             }
 
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"Datenbankfehler beim Abrufen des Produkts mit der ID {productId}");
+                _logger.LogError(ex, $"Database error while getting product with id {productId}");
                 throw;
             }
         }
 
         public async Task AddProduct(Product product)
         {
-            if (product == null) { throw new ArgumentNullException(nameof(product)); }
+            product = Utilities.ThrowExceptionWhenNull(product, "Product is null.");
+            
             try
             {
                 _context.Products.Add(product);
@@ -86,15 +90,15 @@ namespace DataAccess.Repositories
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"Datenbankfehler beim Hinzufügen des Produkts {product.ProductName}");
+                _logger.LogError(ex, $"Database error while adding product with id {product.ProductId}");
                 throw;
             }
         }
 
         public async Task UpdateProduct(Product productToBeUpdated)
         {
-            if (productToBeUpdated == null)
-            { throw new ArgumentNullException(nameof(productToBeUpdated)); }
+            productToBeUpdated = Utilities.ThrowExceptionWhenNull(productToBeUpdated, "Product that should be updated is null");
+            
             try
             {
                 //INFO: falls das Product irgendwann untracked wurde, ansonsten kann es sein, dass EF Core die Änderung nicht durchführt
@@ -104,7 +108,7 @@ namespace DataAccess.Repositories
             }
             catch (DbUpdateException ex)
 {
-                _logger.LogError(ex, $"Datenbankfehler beim Updaten des Produkts mit ID {productToBeUpdated.ProductId}");
+                _logger.LogError(ex, $"Database error while updating product with id {productToBeUpdated.ProductId}");
                 throw;
             }
         }
@@ -114,22 +118,15 @@ namespace DataAccess.Repositories
         {
             try
             {
-                if (productId.Equals(Guid.Empty))
-                { throw new ArgumentNullException(nameof(productId)); }
+                var product = await GetProduct(productId, ($"Product does not exist. ProductId: {productId}"));
 
-                var product = await GetProductById(productId);
-                if (product == null)
-                {
-                    _logger.LogWarning($"Attempted to delete a product that does not exist. ProductId: {productId}");
-                    throw new InvalidOperationException(nameof(product));
-                }
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Successfully deleted {product.ProductName} with Id: {productId}.");
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"Database error when deleting product with ID {productId}");
+                _logger.LogError(ex, $"Database error while deleting product with ID {productId}");
                 throw;
             }
         }
@@ -138,15 +135,8 @@ namespace DataAccess.Repositories
         public async Task SaveProductPicture(Guid productId, string encodedPicture)
         {
             try
-            { 
-                //TODO1 doppelter Code wit bei DeleteProductPicture
-                if(productId.Equals(Guid.Empty))
-                { throw new ArgumentNullException(nameof(productId)); }
-
-                var product = await GetProductById(productId);
-
-                if(product == null)
-                { throw new InvalidOperationException(nameof(product)); }
+            {
+                var product = await GetProduct(productId, ($"Product does not exist. ProductId: {productId}"));
 
                 product.ProductPicture = encodedPicture;
 
@@ -154,9 +144,23 @@ namespace DataAccess.Repositories
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"Datenbankfehler beim Speichern des Bilder für das Produkt mit ID {productId}");
+                _logger.LogError(ex, $"Database error while saving the picture for product with id {productId}");
                 throw;
             }
+        }
+
+        public async Task<Product> GetProduct(Guid productId, string errorMessage)
+        {
+            productId = Utilities.ThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
+
+            var product = await GetProductById(productId);
+
+            if (product == null)
+            {
+                _logger.LogWarning(errorMessage);
+                throw new ArgumentNullException(errorMessage);
+            }
+            return product;
         }
 
 
@@ -164,13 +168,16 @@ namespace DataAccess.Repositories
         {
             try
             {
-                if (productId.Equals(Guid.Empty))
-                { throw new ArgumentNullException(nameof(productId)); }
+                productId = Utilities.ThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
 
                 var product = await GetProductById(productId);
 
                 if (product == null)
-                { throw new InvalidOperationException(nameof(product)); }
+                {
+                    var errorMessage = "Product from database is null";
+                    _logger.LogWarning(errorMessage);
+                    throw new ArgumentNullException(errorMessage);
+                }
 
                 product.ProductPicture = null;
 
@@ -178,7 +185,7 @@ namespace DataAccess.Repositories
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"Datenbankfehler beim Löschen des Bildes für das Produkts mit ID {productId}");
+                _logger.LogError(ex, $"Database error while deleting picture for product with id {productId}");
                 throw;
             }
         }

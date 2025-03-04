@@ -18,7 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EvilCorp2000.UI\EvilCorp2000.csproj" />
+    <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+    <ProjectReference Include="..\Shart.Utilities\Shared.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

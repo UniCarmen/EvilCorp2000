@@ -3,6 +3,7 @@ using DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
+using Shared.Utilities;
 using System.ComponentModel.DataAnnotations;
 
 namespace DataAccess.Repositories
@@ -22,21 +23,22 @@ namespace DataAccess.Repositories
         {
             try
             {
-                if (productId == Guid.Empty) { throw new ArgumentNullException("Invalid Guid"); }
+                productId = Utilities.ThrowExceptionWhenDefault(productId, $"Invalid productId {productId}.");
                 return await _context.Discounts.Where(p => p.ProductId == productId).ToListAsync();
             }
             catch (DbUpdateException ex)
 {
-                _logger.LogError(ex, $"Datenbankfehler beim Abrufen des Discounts des Produkts mit der ID {productId}");
+                _logger.LogError(ex, $"Database error trying to get product with id {productId}");
                 throw;
             }
         }
 
-        public async Task<Discount> GetCurrentDiscountByProductId(Guid productId)
+        public async Task<Discount?> GetCurrentDiscountByProductId(Guid productId)
         {
             try
             {
-                if (productId == Guid.Empty) { throw new ArgumentNullException("Invalid Guid"); }
+                productId = Utilities.ThrowExceptionWhenDefault(productId, $"Invalid productId {productId}.");
+                //if (productId == Guid.Empty) { throw new ArgumentException("Invalid Guid"); }
                 return await _context.Discounts.
                     Where(p =>
                     p.ProductId == productId &&
@@ -46,7 +48,7 @@ namespace DataAccess.Repositories
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"Datenbankfehler beim Abrufen des Discounts des Produkts mit der ID {productId}");
+                _logger.LogError(ex, $"Database error trying to get product with id {productId}");
                 throw;
             }
         }
@@ -55,13 +57,14 @@ namespace DataAccess.Repositories
         {
             try
             {
-                if (discount == null) { throw new ArgumentNullException(nameof(discount)); }
+                discount = Utilities.ThrowExceptionWhenNull(discount, "Discount is null.");
+                //if (discount == null) { throw new ArgumentNullException(nameof(discount)); }
                 _context.Discounts.Add(discount);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"Datenbankfehler beim Speichern des Discounts mit dem Startdatum {discount.StartDate}");
+                _logger.LogError(ex, $"Database error trying to save discount with id{discount.DiscountId}, starting date {discount.StartDate}, productId {discount.DiscountId}");
                 throw;
             }
         }
@@ -70,10 +73,8 @@ namespace DataAccess.Repositories
         {
             try 
             {
-                if (productFromDB == null)
-                {
-                    throw new ArgumentNullException(nameof(productFromDB));
-                }
+                productFromDB = Utilities.ThrowExceptionWhenNull(productFromDB, "Product from DB is null.");
+                
                 //INFO: alle weg, die NICHT in der neuen DiscountListe vorhanden sind, kann bei vielen Disounts ineffizient werden
                 //INFO: effektiver wäre die Verwendung eines HashSets (für Lookup optimiert)
                 //INFO: verstehen wäre gut.
@@ -84,8 +85,9 @@ namespace DataAccess.Repositories
                 //    .ToList();
 
                 var discountsToRemove = productFromDB.Discounts
-                .Where(d => !discounts.Any(ud => ud.DiscountId == d.DiscountId))
-                .ToList();
+                    .Where(d => !discounts.Any(ud => ud.DiscountId == d.DiscountId))
+                    .ToList();
+
                 foreach (var discount in discountsToRemove)
                 {
                     productFromDB.Discounts.Remove(discount);
@@ -118,7 +120,7 @@ namespace DataAccess.Repositories
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"Datenbankfehler beim Updaten der Discounts des Produkts mit der ID {productFromDB.ProductId}");
+                _logger.LogError(ex, $"Database error trying to update discounts of product with id{productFromDB.ProductId}");
                 throw;
             }
         }
@@ -127,74 +129,16 @@ namespace DataAccess.Repositories
         {
             try
             {
-                if (discount == null) { throw new ArgumentNullException(nameof(discount)); }
+                discount = Utilities.ThrowExceptionWhenNull(discount, "Discount was null.");
                 _context.Discounts.Remove(discount);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation($"Successfully deleted {discount.DiscountId} with starting date {discount.StartDate} from product {discount.ProductId}.");
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, $"Datenbankfehler beim Löschen des Discounts mit der ID {discount.ProductId}");
+                _logger.LogError(ex, $"Database error trying to delete discount of product with id{discount.ProductId}, productId {discount.ProductId}");
                 throw;
             }
         }
-
-
-        //TODO1: try catches in generische Funktionen auslagern!, evtl. umbennennen: ExecuteWithLoggingAsync
-
-        //private async Task<T> ExecuteDbOperationAsync<T>(Func<Task<T>> operation, string errorMessage)
-        //{
-        //    try
-        //    {
-        //        return await operation();
-        //    }
-        //    catch (DbUpdateException ex)
-        //    {
-        //        _logger.LogError(ex, errorMessage);
-        //        throw;
-        //    }
-        //}
-
-        //private async Task ExecuteDbOperationAsync(Func<Task> operation, string errorMessage)
-        //{
-        //    try
-        //    {
-        //        await operation();
-        //    }
-        //    catch (DbUpdateException ex)
-        //    {
-        //        _logger.LogError(ex, errorMessage);
-        //        throw;
-        //    }
-        //}
-
-        //TODO1: Bsp neue DeleteMethode:
-        //public async Task DeleteDiscount(Discount discount)
-        //{
-        //    if (discount == null) { throw new ArgumentNullException(nameof(discount)); }
-
-        //    await ExecuteDbOperationAsync(async () =>
-        //    {
-        //        var existingDiscount = await _context.Discounts.FirstOrDefaultAsync(d => d.DiscountId == discount.DiscountId);
-        //        if (existingDiscount == null)
-        //        {
-        //            _logger.LogWarning($"Discount mit ID {discount.DiscountId} nicht gefunden.");
-        //            return;
-        //        }
-
-        //        _context.Discounts.Remove(existingDiscount);
-        //        await _context.SaveChangesAsync();
-        //    }, $"Datenbankfehler beim Löschen des Discounts mit ID {discount.DiscountId}");
-        //}
-
-        //TODO1: Bsp neue GetDiscountsByProductId (mit Rückgabewert):
-        //public async Task<List<Discount>> GetDiscountsByProductId(Guid productId)
-        //{
-        //    if (productId == Guid.Empty) throw new ArgumentException("ProductId cannot be empty", nameof(productId));
-
-        //    return await ExecuteDbOperationAsync(
-        //        async () => await _context.Discounts.Where(p => p.ProductId == productId).ToListAsync(),
-        //        $"Datenbankfehler beim Abrufen der Discounts für Produkt ID {productId}"
-        //    );
-        //}
     }
 }

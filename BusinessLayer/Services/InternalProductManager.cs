@@ -70,6 +70,7 @@ namespace BusinessLayer.Services
 
         public async Task<List<CategoryDTO>> GetCategories()
         {
+            //var categoryEntities = await _categoryRepository.GetAllCategories();
             var categoryEntities = await _categoryRepository.GetAllCategories();
 
             return categoryEntities.Select(c => _categoryMapper.CategoryToCategoryDto(c)).ToList();
@@ -150,6 +151,10 @@ namespace BusinessLayer.Services
             //TODO 1: Warum mache ich das so? -> ein neues Objekt erstellen und damit das DB product updaten?
             //var newProductEntity = (_productMapper.ProductManagementProductToProductEntity(productToStore, categories, discounts));
             await _productRepository.UpdateProduct(/*newProductEntity,*/ productFromDB);
+            
+            //Update über Update Product funktioniert nicht??
+            await _categoryRepository.UpdateCategories(productFromDB, categories);
+            await _discoutRepository.UpdateDiscounts(productFromDB, discounts);
         }
 
 

@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EvilCorp2000", "EvilCorp200
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccessTests", "DatabaseTests\DataAccessTests.csproj", "{A2AAF6F3-AC83-4218-A613-96B0CD10CAD4}"
 	ProjectSection(ProjectDependencies) = postProject
-		{C2040339-765D-402D-871C-56EA6FABEE96} = {C2040339-765D-402D-871C-56EA6FABEE96}
+		{8DB1257F-7247-40F2-A594-5687C8CFDDCE} = {8DB1257F-7247-40F2-A594-5687C8CFDDCE}
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{8DB1257F-7247-40F2-A594-5687C8CFDDCE}"
@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLayerTests", "Busin
 	ProjectSection(ProjectDependencies) = postProject
 		{949CF9D2-6548-40BA-9172-D199F58AF1CE} = {949CF9D2-6548-40BA-9172-D199F58AF1CE}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Utilities", "Shared.Utilities\Shared.Utilities.csproj", "{E037BC98-5B21-49EC-BE46-F36EEC66C1A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,6 +56,10 @@ Global
 		{76AEF6D6-1332-486E-A1F1-410E74B94DA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76AEF6D6-1332-486E-A1F1-410E74B94DA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76AEF6D6-1332-486E-A1F1-410E74B94DA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E037BC98-5B21-49EC-BE46-F36EEC66C1A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E037BC98-5B21-49EC-BE46-F36EEC66C1A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E037BC98-5B21-49EC-BE46-F36EEC66C1A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E037BC98-5B21-49EC-BE46-F36EEC66C1A0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
