@@ -5,7 +5,7 @@ And then I was inspired by a really, really old website (http://www.eviloverlord
 
 The documentation is accessible under /docs/architecture.md
 
-### Product Management (still in work)
+### Product Management (refactoring is planned, but it works in the current state)
 Since I don't use JS, a big challenge here is that the product overview opens in a modal written in  a partial.
 
 * Enter, view, delete and change products (name, description, categories, price, amount on stock) with UI Validation
@@ -18,9 +18,12 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * Data is stored in a MS SQL Server DB
 * Seperation of concerns (DAL, BL, UI): different projects (there is still a relic of which I wanted to take care and DTOs which are used in both UI and BL)
 * Errorlogging with Serilog in Console (Debug), File (Warning) and Db (Error)
+* Unit Tests
 
 ### Planned next
-* Unit Tests
+* Assess, what can be refactored
+* Refactoring of current code
+* UI Improvements
 
 ### Planned in the future
 * Add, alter, delete(?) Categories
