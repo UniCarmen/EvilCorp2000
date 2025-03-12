@@ -194,7 +194,7 @@ namespace BusinessLayerTests
         public async Task DeleteProduct_ShouldThrowException_WhenProductIdIsEmpty()
         {
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _productManager.DeleteProduct(Guid.Empty));
+            await Assert.ThrowsAsync<ArgumentException>(() => _productManager.DeleteProduct(Guid.Empty));
         }
 
         [Fact]

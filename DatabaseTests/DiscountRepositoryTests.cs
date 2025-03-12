@@ -52,7 +52,7 @@ namespace DatabaseTests
             using var context = CreateInMemoryDbContext();
             var repository = new DiscountRepository(context, NullLogger<DiscountRepository>.Instance);
 
-            await Assert.ThrowsAsync<ArgumentNullException>(() => repository.GetDiscountsByProductId(Guid.Empty));
+            await Assert.ThrowsAsync<ArgumentException>(() => repository.GetDiscountsByProductId(Guid.Empty));
         }
 
         [Fact]

@@ -120,6 +120,14 @@ namespace DataAccess.Repositories
             {
                 var product = await GetProduct(productId, ($"Product does not exist. ProductId: {productId}"));
 
+                var errorMessage = "Product does not exist.";
+
+                if (product == null)
+                {
+                    _logger.LogWarning(errorMessage);
+                    throw new ArgumentNullException(nameof(product), errorMessage);
+                }
+
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Successfully deleted {product.ProductName} with Id: {productId}.");
@@ -158,7 +166,7 @@ namespace DataAccess.Repositories
             if (product == null)
             {
                 _logger.LogWarning(errorMessage);
-                throw new ArgumentNullException(errorMessage);
+                throw new ArgumentNullException(nameof(product), errorMessage);
             }
             return product;
         }

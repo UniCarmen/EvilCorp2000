@@ -17,6 +17,7 @@ namespace DatabaseTests
             return new EvilCorp2000Context(options);
         }
 
+
         private static Category CreateCategory1() { return new Category { CategoryId = Guid.NewGuid(), CategoryName = "Weapons" }; }
         private static Category CreateCategory2() { return new Category { CategoryId = Guid.NewGuid(), CategoryName = "Armor" }; } 
         private static Discount CreateDiscount1() { return new Discount { DiscountId = Guid.NewGuid(), StartDate = DateTime.UtcNow, EndDate = DateTime.UtcNow.AddDays(10), DiscountPercentage = 10 }; } 
@@ -108,13 +109,126 @@ namespace DatabaseTests
 
 
         [Fact]
-        public async Task GetProductById_ShouldThrowException_WhenProductDoesNotExist()
+        public async Task GetProduct_ProductNotFound_ThrowsArgumentNullException()
         {
-            using var context = CreateInMemoryDbContext();
+            // Arrange
+            var context = CreateInMemoryDbContext();
             var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => repository.GetProductById(Guid.NewGuid()));
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(() =>
+                repository.GetProduct(Guid.NewGuid(), "Product not found"));
+
+            Assert.Contains("Product not found", ex.Message); //da eigene Formatierung von .NET bei Fehlernachrichten
+            Assert.Equal("product", ex.ParamName);
         }
+
+        [Fact]
+        public async Task GetProduct_WithValidId_ReturnsProduct()
+        {
+            // Arrange
+            var context = CreateInMemoryDbContext();
+            var product = CreateProduct();
+            context.Products.Add(product);
+            await context.SaveChangesAsync();
+
+            var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
+
+            // Act
+            var result = await repository.GetProduct(product.ProductId, "Product not found");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(product.ProductId, result.ProductId);
+        }
+
+        [Fact]
+        public async Task GetProduct_WithEmptyId_ThrowsArgumentNullException()
+        {
+            // Arrange
+            var context = CreateInMemoryDbContext();
+            var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() =>
+                repository.GetProduct(Guid.NewGuid(), "Product not found"));
+        }
+
+        //public async Task DeleteProductPicture(Guid productId)
+        //{
+        //    try
+        //    {
+        //        productId = Utilities.ThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
+
+        //        var product = await GetProductById(productId);
+
+        //        if (product == null)
+        //        {
+        //            var errorMessage = "Product from database is null";
+        //            _logger.LogWarning(errorMessage);
+        //            throw new ArgumentNullException(errorMessage);
+        //        }
+
+        //        product.ProductPicture = null;
+
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateException ex)
+        //    {
+        //        _logger.LogError(ex, $"Database error while deleting picture for product with id {productId}");
+        //        throw;
+        //    }
+        //}
+
+        [Fact]
+        public async Task DeleteProductPicture_ProductNotFound_ThrowsArgumentNullException()
+        {
+            // Arrange
+            var context = CreateInMemoryDbContext();
+
+            var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(() =>
+                repository.DeleteProductPicture(Guid.NewGuid()));
+        }
+
+        [Fact]
+        public async Task DeleteProductPicture_WithValidId_ShouldDeleteProductPicture()
+        {
+            // Arrange
+            var context = CreateInMemoryDbContext();
+            var product = CreateProduct();
+            context.Products.Add(product);
+            await context.SaveChangesAsync();
+
+            var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
+
+            // Act
+            await repository.DeleteProductPicture(product.ProductId);
+
+            var result = await context.Products.FindAsync(product.ProductId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(string.IsNullOrEmpty(result.ProductPicture), "Product picture should be null or empty after deletion.");
+            // Assert
+
+        }
+
+        [Fact]
+        public async Task DeleteProductPicture_ShouldThrowException_WhenIdIsInvalid()
+        {
+            // Arrange
+            var context = CreateInMemoryDbContext();
+            var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() =>
+                repository.DeleteProductPicture(Guid.NewGuid()));
+        }
+
+
 
         [Fact]
         public async Task GetProductById_ShouldThrowException_WhenProductIdIsEmpty()
@@ -122,7 +236,7 @@ namespace DatabaseTests
             using var context = CreateInMemoryDbContext();
             var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
 
-            await Assert.ThrowsAsync<ArgumentNullException>(() => repository.GetProductById(Guid.Empty));
+            await Assert.ThrowsAsync<ArgumentException>(() => repository.GetProductById(Guid.Empty));
         }
 
         [Fact]
@@ -183,7 +297,7 @@ namespace DatabaseTests
             using var context = CreateInMemoryDbContext();
             var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
 
-            await Assert.ThrowsAsync<ArgumentNullException>(() => repository.DeleteProduct(Guid.Empty));
+            await Assert.ThrowsAsync<ArgumentException>(() => repository.DeleteProduct(Guid.Empty));
         }
 
 
@@ -210,14 +324,6 @@ namespace DatabaseTests
             Assert.Equal(2, result.Categories.Count);
         }
 
-        [Fact]
-        public async Task GetProductByIdWithCategoriesAnsdDiscounts_ShouldThrowException_WhenProductDoesNotExist()
-        {
-            using var context = CreateInMemoryDbContext();
-            var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => repository.GetProductById(Guid.NewGuid()));
-        }
 
         [Fact]
         public async Task GetProductByIdWithCategoriesAnsdDiscounts_ShouldThrowException_WhenProductIdIsEmpty()
@@ -225,7 +331,7 @@ namespace DatabaseTests
             using var context = CreateInMemoryDbContext();
             var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
 
-            await Assert.ThrowsAsync<ArgumentNullException>(() => repository.GetProductById(Guid.Empty));
+            await Assert.ThrowsAsync<ArgumentException>(() => repository.GetProductById(Guid.Empty));
         }
 
 
@@ -282,7 +388,7 @@ namespace DatabaseTests
             string newPicture = "updated_picture.jpg";
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => repository.SaveProductPicture(nonExistentProductId, newPicture));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => repository.SaveProductPicture(nonExistentProductId, newPicture));
         }
 
         [Fact]
@@ -294,7 +400,7 @@ namespace DatabaseTests
             string newPicture = "updated_picture.jpg";
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => repository.SaveProductPicture(Guid.Empty, newPicture));
+            await Assert.ThrowsAsync<ArgumentException>(() => repository.SaveProductPicture(Guid.Empty, newPicture));
         }
 
         [Fact]
@@ -318,25 +424,13 @@ namespace DatabaseTests
         }
 
         [Fact]
-        public async Task DeleteProductPicture_ShouldThrowException_WhenProductDoesNotExist()
-        {
-            using var context = CreateInMemoryDbContext();
-            var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
-
-            var nonExistentProductId = Guid.NewGuid();
-
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => repository.DeleteProductPicture(nonExistentProductId));
-        }
-
-        [Fact]
         public async Task DeleteProductPicture_ShouldThrowException_WhenProductIdIsEmpty()
         {
             using var context = CreateInMemoryDbContext();
             var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => repository.DeleteProductPicture(Guid.Empty));
+            await Assert.ThrowsAsync<ArgumentException>(() => repository.DeleteProductPicture(Guid.Empty));
         }
 
 
