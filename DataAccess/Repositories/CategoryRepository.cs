@@ -43,7 +43,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                ThrowExceptionWhenNull(category, $"Category with id is missing");
+                ReturnValueOrThrowExceptionWhenNull(category, $"Category with id is missing");
                 //INFO: alt: if (category == null) { throw new ArgumentNullException("Category is missing"); }
                 _context.Category.Add(category);
                 await _context.SaveChangesAsync();
@@ -88,7 +88,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                categoryToDelete = ThrowExceptionWhenNull(categoryToDelete, $"Category to delete is missing");
+                categoryToDelete = ReturnValueOrThrowExceptionWhenNull(categoryToDelete, $"Category to delete is missing");
 
                 var oldCategory = await _context.Category.FirstOrDefaultAsync(p => p.CategoryId == categoryToDelete.CategoryId);
 

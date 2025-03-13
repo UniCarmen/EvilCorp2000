@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Shared.Utilities
 {
@@ -12,16 +13,14 @@ namespace Shared.Utilities
         //TODO1: evtl diese Schreibweise testen / verwenden: ArgumentNullException.ThrowIfNull(category, nameof(category));
 
         //INFO:  where T: class --> für Reftypen: string, eigene Objekte, nullable und nicht nullable
-        public static T ThrowExceptionWhenNull<T>(T value, string errorMessage) where T : class
+        [return: NotNull]
+        public static T ReturnValueOrThrowExceptionWhenNull<T>(T value, string errorMessage) where T : class? //akzeptiert nullable und nicht nullable
         {
-            if (value is null)
-                throw new ArgumentNullException(errorMessage);
-
-            return value;
+            return value?? throw new ArgumentNullException(errorMessage); ;
         }
 
         //INFO: where T: struct --> für Werttypen: int, Guid, decimal, nullable und nicht nullable
-        public static T ThrowExceptionWhenDefault<T>(T value, string errorMessage) where T : struct
+        public static T ReturnValueOrThrowExceptionWhenDefault<T>(T value, string errorMessage) where T : struct
         {
             if (EqualityComparer<T>.Default.Equals(value, default))
                 throw new ArgumentException(errorMessage);

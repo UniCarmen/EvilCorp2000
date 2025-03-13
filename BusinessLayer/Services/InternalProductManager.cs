@@ -4,6 +4,8 @@ using DataAccess.Repositories;
 using System.ComponentModel.DataAnnotations;
 using BusinessLayer.Mappings;
 using static BusinessLayer.Services.ValidationService;
+using Shared.Utilities;
+using System.Diagnostics.CodeAnalysis;
 
 namespace BusinessLayer.Services
 {
@@ -26,7 +28,7 @@ namespace BusinessLayer.Services
             _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
-        //TODO: Nullprüfungen vor den Mappings
+        //TODO1: Methoden auslagern, vieles doppelt
 
         public async Task<List<ProductManagementProductDTO>> GetProductsForInternalUse()
         {
@@ -34,87 +36,77 @@ namespace BusinessLayer.Services
 
             List<ProductManagementProductDTO> productsForInternalUse = [];
 
-            //TODO1: LINQ!
             foreach (Product product in products)
             {
-                var currentDiscounts = product.Discounts.Select(de => _discountMapper.DiscountToDiscountDTO(de)).ToList();
-
-                var categories = product.Categories.Select(c => _categoryMapper.CategoryToCategoryDto(c)).ToList();
-
+                (List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories) = 
+                    MapDiscountsAndCategoriesToDTOs(product.Discounts.ToList(), product.Categories.ToList());
+                
                 productsForInternalUse.Add(_productMapper.ProductToProductManagementProductDto(product, currentDiscounts, categories));
             }
 
             return productsForInternalUse;
         }
 
+
         public async Task<ProductManagementProductDTO> GetProductForInternalUse(Guid id)
         {
-            var productEntity = await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(id);
-            //TODO1: KeyNotFoundException, da ein Null-Product ein loguscher Fehler ist, kein fehlerhafter Parameter - noch woanders?
-            //TODO1: direkt bei productEntity mit ?? throw new, damit der Fehler gleich abgefangen wird
-
-            if (productEntity == null)
-            {
-                
-                throw new ArgumentNullException(nameof(productEntity));
-            }
+            var productEntity = Utilities.ReturnValueOrThrowExceptionWhenNull(
+                await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(id), 
+                "ProductEntity is null.");
 
             var currentDiscountEntities = await _discoutRepository.GetDiscountsByProductId(id);
 
-            var currentDiscounts = currentDiscountEntities.Select(de => _discountMapper.DiscountToDiscountDTO(de)).ToList();
-
-            var categories = productEntity.Categories.Select(c => _categoryMapper.CategoryToCategoryDto(c)).ToList();
+            (List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories) = 
+                MapDiscountsAndCategoriesToDTOs(currentDiscountEntities, productEntity.Categories.ToList());
 
             return _productMapper.ProductToProductManagementProductDto(productEntity, currentDiscounts, categories);
         }
 
         public async Task<List<CategoryDTO>> GetCategories()
         {
-            //var categoryEntities = await _categoryRepository.GetAllCategories();
-            var categoryEntities = await _categoryRepository.GetAllCategories();
-
-            return categoryEntities.Select(c => _categoryMapper.CategoryToCategoryDto(c)).ToList();
+            return
+                ServiceUtilities.MapWithNullChecks(
+                    await _categoryRepository.GetAllCategories(),
+                    _categoryMapper.CategoryToCategoryDto,
+                    "Category List")
+                .ToList();
         }
 
 
         public async Task SaveProductToStore(ProductManagementProductDTO productToStore)
         {
-            if (productToStore == null)
+            productToStore = Utilities.ReturnValueOrThrowExceptionWhenNull(productToStore, "ProductToStore is null.");
+
+            var existingProduct = await _productRepository.GetProductById(productToStore.ProductId);
+
+            if (existingProduct != null)
             {
-                throw new ArgumentNullException(nameof(productToStore));
+                throw new ArgumentException("Product with this ID already exists.");
             }
 
             var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName, productToStore.ProductId);
             ValidateProduct(productToStore, nameIsUnique);
 
-            var discounts = productToStore.Discounts.Select(d => _discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
-
-            var categories = productToStore.Categories.Select(c =>
-                _categoryMapper.CategoryDtoToCategory(c)
-            ).ToList();
+            (List<Discount> currentDiscounts, List<Category> categories) = 
+                MapDiscountsAndCategoriesToEntities(productToStore.Discounts, productToStore.Categories, productToStore.ProductId);
 
             categories = _categoryRepository.AttachCategoriesIfNeeded(categories);
 
-            await _productRepository.AddProduct(_productMapper.ProductManagementProductDtoToProductEntity(productToStore, categories, discounts));
+            await _productRepository.AddProduct(_productMapper.ProductManagementProductDtoToProductEntity(productToStore, categories, currentDiscounts));
           
         }
 
 
         public async Task AddDiscount(DiscountDTO discount, ProductManagementProductDTO productToStore)
         {
-            if (discount == null)
-            {
-                throw new ArgumentNullException(nameof(discount));
-            }
+            discount = Utilities.ReturnValueOrThrowExceptionWhenNull(discount, "Discount is null.");
+            productToStore.Discounts = Utilities.ReturnValueOrThrowExceptionWhenNull(productToStore.Discounts, "Discount is null.");
 
             ValidateDiscount(discount, productToStore.Discounts);
 
             discount.DiscountId = Guid.NewGuid();
 
-            if (productToStore == null)
-            {
-                throw new ArgumentNullException(nameof(productToStore));
-            }
+            productToStore = Utilities.ReturnValueOrThrowExceptionWhenNull(productToStore, "productToStore is null");
             
             productToStore.Discounts.Add(discount);
             await UpdateProductToStore(productToStore);
@@ -123,45 +115,35 @@ namespace BusinessLayer.Services
 
         public async Task UpdateProductToStore(ProductManagementProductDTO productToStore)
         {
-            if (productToStore == null)
-            {
-                throw new ArgumentNullException(nameof(productToStore));
-            }
+            productToStore = Utilities.ReturnValueOrThrowExceptionWhenNull(productToStore, "productToStore is null.");
 
             var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName, productToStore.ProductId);
             ValidateProduct(productToStore, nameIsUnique);
 
-            var discounts = productToStore.Discounts.Select(d => _discountMapper.DiscountDTOToDiscount(d, productToStore.ProductId)).ToList();
+            (List<Discount> currentDiscounts, List<Category> categories) =
+                MapDiscountsAndCategoriesToEntities(productToStore.Discounts, productToStore.Categories, productToStore.ProductId);
 
-            var categories = productToStore.Categories.Select(c => _categoryMapper.CategoryDtoToCategory(c)).ToList();
-
-            var productFromDB = await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(productToStore.ProductId);
-
-            if (productFromDB == null)
-            {
-                throw new InvalidOperationException(nameof(productFromDB));
-            }
+            var productFromDB = Utilities.ReturnValueOrThrowExceptionWhenNull(
+                await _productRepository.GetProductByIdWithCategoriesAnsdDiscounts(productToStore.ProductId),
+                "productFromDB is null.");
 
             productFromDB.ProductName = productToStore.ProductName;
             productFromDB.ProductDescription = productToStore.Description;
             productFromDB.ProductPicture = productToStore.ProductPicture;
             productFromDB.ProductPrice = productToStore.Price;
             productFromDB.AmountOnStock = productToStore.AmountOnStock;
-
-            //TODO 1: Warum mache ich das so? -> ein neues Objekt erstellen und damit das DB product updaten?
-            //var newProductEntity = (_productMapper.ProductManagementProductToProductEntity(productToStore, categories, discounts));
-            await _productRepository.UpdateProduct(/*newProductEntity,*/ productFromDB);
+           
+            await _productRepository.UpdateProduct(productFromDB);
             
-            //Update über Update Product funktioniert nicht??
+            //TODO Update über Update Product funktioniert nicht. WaruM??? zu komplex???
             await _categoryRepository.UpdateCategories(productFromDB, categories);
-            await _discoutRepository.UpdateDiscounts(productFromDB, discounts);
+            await _discoutRepository.UpdateDiscounts(productFromDB, currentDiscounts);
         }
 
 
         public async Task DeleteProduct (Guid productId)
         {
-            if (productId == Guid.Empty)
-            { throw new ArgumentException("Ungültige Produkt-ID.", nameof(productId)); }
+            productId = Utilities.ReturnValueOrThrowExceptionWhenDefault(productId, "ProductId is null.");
             await _productRepository.DeleteProduct(productId);
         }
 
@@ -170,17 +152,55 @@ namespace BusinessLayer.Services
         {
             var pictureStringInValid = string.IsNullOrEmpty(encodedPicture);
             if (productId == Guid.Empty || pictureStringInValid)
-            { throw new ArgumentNullException(nameof(productId)); }
+            { throw new ArgumentException(nameof(productId), "Guid is empty or pictureString is invalid"); }
 
             await _productRepository.SaveProductPicture(productId, encodedPicture);
         }
 
         public async Task DeleteProductPicture(Guid productId)
         {
-            if (productId == Guid.Empty)
-            { throw new ArgumentNullException(nameof(productId)); }
-
+            productId = Utilities.ReturnValueOrThrowExceptionWhenDefault(productId, "ProductId is null.");
             await _productRepository.DeleteProductPicture(productId);
+        }
+
+        public (List<DiscountDTO>, List<CategoryDTO>) MapDiscountsAndCategoriesToDTOs(List<Discount> discounts, List<Category> categories)
+        {
+            List<DiscountDTO> returnDiscountsDtos =
+                    ServiceUtilities.MapWithNullChecks(
+                        discounts,
+                        _discountMapper.DiscountToDiscountDTO,
+                        "Discount List")
+                    .ToList();
+
+            List<CategoryDTO> returnCategorieDtos =
+                ServiceUtilities.MapWithNullChecks(
+                    categories,
+                    _categoryMapper.CategoryToCategoryDto,
+                    "Category List")
+                .ToList();
+
+            return (returnDiscountsDtos, returnCategorieDtos);
+        }
+
+
+        public (List<Discount>, List<Category>) MapDiscountsAndCategoriesToEntities(List<DiscountDTO> discounts, List<CategoryDTO> categories, Guid productId)
+        {
+            List<Discount> returnDiscounts =
+                    ServiceUtilities.MapWithGuidWithNullChecks(
+                        discounts,
+                        _discountMapper.DiscountDTOToDiscount,
+                        productId,
+                        "Discount List")
+                    .ToList();
+
+            List<Category> returnCategories =
+                ServiceUtilities.MapWithNullChecks(
+                    categories,
+                    _categoryMapper.CategoryDtoToCategory,
+                    "Category List")
+                .ToList();
+
+            return (returnDiscounts, returnCategories);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using DataAccess.Entities;
 using BusinessLayer.Models;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Utilities;
 
 namespace BusinessLayer.Mappings
 {
@@ -8,33 +9,31 @@ namespace BusinessLayer.Mappings
     {
         public ProductForSaleDTO ProductToProductForSaleDto(Product productEntity, Discount currentDiscount)
         {
-            if (productEntity == null)
-            { throw new ArgumentNullException (nameof(productEntity)); }
+            productEntity = Utilities.ReturnValueOrThrowExceptionWhenNull(productEntity, "Category is null.");
 
             decimal discountedPrice = 0.0m;
             double discountedPercentage;
 
-            if (currentDiscount != null && currentDiscount.DiscountPercentage != 0.0)
-            {
-                discountedPrice = (decimal)((double)productEntity.ProductPrice / 100 * (100 - currentDiscount.DiscountPercentage));
-                discountedPercentage = currentDiscount.DiscountPercentage;
-            }
-            else
-            {
-                discountedPrice = 0.0m;
-                discountedPercentage = 0.0;
-            }
+            //INFO: ?: Null Conditional Operator. wenn currentDiscount = null, dann wird DiscountPercentage gar nicht erst aufgerufen
+            //INFO: ??: Null Coalescing Operator. wenn null wird 0.0 genommen
+            discountedPercentage = currentDiscount?.DiscountPercentage ?? 0.0;
 
-            //TODO1: Besser
-            //INFO: ?: Null Conditional Operator. wenn currentDiscount = 0, dann wird DiscountPercentage nicht aufgerufen
-            //INFO: ??: Null Coalescing Operator. Wenn currentDiscount = 0, dann Standardwerd 0.0
-            //INFO: Ansonsten discountPercentage
-            //double discount = currentDiscount?.DiscountPercentage ?? 0.0;
+            //INFO: ?: -> ternärer Operator (=if ? = true, dann das : false, dann das)
+            discountedPrice = discountedPercentage > 0 ?
+                productEntity.ProductPrice * (decimal)((100 - discountedPercentage) / 100)
+                : 0.0m;
 
-            //INFO: ?: -> ternärer Operator (=if ?=true, :false)
-            //decimal discountedPrice = discount > 0
-            //    ? productEntity.ProductPrice * (decimal)((100 - discount) / 100)
-            //    : 0.0m;
+            //INFO: ersetzt:
+            //if (currentDiscount != null && currentDiscount.DiscountPercentage != 0.0)
+            //{
+            //    discountedPrice = (decimal)((double)productEntity.ProductPrice / 100 * (100 - currentDiscount.DiscountPercentage));
+            //    discountedPercentage = currentDiscount.DiscountPercentage;
+            //}
+            //else
+            //{
+            //    discountedPrice = 0.0m;
+            //    discountedPercentage = 0.0;
+            //}
 
             return new ProductForSaleDTO
             {
@@ -53,17 +52,12 @@ namespace BusinessLayer.Mappings
 
         public Product ProductManagementProductDtoToProductEntity(ProductManagementProductDTO pmProduct, List<Category> categories, List<Discount> discounts)
         {
-            if (pmProduct == null)
-            { throw new ArgumentNullException(nameof(pmProduct)); }
+            pmProduct = Utilities.ReturnValueOrThrowExceptionWhenNull(pmProduct, "ProductManagementProduct is null.");
 
-            if(categories.IsNullOrEmpty())
-            {  throw new ArgumentException(nameof(categories)); }
+            categories = categories.IsNullOrEmpty() ? throw new ArgumentException(nameof(categories), "Categories are null or empty.") : categories;
             
-            var newProductId = pmProduct.ProductId;
-            if (newProductId == Guid.Empty)
-            {
-                newProductId = Guid.NewGuid();
-            }
+            var newProductId = pmProduct.ProductId == Guid.Empty ? Guid.NewGuid() : pmProduct.ProductId;
+
             return new Product
             {
                 ProductId = newProductId,
@@ -81,11 +75,9 @@ namespace BusinessLayer.Mappings
 
         public ProductManagementProductDTO ProductToProductManagementProductDto(Product product, List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories)
         {
-            if (product == null)
-            { throw new ArgumentNullException(nameof(product)); }
+            product = Utilities.ReturnValueOrThrowExceptionWhenNull(product, "Product is null");
 
-            if (categories.IsNullOrEmpty())
-            { throw new ArgumentException(nameof(categories)); }
+            categories = categories.IsNullOrEmpty() ? throw new ArgumentException(nameof(categories), "Category is null or empty") : categories;
 
             return new ProductManagementProductDTO
             {

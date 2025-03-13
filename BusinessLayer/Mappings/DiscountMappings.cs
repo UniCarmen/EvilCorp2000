@@ -1,5 +1,6 @@
 ﻿using DataAccess.Entities;
 using BusinessLayer.Models;
+using Shared.Utilities;
 
 namespace BusinessLayer.Mappings
 {
@@ -7,8 +8,8 @@ namespace BusinessLayer.Mappings
     {
         public DiscountDTO DiscountToDiscountDTO(Discount discount)
         {
-            if(discount == null)
-            { throw new ArgumentNullException (nameof(discount)); }
+            discount = Utilities.ReturnValueOrThrowExceptionWhenNull(discount, "Discount is null.");
+            
             return new DiscountDTO
             {
                 DiscountId = discount.DiscountId,
@@ -20,21 +21,11 @@ namespace BusinessLayer.Mappings
 
         public Discount DiscountDTOToDiscount(DiscountDTO discountDTO, Guid productId)
         {
-            if(discountDTO == null)
-            {
-                throw new ArgumentNullException(nameof(discountDTO));
-            }
+            discountDTO = Utilities.ReturnValueOrThrowExceptionWhenNull(discountDTO, "Discount is null.");
 
-            if(productId == Guid.Empty)
-            {
-                throw new ArgumentException("ProductId cannot be empty", nameof(productId));
-            }
-            
-            Guid discountId = discountDTO.DiscountId;
-            if (discountId == Guid.Empty)
-            {
-                discountId = Guid.NewGuid();
-            }
+            productId = Utilities.ReturnItemOrThrowExceptionWhenDefault(productId, "ProductId cannot be empty.");
+
+            var discountId = discountDTO.DiscountId == Guid.Empty ? Guid.NewGuid() : discountDTO.DiscountId;
 
             return new Discount
             {

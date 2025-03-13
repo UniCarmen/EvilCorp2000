@@ -1,5 +1,7 @@
 ﻿using DataAccess.Entities;
 using BusinessLayer.Models;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Shared.Utilities;
 
 namespace BusinessLayer.Mappings
 {
@@ -7,7 +9,7 @@ namespace BusinessLayer.Mappings
     {
         public CategoryDTO CategoryToCategoryDto(Category category)
         {
-            if (category == null) throw new ArgumentNullException(nameof(category));
+            category = Utilities.ReturnValueOrThrowExceptionWhenNull(category, "Category is null.");
             return new CategoryDTO()
             {
                 CategoryId = category.CategoryId,
@@ -15,37 +17,15 @@ namespace BusinessLayer.Mappings
             };
         }
 
-        public Category CategoryDtoToCategory(CategoryDTO category)
+        public Category CategoryDtoToCategory(CategoryDTO categoryDto)
         {
-            if (category == null) throw new ArgumentNullException(nameof(category));
+            categoryDto = Utilities.ReturnValueOrThrowExceptionWhenNull(categoryDto, "CategoryDto is null.");
+
             return new Category()
             {
-                CategoryId = category.CategoryId,
-                CategoryName = category.CategoryName,
+                CategoryId = categoryDto.CategoryId,
+                CategoryName = categoryDto.CategoryName,
             };
-        }
-
-
-        //TODO1: generische Methoden für die Nullprüfung in einem Sharedprojekt anlegen? So kann ich alles auslagern
-        //TODO1: evtl diese Schreibweise testen / verwenden: ArgumentNullException.ThrowIfNull(category, nameof(category));
-
-        //INFO: <T>: sagt, dass ein generischer verwende wird
-        //INFO: where T: class: sagt, dass nur Referenztypen (class) erlaubt sind // struct für Werttypen
-        //INFO: bei Werttypen steht T? in den Parametern
-
-        //INFO: für Reftypen: string, eigene Objekte
-        private static T ThrowExceptionWhenNull<T> (T value, Exception exception, string parameterName) where T: class
-        {
-            //INFO: gibt entweder den Eingangwert zurück oder wirft einen Fehler, falls es keinen gibt = null
-            return value ?? throw new ArgumentNullException(nameof(parameterName));
-        }
-
-        //INFO: für Werttypen: int, Guid, decimal
-        private static T EnsureNotNull<T>(T? value, string paramName) where T : struct
-        {
-            return value ?? throw new ArgumentNullException(paramName);
-        }
-
-        
+        }        
     }
 }

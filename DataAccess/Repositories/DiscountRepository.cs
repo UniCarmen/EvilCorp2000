@@ -23,7 +23,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                productId = Utilities.ThrowExceptionWhenDefault(productId, $"Invalid productId {productId}.");
+                productId = Utilities.ReturnItemOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}.");
                 return await _context.Discounts.Where(p => p.ProductId == productId).ToListAsync();
             }
             catch (DbUpdateException ex)
@@ -37,7 +37,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                productId = Utilities.ThrowExceptionWhenDefault(productId, $"Invalid productId {productId}.");
+                productId = Utilities.ReturnItemOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}.");
                 //if (productId == Guid.Empty) { throw new ArgumentException("Invalid Guid"); }
                 return await _context.Discounts.
                     Where(p =>
@@ -57,7 +57,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                discount = Utilities.ThrowExceptionWhenNull(discount, "Discount is null.");
+                discount = Utilities.ReturnValueOrThrowExceptionWhenNull(discount, "Discount is null.");
                 //if (discount == null) { throw new ArgumentNullException(nameof(discount)); }
                 _context.Discounts.Add(discount);
                 await _context.SaveChangesAsync();
@@ -73,7 +73,7 @@ namespace DataAccess.Repositories
         {
             try 
             {
-                productFromDB = Utilities.ThrowExceptionWhenNull(productFromDB, "Product from DB is null.");
+                productFromDB = Utilities.ReturnValueOrThrowExceptionWhenNull(productFromDB, "Product from DB is null.");
                 
                 //INFO: alle weg, die NICHT in der neuen DiscountListe vorhanden sind, kann bei vielen Disounts ineffizient werden
                 //INFO: effektiver wäre die Verwendung eines HashSets (für Lookup optimiert)
@@ -129,7 +129,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                discount = Utilities.ThrowExceptionWhenNull(discount, "Discount was null.");
+                discount = Utilities.ReturnValueOrThrowExceptionWhenNull(discount, "Discount was null.");
                 _context.Discounts.Remove(discount);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Successfully deleted {discount.DiscountId} with starting date {discount.StartDate} from product {discount.ProductId}.");

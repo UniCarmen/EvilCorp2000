@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BusinessLayer.Services
 {
+    //wenn der Shop geschrieben wird, noch einmal komplett prüfen / überarbeiten
     //TODO: muss umgeschrieben werden, sodass mit InternalProduct gearbeitet wird, in der UI muss dann zu ProductForSale gemappt werden 
     //Klasse üerprüfen -> geplante Änderungen, try catches mit
     //sollte Fehler in die DB schreiben
