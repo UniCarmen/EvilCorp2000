@@ -23,7 +23,7 @@ namespace BusinessLayer.Mappings
         {
             discountDTO = Utilities.ReturnValueOrThrowExceptionWhenNull(discountDTO, "Discount is null.");
 
-            productId = Utilities.ReturnItemOrThrowExceptionWhenDefault(productId, "ProductId cannot be empty.");
+            productId = Utilities.ReturnValueOrThrowExceptionWhenDefault(productId, "ProductId cannot be empty.");
 
             var discountId = discountDTO.DiscountId == Guid.Empty ? Guid.NewGuid() : discountDTO.DiscountId;
 

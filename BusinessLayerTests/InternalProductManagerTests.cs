@@ -48,6 +48,30 @@ namespace BusinessLayerTests
         }
 
         [Fact]
+        public void MapDiscountsAndCategoriesToDTOs_ShouldThrowException_WhenCategoriesOrDiscountsContainNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => _productManager.MapDiscountsAndCategoriesToDTOs([null], [null]));
+        }
+
+        [Fact]
+        public void MapDiscountsAndCategoriesToDTOs_ShouldThrowException_WhenCategoriesOrDiscountsAreNull()
+        {
+            Assert.Throws<ArgumentNullException>( () => _productManager.MapDiscountsAndCategoriesToDTOs(null, null));
+        }
+
+        [Fact]
+        public void MapDiscountsAndCategoriesToEntities_ShouldThrowException_WhenCategoriesOrDiscountsContainNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => _productManager.MapDiscountsAndCategoriesToEntities([null], [null], Guid.NewGuid()));
+        }
+
+        [Fact]
+        public void MapDiscountsAndCategoriesToEntities_ShouldThrowException_WhenCategoriesOrDiscountsAreNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => _productManager.MapDiscountsAndCategoriesToEntities(null, null, Guid.NewGuid()));
+        }
+
+        [Fact]
         public async Task GetProductForInternalUse_ShouldThrowException_WhenProductNotFound()
         {
             // Arrange
@@ -233,7 +257,7 @@ namespace BusinessLayerTests
         public async Task SaveProductPicture_ShouldThrowException_WhenProductIdIsEmpty()
         {
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _productManager.SaveProductPicture(Guid.Empty, "image.jpg"));
+            await Assert.ThrowsAsync<ArgumentException>(() => _productManager.SaveProductPicture(Guid.Empty, "image.jpg"));
         }
 
         [Fact]
@@ -254,7 +278,7 @@ namespace BusinessLayerTests
         public async Task DeleteProductPicture_ShouldThrowException_WhenProductIdIsEmpty()
         {
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _productManager.DeleteProductPicture(Guid.Empty));
+            await Assert.ThrowsAsync<ArgumentException>(() => _productManager.DeleteProductPicture(Guid.Empty));
         }
 
         [Fact]

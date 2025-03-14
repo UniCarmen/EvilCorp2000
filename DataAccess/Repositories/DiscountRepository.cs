@@ -23,7 +23,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                productId = Utilities.ReturnItemOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}.");
+                productId = Utilities.ReturnValueOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}.");
                 return await _context.Discounts.Where(p => p.ProductId == productId).ToListAsync();
             }
             catch (DbUpdateException ex)
@@ -37,7 +37,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                productId = Utilities.ReturnItemOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}.");
+                productId = Utilities.ReturnValueOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}.");
                 //if (productId == Guid.Empty) { throw new ArgumentException("Invalid Guid"); }
                 return await _context.Discounts.
                     Where(p =>

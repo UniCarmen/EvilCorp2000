@@ -42,7 +42,7 @@ namespace DataAccess.Repositories
         //INFO: Der Aufrufer entscheidet, was passiert, wenn Null kommt -> Business-Entscheidung.
         public async Task<Product?> GetProductByIdWithCategoriesAnsdDiscounts(Guid productId)
         {
-            productId = Utilities.ReturnItemOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
+            productId = Utilities.ReturnValueOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
 
             try
             {
@@ -63,7 +63,7 @@ namespace DataAccess.Repositories
 
         public async Task<Product?> GetProductById (Guid productId)
         {
-            productId = Utilities.ReturnItemOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
+            productId = Utilities.ReturnValueOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
 
             try
             {
@@ -159,7 +159,7 @@ namespace DataAccess.Repositories
 
         public async Task<Product> GetProduct(Guid productId, string errorMessage)
         {
-            productId = Utilities.ReturnItemOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
+            productId = Utilities.ReturnValueOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
 
             var product = await GetProductById(productId);
 
@@ -176,7 +176,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                productId = Utilities.ReturnItemOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
+                productId = Utilities.ReturnValueOrThrowExceptionWhenDefault(productId, $"Invalid productId {productId}");
 
                 var product = await GetProductById(productId);
 
