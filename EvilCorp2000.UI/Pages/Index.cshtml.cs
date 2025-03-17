@@ -2,7 +2,6 @@ using BusinessLayer.Models;
 using BusinessLayer.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace EvilCorp2000.Pages
@@ -13,17 +12,17 @@ namespace EvilCorp2000.Pages
         private readonly IProductForSaleManager _productForSaleManager;
 
 
-        public List<ProductForSaleDTO> ProductsForSale { get; set; }
+        public List<ProductForSaleDTO> ProductsForSale { get; private set; } = [];
 
 
         public IndexModel(IProductForSaleManager productForSaleManager, ILogger<IndexModel> logger)
         {
-            _logger = logger;
-            _productForSaleManager = productForSaleManager;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _productForSaleManager = productForSaleManager ?? throw new ArgumentNullException(nameof(productForSaleManager));
         }
 
 
-        public async Task OnGet()
+        public async Task<IActionResult> OnGet()
         {
             try
             {
@@ -31,16 +30,21 @@ namespace EvilCorp2000.Pages
             }
             catch (DbUpdateException ex)
             {
-                ExecuteOnDBExceptionCatch("Fehler in der Datenbank", ex);
+                LogAndAddModelError("Fehler in der Datenbank", ex);
             }
-            catch (Exception ex) { _logger.LogError(ex, "Error getting the products from the database"); }
+            catch (Exception ex)
+            {
+                LogAndAddModelError("Fehler beim Laden der Produkte.", ex);
+            }
 
+            return Page();
         }
 
-        private IActionResult ExecuteOnDBExceptionCatch(string modelStateError, Exception ex)
+
+        private void LogAndAddModelError(string message, Exception ex)
         {
-            ModelState.AddModelError(string.Empty, modelStateError);
-            return Page();
+            _logger.LogError(ex, message);
+            ModelState.AddModelError(string.Empty, message);
         }
 
 

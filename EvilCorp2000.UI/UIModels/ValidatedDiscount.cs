@@ -1,5 +1,4 @@
-﻿using DataAccess.Entities;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using static EvilCorp2000.UIModels.DiscountValidation;
 
 namespace EvilCorp2000.UIModels
@@ -19,32 +18,25 @@ namespace EvilCorp2000.UIModels
 
     public class DiscountValidation
     {
-        public class StartDateValidationAttribute : ValidationAttribute
+        /// <summary>
+        /// Determines whether the provided value is a valid start date (today or a future date).
+        /// </summary>
+        public class StartDateValidationAttribute : BaseValidationAttribute
         {
-            public StartDateValidationAttribute(string errorMessage)
-            {
-                ErrorMessage = errorMessage;
-            }
+            //INFO: mit :base(errorMessage -> Konstruktorverkettung. Der Konstruktor der Basisklasse wird aufgerufen, um die KLasse zu initialisieren
+            public StartDateValidationAttribute(string errorMessage) : base(errorMessage) { }
 
-            protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            {
-                //wenn Date null oder vor dem aktuellen Datum
-                if (value == null || value is DateTime date && date < DateTime.Today)
-                {
-                    return new ValidationResult(ErrorMessage);
-                }
-
-                else return ValidationResult.Success;
-            }
+            //Ausdrucksbasierte Methode. Anstatt KLammern ein => und kein return Keyword nötig
+            protected override ValidationResult? IsValid(object? value, ValidationContext _) =>
+                value is not DateTime date || date < DateTime.Today ? Fail() : SuccessResult;
         }
 
-
-        public class EndDateValidationAttribute : ValidationAttribute
+        /// <summary>
+        /// Determines whether the provided end date is valid (after the start date and today or later).
+        /// </summary>
+        public class EndDateValidationAttribute : BaseValidationAttribute
         {
-            public EndDateValidationAttribute(string errorMessage)
-            {
-                ErrorMessage = errorMessage;
-            }
+            public EndDateValidationAttribute(string errorMessage) : base(errorMessage) { }
 
             protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
             {
@@ -53,34 +45,22 @@ namespace EvilCorp2000.UIModels
 
                 var endDate = value as DateTime?;
 
-                if (startDateValue == null && (endDate == null || endDate <= DateTime.UtcNow))
-                    return new ValidationResult(ErrorMessage);
-
-                if (endDate <= startDateValue || endDate == null || endDate < DateTime.Today)
-                    return new ValidationResult(ErrorMessage);
-
-                else return ValidationResult.Success;
+                return (startDateValue == null || endDate == null || endDate <= startDateValue || endDate <= DateTime.Today)
+                    ? Fail()
+                    : SuccessResult;
             }
         }
 
-
-        public class DiscountPercentageAttribute : ValidationAttribute
+        /// <summary>
+        /// Determines whether the provided discount percentage is valid (greater than 0).
+        /// </summary>
+        public class DiscountPercentageAttribute : BaseValidationAttribute
         {
-            public DiscountPercentageAttribute(string errorMessage)
-            {
-                ErrorMessage = errorMessage;
-            }
+            public DiscountPercentageAttribute(string errorMessage) : base(errorMessage) { }
 
-            protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            {
-                var percentageProperty = validationContext.ObjectType.GetProperty("DiscountPercentage");
-                var percentage = percentageProperty.GetValue(validationContext.ObjectInstance) as double?;
-
-                if (percentage == null || percentage <= 0.0)
-                    return new ValidationResult(ErrorMessage);
-
-                else return ValidationResult.Success;
-            }
+            protected override ValidationResult? IsValid(object? value, ValidationContext _) =>
+                //dem Attribut wird automatisch der Wert des Propertires DiscountPercentage übergeben
+                value is not double percentage || percentage <= 0.0 ? Fail() : SuccessResult;
         }
 
     }

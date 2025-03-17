@@ -8,7 +8,7 @@ namespace EvilCorp2000.Pages.Utilities
     {
         public static ValidatedProduct CreateValidatedProduct(ProductManagementProductDTO selectedProduct, List<Guid> categoryIds)
         {
-            return new ValidatedProduct
+            return new ()
             {
                 ProductId = selectedProduct.ProductId,
                 ProductPicture = selectedProduct.ProductPicture,
@@ -24,25 +24,24 @@ namespace EvilCorp2000.Pages.Utilities
 
         public static ProductManagementProductDTO CreateProductToStoreDTO(ValidatedProduct validatedProduct, List<CategoryDTO> categories)
         {
-            return new ProductManagementProductDTO
+            return new ()
             {
                 ProductName = validatedProduct.ProductName,
                 ProductPicture = validatedProduct.ProductPicture,
-                AmountOnStock = validatedProduct.AmountOnStock.Value,
-                Description = validatedProduct.Description,
+                AmountOnStock = validatedProduct.AmountOnStock ?? 0,
+                Description = validatedProduct.Description ?? "",
                 Categories = categories,
                 Discounts = validatedProduct.Discounts,
-                Price = validatedProduct.Price.Value,
+                Price = validatedProduct.Price ?? 0.0m,
                 ProductId = validatedProduct.ProductId,
             };
         }
 
 
         //Es wird immer Euro verwendet
-        public static string FormatAsEuro(decimal price)
-        {
-            return price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
-        }
+        public static string FormatAsEuro(decimal price) =>
+            price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
+        
 
 
 

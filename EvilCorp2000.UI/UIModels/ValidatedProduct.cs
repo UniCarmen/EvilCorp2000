@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using BusinessLayer.Models;
+﻿using BusinessLayer.Models;
+using System.ComponentModel.DataAnnotations;
 //using static EvilCorp2000.UIModels.NewProductValidations;
 
 namespace EvilCorp2000.UIModels
@@ -19,7 +19,7 @@ namespace EvilCorp2000.UIModels
         public string? Description { get; set; } = "";
 
         //[Required(ErrorMessage = "Category required")] //- funktioniert nicht bei GuidList
-        [GuidListValidation(ErrorMessage = "Please select at least one category.")]
+        [GuidListValidation("Please select at least one category.")]
         [Display(Name = "Category")]
         public List<Guid> SelectedCategoryIds { get; set; } = [];
 
@@ -41,18 +41,13 @@ namespace EvilCorp2000.UIModels
 
         //TODO: Status: Aktiv / nicht aktiv??
 
-        public class GuidListValidationAttribute : ValidationAttribute
+
+        public class GuidListValidationAttribute : BaseValidationAttribute
         {
-            //Nullable, weil Validation.Success null repräsentiert... zeigt einfach an, dass die Validierung erfolgreich war
-            protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            {
-                var list = value as IList<Guid>;
-                if (list == null || !list.Any())
-                {
-                    return new ValidationResult(ErrorMessage);
-                }
-                return ValidationResult.Success;
-            }
+            public GuidListValidationAttribute(string errorMessage) : base(errorMessage) { }
+
+            protected override ValidationResult? IsValid(object? value, ValidationContext _) =>
+                ((value is not IList<Guid> list) || !list.Any() ? Fail() : SuccessResult);
         }
 
     }

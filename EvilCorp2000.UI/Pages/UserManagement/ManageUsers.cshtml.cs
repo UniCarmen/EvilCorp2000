@@ -99,7 +99,7 @@ namespace EvilCorp2000.Pages.UserManagement
         {
             try
             {
-                ModelState.Clear();
+                //ModelState.Clear();
 
                 if (string.IsNullOrWhiteSpace(NewUserEmail) || !new EmailAddressAttribute().IsValid(NewUserEmail))
                 {
@@ -149,7 +149,6 @@ namespace EvilCorp2000.Pages.UserManagement
                     }
                 }
 
-
                 return await OnGet();
             }
             catch (Exception ex)
@@ -162,7 +161,7 @@ namespace EvilCorp2000.Pages.UserManagement
 
         public async Task<IActionResult> OnPostShowDeletionInformation()//(string userEmail)
         {
-            ModelState.Clear();
+            //ModelState.Clear();
             await LoadDataAsync();
             ShowDeletionConfirmation = true;
 
@@ -174,7 +173,7 @@ namespace EvilCorp2000.Pages.UserManagement
 
         public async Task<IActionResult> OnPostHideDeletionInformation()//(string userEmail)
         {
-            ModelState.Clear();
+            //ModelState.Clear();
             await LoadDataAsync();
             //ShowDeletionConfirmation = false; --> nicht nötig, weil standardmäßig auf false
             return Page();
