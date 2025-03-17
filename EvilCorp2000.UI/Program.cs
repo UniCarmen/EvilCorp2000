@@ -45,6 +45,7 @@ builder.Host.UseSerilog((context, config) =>
 builder.Services.AddDbContext<EvilCorp2000Context>(options =>
     options.UseSqlServer(connectionString));
 
+
 //erzwingt Https und leitet automatisch zu https, selbst wenn explizit http angegeben wurde.
 builder.Services.AddHttpsRedirection(options =>
 {
@@ -79,16 +80,22 @@ app.UseSerilogRequestLogging();
 
 if (!app.Environment.IsDevelopment())
 {
-    //Error Handling - unerwartete Fehler
-    app.UseExceptionHandler("/Pages/Error");
-    //Weiterleitung bei erwarteten Fehlern an benutzerdefinierte Fehlerseiten
-    //app.UseStatusCodePagesWithReExecute("/Pages/ErrorNew/{0}"); 
+    //Weiterleitung bei erwarteten Fehlern an benutzerdefinierte Fehlerseiten, auch Production
+    app.UseStatusCodePagesWithReExecute("/ErrorNew/{0}");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-//Weiterleitung bei erwarteten Fehlern an benutzerdefinierte Fehlerseiten, auch Production
-app.UseStatusCodePagesWithReExecute("/Pages/ErrorNew/{0}");
+else
+{
+    //Error Handling - unerwartete Fehler
+    //Pfad: https://localhost:7135/Error/Error
+    app.UseExceptionHandler("/Error");
+
+    //Weiterleitung bei erwarteten Fehlern an benutzerdefinierte Fehlerseiten, auch Production
+    app.UseStatusCodePagesWithReExecute("/ErrorNew/{0}");
+}
+
 
 //F�r die Produktion muss auch ein SSL Zertifikat f�r HTTPS Seiten erstellt werden, z. B. �ber  Let's Encrypt
 //In Dev wird von VS automatisch eins eingerichtet

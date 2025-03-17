@@ -29,6 +29,10 @@ namespace DataAccess.Repositories
                     .Include(p => p.Categories)
                     .Include(p => p.Discounts)
                     .AsNoTracking()
+                    //reduce mulitple joinquery by ef core: 3 categories + 4 discounts: 12 lines (single query = standard)
+                    //produced many entries in the logs file
+                    //if theres more data, it's faster to use seperate queries (split query)
+                    .AsSplitQuery() 
                     .ToListAsync();
             }
             catch (DbUpdateException ex)
