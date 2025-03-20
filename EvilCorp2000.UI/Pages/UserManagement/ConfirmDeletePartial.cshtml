@@ -4,7 +4,7 @@
 
 <div class="modal-header">
     <h2>Confirm Deletion</h2>
-    <form method="post" asp-page-handler="HideDeletionInformation">
+    <form method="post" asp-page-handler="ToggleDeletionInformation">
         <input type="hidden" name="CloseCustomModal" />
         <button type="submit" class="btn-close" aria-label="Close"></button>
     </form>
@@ -12,11 +12,11 @@
 <p>Are you sure you want to delete <b>@Model.UserEmail</b></p>
 
 <div class="modal-footer">
-    <form method="post" asp-page-handler="HideDeletionInformation">
+    <form method="post" asp-page-handler="ToggleDeletionInformation" asp-route-showDeletionInformation="False">
         <input type="hidden" name="CloseCustomModal"/>
         <button type="submit" class="custom-button button-secondary m-1" aria-label="Close">Cancel</button>
     </form>
-    <form method="post" asp-page-handler="DeleteUser">
+    <form method="post" asp-page-handler="DeleteUser" asp-route-showDeletionInformation="False">
         <input type="hidden" name="UserEmail" value="@Model.UserEmail"/>
         <button type="submit" class="custom-button custom-button-danger" aria-label="Close">Yes, Delete</button>
     </form>

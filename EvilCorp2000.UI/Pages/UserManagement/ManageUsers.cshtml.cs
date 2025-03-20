@@ -1,11 +1,12 @@
-using DataAccess.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Security.Cryptography;
 
 namespace EvilCorp2000.Pages.UserManagement
 {
@@ -13,7 +14,6 @@ namespace EvilCorp2000.Pages.UserManagement
     public class ManageUsersModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<ManageUsersModel> _logger;
 
         //nur für Tests
@@ -32,7 +32,6 @@ namespace EvilCorp2000.Pages.UserManagement
         public ManageUsersModel(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, ILogger<ManageUsersModel> logger)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
             _logger = logger;
         }
 
@@ -42,21 +41,30 @@ namespace EvilCorp2000.Pages.UserManagement
             {
                 Users = await _userManager.Users.ToListAsync();
 
+                if (Users.IsNullOrEmpty())
+                {
+                    HandleWarning($"{Users} is null or empty.", "Users couldn't be loaded");
+                    return;
+                }
+
                 foreach (var user in Users)
                 {
                     var roles = await _userManager.GetRolesAsync(user);
                     UsersWithRoles.Add(new UserWithRole
                     {
                         Email = user.Email,
-                        Role = roles.FirstOrDefault()
+                        Role = roles.FirstOrDefault() ?? "No Role"
                     });
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError("There was a problem loading the users.", ex);
+                ExceptionHandling(ex, 
+                    $"There was an error loading {nameof(Users)} and {nameof(UsersWithRoles)}. :StackTrace {ex.StackTrace}", 
+                    "Users couldn't be loaded. Please try again");
             }
         }
+
 
         public async Task<IActionResult> OnGet()
         {
@@ -70,7 +78,7 @@ namespace EvilCorp2000.Pages.UserManagement
         {
             try
             {
-                if(UserEmail == null)
+                if (UserEmail == null)
                 {
                     ModelState.AddModelError(nameof(UserEmail), "Invalid user.");
                     return await OnGet();
@@ -85,13 +93,14 @@ namespace EvilCorp2000.Pages.UserManagement
                 var roles = await _userManager.GetRolesAsync(existingUser);
 
                 await _userManager.DeleteAsync(existingUser);
-                //await _userManager.RemoveFromRolesAsync(existingUser, roles);
+
                 return await OnGet();
             }
             catch (Exception ex)
             {
-                _logger.LogError("There was a problem deleting the user.", ex);
-                return Page();
+                return ExceptionHandling(ex,
+                    $"There was a problem deleting user {UserEmail}. StackTrace: {ex.StackTrace}", 
+                    "There was a problem deleting the user.");
             }
         }
 
@@ -99,8 +108,6 @@ namespace EvilCorp2000.Pages.UserManagement
         {
             try
             {
-                //ModelState.Clear();
-
                 if (string.IsNullOrWhiteSpace(NewUserEmail) || !new EmailAddressAttribute().IsValid(NewUserEmail))
                 {
                     ModelState.AddModelError(nameof(NewUserEmail), "Invalid email address.");
@@ -118,9 +125,14 @@ namespace EvilCorp2000.Pages.UserManagement
                 // Sicherstellen, dass die Rolle gültig ist
                 if (SelectedRole != "TaskDrone" && SelectedRole != "Overseer")
                 {
-                    ModelState.AddModelError(nameof(NewUserEmail), "Invalid role selected.");
+                    ModelState.AddModelError(nameof(SelectedRole), "Invalid role selected.");
                     return await OnGet();
                 }
+
+                //INFO: darf erst nach der Validierung kommen = erst, wenn das Formular korrekt gefüllt ist
+                //INFO: wenn es zu früh kommt, wird der Post nicht ausgeführt - erst, wenn mal ein zweites Mal klickt.
+                ModelState.Clear();
+
 
                 var newUser = new IdentityUser { UserName = NewUserEmail, Email = NewUserEmail };
                 string password = GenerateSecurePassword();
@@ -130,7 +142,8 @@ namespace EvilCorp2000.Pages.UserManagement
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(newUser, SelectedRole);
-                    Console.WriteLine($"This simulates an E-Mail: {SelectedRole} created: {NewUserEmail} | Password: {password}. Please Log in and change your password.");
+                    Console.WriteLine(
+                        $"This simulates an E-Mail: {SelectedRole} created: {NewUserEmail} | Password: {password}. Please Log in and change your password.");
 
                     NewUserEmail = string.Empty;
                     SelectedRole = "TaskDrone";
@@ -138,9 +151,9 @@ namespace EvilCorp2000.Pages.UserManagement
                     return await OnGet();
                 }
 
-                // TaskDrone created: drone123@evilcorp2000.com | Password: HDTr+6 
-                //drone795@evilcorp2000.com | Password: 5-2MdC
-                //Overseer created: overseerBiggs@evilcorp2000.com | Password: D2*c6-
+                //INFO: TaskDrone created: drone123@evilcorp2000.com | Password: HDTr+6 
+                //INFO: drone795@evilcorp2000.com | Password: 5-2MdC
+                //INFO: Overseer created: overseerBiggs@evilcorp2000.com | Password: D2*c6-
                 else
                 {
                     foreach (var error in result.Errors)
@@ -153,32 +166,64 @@ namespace EvilCorp2000.Pages.UserManagement
             }
             catch (Exception ex)
             {
-                _logger.LogError("There was a problem saving the new user.", ex);
-                return Page();
+                return ExceptionHandling(
+                    ex,
+                    $"There was a problem saving the new user {UserEmail} with role {SelectedRole}. StackTrace: {ex.StackTrace}", 
+                    "There was a problem saving the user.");
             }
         }
 
 
-        public async Task<IActionResult> OnPostShowDeletionInformation()//(string userEmail)
+        public async Task<IActionResult> OnPostToggleDeletionInformation(bool showDeletionInformation)
         {
-            //ModelState.Clear();
-            await LoadDataAsync();
-            ShowDeletionConfirmation = true;
+            try
+            {
+                await LoadDataAsync();
 
-            var existingUser = await _userManager.FindByEmailAsync(UserEmail);
-            UserId = Guid.Parse(existingUser.Id);
+                ModelState.Clear();
 
+                if (showDeletionInformation)
+                {
+                    ShowDeletionConfirmation = true;
+
+                    var existingUser = await _userManager.FindByEmailAsync(UserEmail);
+
+                    var userId = Guid.Empty;
+
+                    if (existingUser == null || !Guid.TryParse(existingUser.Id, out userId))
+                    {
+                        UserId = userId;
+                        ModelState.AddModelError(nameof(UserEmail), "Invalid user.");
+                        return Page();
+                    }
+                }
+
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                return ExceptionHandling(
+                    ex, 
+                    $"There was a problem getting user {UserEmail}. StackTrace: {ex.StackTrace}", 
+                    "There was a problem getting the user.");
+            }
+
+        }
+
+
+        private IActionResult ExceptionHandling(Exception ex, string logMessage, string userMessage)
+        {
+            _logger.LogError(ex, logMessage);
+            ModelState.AddModelError(string.Empty, userMessage);
             return Page();
         }
 
-        public async Task<IActionResult> OnPostHideDeletionInformation()//(string userEmail)
-        {
-            //ModelState.Clear();
-            await LoadDataAsync();
-            //ShowDeletionConfirmation = false; --> nicht nötig, weil standardmäßig auf false
-            return Page();
-        }
 
+        private void HandleWarning(string logMessage, string userMessage)
+        {
+            _logger.LogError(logMessage);
+            ModelState.AddModelError(string.Empty, userMessage);
+        }
 
 
         public string GenerateSecurePassword()
@@ -191,26 +236,40 @@ namespace EvilCorp2000.Pages.UserManagement
             string digitChars = "0123456789";
             string specialChars = "!@#$%^&*()-_=+";
 
-            var rnd = new Random();
+            var rng = RandomNumberGenerator.Create(); //Random(); --> kryptographisch nicht sicher
             var passwordChars = new List<char>();
 
-            // Garantiert, dass jede aktivierte Kategorie mindestens ein Zeichen enthält
-            if (passwordOptions.RequireUppercase) passwordChars.Add(upperCaseChars[rnd.Next(upperCaseChars.Length)]);
-            if (passwordOptions.RequireLowercase) passwordChars.Add(lowerCaseChars[rnd.Next(lowerCaseChars.Length)]);
-            if (passwordOptions.RequireDigit) passwordChars.Add(digitChars[rnd.Next(digitChars.Length)]);
-            if (passwordOptions.RequireNonAlphanumeric) passwordChars.Add(specialChars[rnd.Next(specialChars.Length)]);
+            // Garantiert, dass jede aktive Kategorie mindestens ein Zeichen enthält
+            if (passwordOptions.RequireUppercase) passwordChars.Add(GetRandomChar(upperCaseChars, rng));
+            if (passwordOptions.RequireLowercase) passwordChars.Add(GetRandomChar(lowerCaseChars, rng));
+            if (passwordOptions.RequireDigit) passwordChars.Add(GetRandomChar(digitChars, rng));
+            if (passwordOptions.RequireNonAlphanumeric) passwordChars.Add(GetRandomChar(specialChars, rng));
 
             // Auffüllen mit zufälligen Zeichen bis zur geforderten Länge
             string allValidChars = upperCaseChars + lowerCaseChars + digitChars + specialChars;
             while (passwordChars.Count < length)
             {
-                passwordChars.Add(allValidChars[rnd.Next(allValidChars.Length)]);
+                passwordChars.Add(GetRandomChar(allValidChars, rng));
             }
 
             // Passwort durchmischen und als String zurückgeben
-            return new string(passwordChars.OrderBy(_ => rnd.Next()).ToArray());
+            return new string(passwordChars.OrderBy(_ => GetRandomNumber(rng)).ToArray());
         }
 
+
+        private static char GetRandomChar(string chars, RandomNumberGenerator rng)
+        {
+            byte[] randomByte = new byte[1];
+            rng.GetBytes(randomByte);
+            return chars[randomByte[0] % chars.Length]; // Sicherstellen, dass wir in den Index-Bereich kommen
+        }
+
+        private static int GetRandomNumber(RandomNumberGenerator rng)
+        {
+            byte[] randomBytes = new byte[4]; // 32-Bit Integer
+            rng.GetBytes(randomBytes);
+            return BitConverter.ToInt32(randomBytes, 0) & int.MaxValue; // Positiven Wert erzeugen
+        }
 
         public class UserWithRole
         {

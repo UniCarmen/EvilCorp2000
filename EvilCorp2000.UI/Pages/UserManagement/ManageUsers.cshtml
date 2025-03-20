@@ -59,8 +59,8 @@
                         <td>
                             <div class="d-flex justify-content-end">
                                 User löschen
-                                
-                                <form method="post" asp-page-handler="ShowDeletionInformation">
+
+                                <form method="post" asp-page-handler="ToggleDeletionInformation" asp-route-showDeletionInformation="True">
                                     <input type="hidden" name="UserEmail" value="@user.Email"/>
                                     <button type="submit" class="btn-close"></button>
                                 </form>
