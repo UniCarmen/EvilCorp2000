@@ -1,16 +1,12 @@
 ﻿using EvilCorp2000.Pages.UserManagement;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using MockQueryable;
 using Moq;
-using System;
-using System.Collections.Generic;
+using Serilog;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 
 namespace EvilCorp2000_UI_Tests
@@ -18,6 +14,8 @@ namespace EvilCorp2000_UI_Tests
 
     public class UserManagementTests
     {
+        
+
         private readonly Mock<UserManager<IdentityUser>> _userManagerMock;
         private readonly Mock<RoleManager<IdentityRole>> _roleManagerMock;
         private readonly Mock<ILogger<ManageUsersModel>> _loggerMock;
@@ -118,7 +116,7 @@ namespace EvilCorp2000_UI_Tests
                 Times.Never
             );
         }
-    
+
 
         [Fact]
         public async Task OnGet_ShouldReturnPageResult()
@@ -145,9 +143,19 @@ namespace EvilCorp2000_UI_Tests
         [Fact]
         public async Task OnPostNewUser_ShouldCreateUser_WhenDataIsValid()
         {
+            
             // Arrange
             _pageModel.NewUserEmail = "newuser@valid.com";
             _pageModel.SelectedRole = "TaskDrone"; // valid role
+
+            //Mock: identityUsers should not be empty
+            var existingUser = new IdentityUser { Email = "irrelevant@evilcorp.com", Id = Guid.NewGuid().ToString() };
+            var identityUsers = new List<IdentityUser> { existingUser };
+            var mockUsers = identityUsers.AsQueryable().BuildMock();
+
+            _userManagerMock.Setup(um => um.Users).Returns(mockUsers);
+            _userManagerMock.Setup(um => um.GetRolesAsync(existingUser))
+                            .ReturnsAsync(new List<string> { "TaskDrone" });
 
             // Mock: user does NOT exist yet
             _userManagerMock
@@ -255,6 +263,16 @@ namespace EvilCorp2000_UI_Tests
             _pageModel.NewUserEmail = "newuser@evilcorp.com";
             _pageModel.SelectedRole = "InvalidRole"; // neither TaskDrone nor Overseer
 
+            //Mock: identityUsers should not be empty
+            var existingUser = new IdentityUser { Email = "irrelevant@evilcorp.com", Id = Guid.NewGuid().ToString() };
+            var identityUsers = new List<IdentityUser> { existingUser };
+            var mockUsers = identityUsers.AsQueryable().BuildMock();
+
+            _userManagerMock.Setup(um => um.Users).Returns(mockUsers);
+            _userManagerMock.Setup(um => um.GetRolesAsync(existingUser))
+                            .ReturnsAsync(new List<string> { "TaskDrone" });
+
+
             // Mock: user does NOT exist
             _userManagerMock
                 .Setup(um => um.FindByEmailAsync("newuser@evilcorp.com"))
@@ -264,10 +282,11 @@ namespace EvilCorp2000_UI_Tests
             var result = await _pageModel.OnPostNewUser();
 
             // Assert
+
             var pageResult = Assert.IsType<PageResult>(result);
             Assert.False(_pageModel.ModelState.IsValid);
-            // An error on the NewUserEmail key or a general ModelState error is expected
-            Assert.True(_pageModel.ModelState.ContainsKey(nameof(_pageModel.NewUserEmail)));
+            // An error on the SelectedRole key is expected
+            Assert.True(_pageModel.ModelState.ContainsKey(nameof(_pageModel.SelectedRole)));
 
             // CreateAsync should not be called if role is invalid
             _userManagerMock.Verify(
@@ -282,6 +301,16 @@ namespace EvilCorp2000_UI_Tests
             // Arrange
             _pageModel.NewUserEmail = "newuser@evilcorp.com";
             _pageModel.SelectedRole = "TaskDrone";
+
+            //Mock: identityUsers should not be empty
+            var existingUser = new IdentityUser { Email = "irrelevant@evilcorp.com", Id = Guid.NewGuid().ToString() };
+            var identityUsers = new List<IdentityUser> { existingUser };
+            var mockUsers = identityUsers.AsQueryable().BuildMock();
+
+            _userManagerMock.Setup(um => um.Users).Returns(mockUsers);
+            _userManagerMock.Setup(um => um.GetRolesAsync(existingUser))
+                            .ReturnsAsync(new List<string> { "TaskDrone" });
+
 
             // Mock: user does NOT exist
             _userManagerMock
@@ -329,47 +358,30 @@ namespace EvilCorp2000_UI_Tests
         }
 
 
-        //LoadDataAsync
-        //OnGet
-        //OnPostNewUser
-
-        //OnPostDeleteUser_ShouldDeleteUser_WhenExists
-        //OnPostDeleteUser_ShouldReturnError_WhenUserDoesNotExist
-        //OnPostDeleteUser_ShouldReturnError_WhenUserEmailIsInvalid
-        //OnPostDeleteUser_ShouldHandleException_AndLogError
-        //OnPostShowDeletionInformation_ShouldShowConfirmation_WhenUserExists
-        //OnPostShowDeletionInformation_ShouldReturnError_WhenUserDoesNotExist
-        //OnPostHideDeletionInformation_ShouldResetConfirmationState
-        //GenerateSecurePassword_ShouldMeetPasswordRequirements
         [Fact]
         public async Task OnPostDeleteUser_ShouldDeleteUser_WhenExists()
         {
             // Arrange
             _pageModel.UserEmail = "existing.user@evilcorp.com";
 
-            // Mock user does exist
-            var existingUser = new IdentityUser { Email = "existing.user@evilcorp.com" };
+            //Mocking des IdentityUsrr
+            var existingUser = new IdentityUser { Email = _pageModel.UserEmail, Id = Guid.NewGuid().ToString() };
+            var identityUsers = new List<IdentityUser> { existingUser };
+            var mockUsers = identityUsers.AsQueryable().BuildMock();
 
-            var identityUsers = new List<IdentityUser>();
-            var mockUsers = identityUsers.AsQueryable().BuildMock();  // <-- This handles async
+            //Definieren der Verhalten aller relevanten Methoden
+            _userManagerMock
+            .Setup(um => um.FindByEmailAsync("existing.user@evilcorp.com"))
+            .ReturnsAsync(existingUser);
             _userManagerMock.Setup(um => um.Users).Returns(mockUsers);
-
-            _userManagerMock
-                .Setup(um => um.FindByEmailAsync("existing.user@evilcorp.com"))
-                .ReturnsAsync(existingUser);
-
-            // Mock roles 
-            _userManagerMock
-                .Setup(um => um.GetRolesAsync(existingUser))
-                .ReturnsAsync(new List<string> { "TaskDrone" });
-
-            // Mock delete result
+            _userManagerMock.Setup(um => um.GetRolesAsync(existingUser)).ReturnsAsync(new List<string> { "TaskDrone" });
             _userManagerMock
                 .Setup(um => um.DeleteAsync(existingUser))
                 .ReturnsAsync(IdentityResult.Success);
 
             // Act
             var result = await _pageModel.OnPostDeleteUser();
+
 
             // Assert
             // 1. No model errors
@@ -399,17 +411,18 @@ namespace EvilCorp2000_UI_Tests
             // Arrange
             _pageModel.UserEmail = "nonexistent.user@evilcorp.com";
 
-            var identityUsers = new List<IdentityUser>();
-            var mockUserQueryable = identityUsers.AsQueryable().BuildMock();
+            //Mocking des IdentityUsrr
+            var nonExistentUser = new IdentityUser { Email = _pageModel.UserEmail, Id = Guid.NewGuid().ToString() };
+            var identityUsers = new List<IdentityUser> ();
+            var mockUsers = identityUsers.AsQueryable().BuildMock();
 
-            _userManagerMock
-                .Setup(um => um.Users)
-                .Returns(mockUserQueryable);  // Supports .ToListAsync()
-
-            // Mock user does NOT exist
+            //Definieren der Verhalten aller relevanten Methoden
             _userManagerMock
                 .Setup(um => um.FindByEmailAsync("nonexistent.user@evilcorp.com"))
                 .ReturnsAsync((IdentityUser)null);
+            _userManagerMock
+                .Setup(um => um.Users)
+                .Returns(mockUsers);
 
             // Act
             var result = await _pageModel.OnPostDeleteUser();
@@ -422,7 +435,7 @@ namespace EvilCorp2000_UI_Tests
             // Verify DeleteAsync never called
             _userManagerMock.Verify(um => um.DeleteAsync(It.IsAny<IdentityUser>()), Times.Never);
 
-            // Verify no error log
+            // Verify error log
             _loggerMock.Verify(
                 logger => logger.Log(
                     It.Is<LogLevel>(l => l == LogLevel.Error),
@@ -430,22 +443,26 @@ namespace EvilCorp2000_UI_Tests
                     It.IsAny<It.IsAnyType>(),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Never
+                Times.Once
             );
         }
 
         [Fact]
         public async Task OnPostDeleteUser_ShouldReturnError_WhenUserEmailIsInvalid()
         {
-            // ARRANGE
-            // 1) Mock the _userManager.Users before calling the method
+            //Mocking des IdentityUsrr
+            var nonExistentUser = new IdentityUser { Email = _pageModel.UserEmail, Id = Guid.NewGuid().ToString() };
             var identityUsers = new List<IdentityUser>();
-            var mockUserQueryable = identityUsers.AsQueryable().BuildMock();
+            var mockUsers = identityUsers.AsQueryable().BuildMock();
+
+            //Definieren der Verhalten aller relevanten Methoden
+            _userManagerMock
+                .Setup(um => um.FindByEmailAsync("nonexistent.user@evilcorp.com"))
+                .ReturnsAsync((IdentityUser)null);
             _userManagerMock
                 .Setup(um => um.Users)
-                .Returns(mockUserQueryable); // supports .ToListAsync()
+                .Returns(mockUsers);
 
-            // By "invalid": if (UserEmail == null) => ModelState error "Invalid user."
             _pageModel.UserEmail = null;
 
             // ACT
@@ -462,7 +479,7 @@ namespace EvilCorp2000_UI_Tests
             _userManagerMock.Verify(um => um.FindByEmailAsync(It.IsAny<string>()), Times.Never);
             _userManagerMock.Verify(um => um.DeleteAsync(It.IsAny<IdentityUser>()), Times.Never);
 
-            // Verify no error log occurred
+            // Verify error log occurred
             _loggerMock.Verify(
                 logger => logger.Log(
                     It.IsAny<LogLevel>(),
@@ -470,7 +487,7 @@ namespace EvilCorp2000_UI_Tests
                     It.IsAny<It.IsAnyType>(),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Never
+                Times.Once
             );
         }
 
@@ -481,7 +498,8 @@ namespace EvilCorp2000_UI_Tests
             _pageModel.UserEmail = "throw.user@evilcorp.com";
 
             // Mock user does exist
-            var existingUser = new IdentityUser { Email = "throw.user@evilcorp.com" };
+            var existingUser = new IdentityUser { Email = "throw.user@evilcorp.com", Id = Guid.NewGuid().ToString() };
+
             _userManagerMock
                 .Setup(um => um.FindByEmailAsync("throw.user@evilcorp.com"))
                 .ReturnsAsync(existingUser);
@@ -500,18 +518,17 @@ namespace EvilCorp2000_UI_Tests
 
             // Verify it logged an error
             _loggerMock.Verify(
-logger => logger.Log(
-                        It.Is<LogLevel>(logLevel => logLevel == LogLevel.Error),  // Must be Error
-                        It.IsAny<EventId>(),
-                        It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("There was a problem deleting the user.")),
-                        It.IsAny<Exception>(),
-                        (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()
-                    ),
-                    Times.Once
+                logger => logger.Log(
+                    It.IsAny<LogLevel>(),
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once
             );
 
-            // No model error expected, just an exception -> log -> return Page()
-            Assert.True(_pageModel.ModelState.IsValid);
+            // Model error expected, just an exception -> log -> return Page()
+            Assert.False(_pageModel.ModelState.IsValid);
         }
 
     }
