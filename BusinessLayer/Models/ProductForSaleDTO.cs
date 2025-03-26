@@ -10,6 +10,7 @@
         public string? ProductPicture { get; set; }
         public decimal Price { get; set; }
         public double? Discount { get; set; }
+
         //TODO: hier muss immer der aktuell geltende (also evtl. auch keiner) Discount geladen werden
         public decimal? DiscountedPrice { get; set; }
         public double? Rating { get; set; }

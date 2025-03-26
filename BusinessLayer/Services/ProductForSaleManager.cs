@@ -17,13 +17,13 @@ namespace BusinessLayer.Services
     {
         private readonly IDiscountRepository _discoutRepository;
         private readonly IProductRepository _productRepository;
-        private readonly ICategoryRepository _categoryRepository;
+        //private readonly ICategoryRepository _categoryRepository;
 
-        public ProductForSaleManager(IDiscountRepository discoutRepository, IProductRepository productRepository, ICategoryRepository categoryRepository)
+        public ProductForSaleManager(IDiscountRepository discoutRepository, IProductRepository productRepository/*, ICategoryRepository categoryRepository*/)
         {
             _discoutRepository = discoutRepository ?? throw new ArgumentNullException(nameof(discoutRepository));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
+            //_categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
         public async Task<List<ProductForSaleDTO>> GetProductsForSale()
@@ -31,25 +31,13 @@ namespace BusinessLayer.Services
             var products = await _productRepository
             .GetAllProductsAsync();
 
-            //categirien abrufen
-            //mit jointabelle abgleichen, welche Kategorie zu welchem mprodukgt
-
             List<ProductForSaleDTO> productsForSale = [];
 
             foreach (Product product in products)
             {
                 var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(product.ProductId);
 
-                //var categories = product.ProductCategoryMappings
-                //    .Select(mapping => mapping.Category.CategoryName)
-                //    .ToList();
-
-                //if (categories.Count == 0)
-                //{
-                //    throw new ArgumentNullException(nameof(categories));
-                //}
-
-                var productMapper = new Mappings.ProductMappings();
+                var productMapper = new ProductMappings();
 
                 productsForSale.Add(productMapper.ProductToProductForSaleDto(product, currentDiscount));
             }

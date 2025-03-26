@@ -11,7 +11,7 @@ namespace BusinessLayer.Mappings
         {
             productEntity = Utilities.ReturnValueOrThrowExceptionWhenNull(productEntity, "Category is null.");
 
-            decimal discountedPrice = 0.0m;
+            decimal? discountedPrice ;
             double discountedPercentage;
 
             //INFO: ?: Null Conditional Operator. wenn currentDiscount = null, dann wird DiscountPercentage gar nicht erst aufgerufen
@@ -21,7 +21,7 @@ namespace BusinessLayer.Mappings
             //INFO: ?: -> ternärer Operator (=if ? = true, dann das : false, dann das)
             discountedPrice = discountedPercentage > 0 ?
                 productEntity.ProductPrice * (decimal)((100 - discountedPercentage) / 100)
-                : 0.0m;
+                : null;
 
             //INFO: ersetzt:
             //if (currentDiscount != null && currentDiscount.DiscountPercentage != 0.0)

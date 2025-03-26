@@ -70,3 +70,91 @@ button {
     button:hover {
         background: red;
     }
+
+.strike {
+    text-decoration: line-through;
+}
+
+.highlighted-price {
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+.product-box {
+    position: relative;
+    display: inline-block;
+    padding: 10px;
+    width: 200px;
+}
+
+
+.ribbon {
+    position: absolute;
+    top: 10px;
+    right: -30px;
+    transform: rotate(45deg);
+    background-color: #e60000;
+    color: white;
+    padding: 5px 40px;
+    font-size: 0.9em;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+}
+
+.highlight-section {
+    margin: 40px 0;
+    padding: 30px;
+    background: rgba(30, 0, 0, 0.8);
+    border: 2px solid #ff0000;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+    text-align: center;
+}
+
+    .highlight-section h2 {
+        font-size: 2em;
+        margin-bottom: 20px;
+        color: #ff4d4d;
+        text-shadow: 0 0 5px #000;
+    }
+
+.highlight-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.highlight-card-box {
+    position: relative;
+    display: inline-block;
+    padding: 10px;
+    width: 500px;
+}
+
+.highlight-card {
+    background: #1a0000;
+    border: 2px solid #a60000;
+    border-radius: 10px;
+    padding: 15px;
+    width: 520px;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+    transition: transform 0.2s ease-in-out;
+    overflow: hidden; /*überstehendes Bild wird abgeschnitten */
+    position: relative;
+}
+
+    .highlight-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        display: block;
+        object-fit: cover;
+        max-height: 400px;
+        position: relative;        
+    }
+
+    .highlight-card:hover {
+        transform: scale(1.05);
+    }
