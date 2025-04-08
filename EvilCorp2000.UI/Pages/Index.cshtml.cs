@@ -14,6 +14,7 @@ namespace EvilCorp2000.Pages
 
         public List<ProductForSaleDTO> ProductsForSale { get; private set; } = [];
 
+        public List<ProductForSaleDTO> RandomDiscountedProducts { get; set; } = [];
 
         public IndexModel(IProductForSaleManager productForSaleManager, ILogger<IndexModel> logger)
         {
@@ -27,6 +28,17 @@ namespace EvilCorp2000.Pages
             try
             {
                 ProductsForSale = await _productForSaleManager.GetProductsForSale();
+
+                var discountedProducts = ProductsForSale.Where(p => p.DiscountedPrice.HasValue).ToList();
+                if (discountedProducts.Count() >= 2)
+                {
+                    var random = new Random();
+                    var randomDiscountedProducts = discountedProducts
+                        .OrderBy(_ => random.Next())
+                        .Take(2)
+                        .ToList();
+                    RandomDiscountedProducts = randomDiscountedProducts;
+                };
             }
             catch (DbUpdateException ex)
             {

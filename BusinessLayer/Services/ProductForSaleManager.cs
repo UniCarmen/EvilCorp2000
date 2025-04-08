@@ -5,6 +5,7 @@ using DataAccess.Repositories;
 using DataAccess.Entities;
 using BusinessLayer.Models;
 using Microsoft.Extensions.Logging;
+using static Shared.Utilities.Utilities;
 
 namespace BusinessLayer.Services
 {
@@ -26,10 +27,11 @@ namespace BusinessLayer.Services
             //_categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
-        public async Task<List<ProductForSaleDTO>> GetProductsForSale()
+        public async Task<List<ProductForSaleDTO>> GetProductsForSale(ProductSortOrder? sortOrder = null)
+            //optionaler Parameter zur Sortierung / Filterung
         {
             var products = await _productRepository
-            .GetAllProductsAsync();
+            .GetAllProductsAsync(sortOrder);
 
             List<ProductForSaleDTO> productsForSale = [];
 

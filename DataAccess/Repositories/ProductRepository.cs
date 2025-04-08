@@ -1,11 +1,14 @@
 ﻿using DataAccess.DBContexts;
 using DataAccess.Entities;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Shared.Utilities;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Runtime.ConstrainedExecution;
+using static Shared.Utilities.Utilities;
 
 namespace DataAccess.Repositories
 {
@@ -21,25 +24,65 @@ namespace DataAccess.Repositories
             _logger = logger;
         }
 
-        public async Task<List<Product>> GetAllProductsAsync()
+        public async Task<List<Product>> GetAllProductsAsync(ProductSortOrder? sortOrder = null)
         {
             try
             {
-                return await _context.Products
+                IQueryable<Product> query = _context.Products
                     .Include(p => p.Categories)
                     .Include(p => p.Discounts)
                     .AsNoTracking()
-                    //reduce mulitple joinquery by ef core: 3 categories + 4 discounts: 12 lines (single query = standard)
-                    //produced many entries in the logs file
-                    //if theres more data, it's faster to use seperate queries (split query)
-                    .AsSplitQuery() 
-                    .ToListAsync();
+                    .AsSplitQuery(); //INFO: teilt Abfrage in mehrere einfache SQL-Abfragen, verbessert Performance bei bielen Includes.
+
+                //für Filter -> checken, searchTerm als Parameter, ich bräuchte auch Kategorie, Bewertung und sowas als Parameter... Suchtyp anlegen?
+                //if (!string.IsNullOrEmpty(searchTerm))
+                //{
+                //    query = query.Where(p => p.ProductName.Contains(searchTerm));
+                //}
+
+
+                query = sortOrder switch
+                {
+                    ProductSortOrder.PriceAsc => query.OrderBy(p => p.ProductPrice),
+                    ProductSortOrder.PriceDesc => query.OrderByDescending(p => p.ProductPrice),
+                    ProductSortOrder.DiscountAsc => query
+                        //nur Produkte mit aktivem Rabatt    
+                        .Select(p => new
+                        {
+                            Product = p,
+                            ActiveDiscount = p.Discounts
+                                .Where(d => d.StartDate <= DateTime.Now && d.EndDate >= DateTime.Now)
+                                .FirstOrDefault()
+                        })
+                        //Produkte werden sortiert: mit aktivem Discount der Höhe nach, alle ohne DIscount am Ende der Liste mit double.MaxValue
+                        .OrderBy(x => x.ActiveDiscount != null ? x.ActiveDiscount.DiscountPercentage : double.MaxValue)
+                        .Select(x => x.Product),
+                    ProductSortOrder.DiscountDesc => query
+                        .Select(p => new
+                        {
+                            Product = p,
+                            ActiveDiscount = p.Discounts
+                                    .Where(d => d.StartDate <= DateTime.Now && d.EndDate >= DateTime.Now)
+                                    .FirstOrDefault()
+                        })
+                            .OrderByDescending(x => x.ActiveDiscount != null ? x.ActiveDiscount.DiscountPercentage : double.MinValue)
+                            .Select(x => x.Product),
+                    _ => query
+                };
+
+                // PAGINATION - checken, pageNumber und pageSize als parameter - > paging typ anlegen, damit nicht zu viele parameter?
+                //query = query.Skip((pageNumber - 1) * pageSize)
+                //             .Take(pageSize);
+
+                //ausführen der Abfrage und Rückgabe, bis hier kein DB-Zugriff, Sortierung findet in DB statt.
+                return await query.ToListAsync();
             }
             catch (DbUpdateException ex)
-{
+            {
                 _logger.LogError(ex, $"Database error while getting the products");
                 throw;
             }
+            
         }
 
         //INFO: Product ist nullable, damit die Methode weiß, dass etwas nullable zurückgegeben werden kann

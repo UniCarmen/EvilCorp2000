@@ -8,6 +8,7 @@ namespace Shared.Utilities
 {
     public static class Utilities
     {
+        public enum ProductSortOrder { Default, PriceAsc, PriceDesc, DiscountDesc, DiscountAsc }
 
         //TODO1: generische Methoden für die Nullprüfung in einem Sharedprojekt anlegen? So kann ich alles auslagern
         //TODO1: evtl diese Schreibweise testen / verwenden: ArgumentNullException.ThrowIfNull(category, nameof(category));
@@ -30,7 +31,7 @@ namespace Shared.Utilities
 
 
 
-
+        //TODO:
         //DADURCH GEWINNE ICH NICHTS... EVTL, WENN ICH MEHR IM CATCH STEHEN HABE
         //LOHTN SICH IM MOMENT NOCH NICHT, DAS AUSZULAGERN IN SHARED
         //public static class ExceptionHandler

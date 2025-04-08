@@ -36,7 +36,7 @@ namespace BusinessLayerTests
 
             //INFO: Setup Methoden sagen, was passieren soll, wenn die RepoFktn aufgerufen werden
             //ReturnsAsync gibt hier eine Liste zurück, als würde sie aus einer Datenbank kommen
-            _productRepositoryMock.Setup(repo => repo.GetAllProductsAsync()).ReturnsAsync(products);
+            _productRepositoryMock.Setup(repo => repo.GetAllProductsAsync(null)).ReturnsAsync(products);
 
             // Act
             var result = await _productManager.GetProductsForInternalUse();

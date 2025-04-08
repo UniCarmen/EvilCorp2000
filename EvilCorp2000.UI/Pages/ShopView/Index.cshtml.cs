@@ -1,50 +1,82 @@
 using BusinessLayer.Models;
 using BusinessLayer.Services;
+using DataAccess.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using DataAccess.Repositories;
-using EvilCorp2000.UIModels;
+using Microsoft.CodeAnalysis.Options;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client.Extensions.Msal;
+using Serilog;
+using static Shared.Utilities.Utilities;
 
 namespace EvilCorp2000.Pages
 {
-
-    //!!!NOCH KEINE TESTS
-
-    public class ShopMainModel : PageModel
+    public class ShopViewModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;
         private readonly IProductForSaleManager _productForSaleManager;
 
 
-        public List<ProductForSaleDTO> ProductsForSale { get; set; }
+        public List<ProductForSaleDTO> ProductsForSale { get; private set; } = [];
+        public string SortOrder { get; set; } = "Default";
+        public List<string> SortOrderString { get;  } = [
+            ProductSortOrder.Default.ToString(),
+            ProductSortOrder.PriceAsc.ToString(),
+            ProductSortOrder.PriceDesc.ToString(),
+            ProductSortOrder.DiscountDesc.ToString(),
+            ProductSortOrder.DiscountAsc.ToString()];
 
-
-        public ShopMainModel(IProductForSaleManager productForSaleManager, ILogger<IndexModel> logger)
+        public ShopViewModel(IProductForSaleManager productForSaleManager, ILogger<IndexModel> logger)
         {
-            _logger = logger;
-            _productForSaleManager = productForSaleManager;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _productForSaleManager = productForSaleManager ?? throw new ArgumentNullException(nameof(productForSaleManager));
         }
 
 
-        public async Task OnGet()
+        public async Task<IActionResult> OnGet(string? sortOrderString = null)
         {
             try
             {
-                ProductsForSale = await _productForSaleManager.GetProductsForSale();
+                SortOrder = sortOrderString ?? "Default";
+                if (Enum.TryParse<ProductSortOrder>(sortOrderString, out var sortOrder))
+                {
+                    ProductsForSale = await _productForSaleManager.GetProductsForSale(sortOrder);
+                }
+                else { ProductsForSale = await _productForSaleManager.GetProductsForSale(); }
+
+
             }
             catch (DbUpdateException ex)
             {
-                ExecuteOnDBExceptionCatch("Fehler in der Datenbank", ex);
+                LogAndAddModelError("Fehler in der Datenbank", ex);
             }
-            catch (Exception ex) { _logger.LogError(ex, "Error getting the products from the database"); }
+            catch (Exception ex)
+            {
+                LogAndAddModelError("Fehler beim Laden der Produkte.", ex);
+            }
 
-        }
-
-        private IActionResult ExecuteOnDBExceptionCatch(string modelStateError, Exception ex)
-        {
-            ModelState.AddModelError(string.Empty, modelStateError);
             return Page();
         }
+
+
+        public async Task<IActionResult> OnPostSort (string sortOrder)
+        {
+            SortOrder = sortOrder; // Den Wert speichern, der vom Formular gesendet wurde
+            //neues loadSortedProducts - oder mit optionalem parameter in onget (enum oder so, welcher sortierungsreihenfolge)
+            //Backend SortedLoadingFunctionen und als Liste zurückgeben (async)
+
+            //sollen dann so geladen und in ProductsForSale
+
+            return Page();
+        }
+
+
+        private void LogAndAddModelError(string message, Exception ex)
+        {
+            _logger.LogError(ex, message);
+            ModelState.AddModelError(string.Empty, message);
+        }
+
+
     }
 }

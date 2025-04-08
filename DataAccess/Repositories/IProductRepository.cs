@@ -1,4 +1,5 @@
 ﻿using DataAccess.Entities;
+using static Shared.Utilities.Utilities;
 
 namespace DataAccess.Repositories
 {
@@ -6,7 +7,7 @@ namespace DataAccess.Repositories
     {
         Task AddProduct(Product product);
         Task DeleteProduct(Guid productId);
-        Task<List<Product>> GetAllProductsAsync();
+        Task<List<Product>> GetAllProductsAsync(ProductSortOrder? sortOrder = null);
         Task<Product?> GetProductByIdWithCategoriesAnsdDiscounts(Guid id);
         Task<Product?> GetProductById(Guid id);
         Task UpdateProduct (Product productFromDB);

@@ -105,10 +105,11 @@ button {
 .highlight-section {
     margin: 40px 0;
     padding: 30px;
-    background: rgba(30, 0, 0, 0.8);
-    border: 2px solid #ff0000;
+    background: rgba(0, 0, 0, 0.8);
+    /*background: rgba(30, 0, 0, 0.8);*/
+    /*border: 2px solid #ff0000;*/
     border-radius: 12px;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+    /*box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);*/
     text-align: center;
 }
 
@@ -157,4 +158,109 @@ button {
 
     .highlight-card:hover {
         transform: scale(1.05);
+    }
+
+.stars-container {
+    display: inline-flex;
+    gap: 2px;
+    font-size: 1.5rem;
+}
+
+.star {
+    position: relative;
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    color: #ccc; /* Standard: leerer Stern */
+    font-style: normal;
+    overflow: hidden;
+}
+
+    /* Volle Sterne */
+    .star.full {
+        color: gold;
+    }
+
+    /* Teilgefüllter Stern */
+    .star.partial {
+        color: #ccc; /* Hintergrundstern */
+    }
+
+        .star.partial::before {
+            content: '★';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: var(--fill);
+            height: 100%;
+            color: gold;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+.star-precise {
+    font-size: 1.5rem;
+    display: inline-block;
+    background: linear-gradient( to right, gold var(--percent, 0%), #ccc var(--percent, 0%) );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+}
+
+/*.sorting-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-family: 'Arial', sans-serif;
+    color: white;
+}
+
+    .sorting-container label {
+        margin-right: 0.5rem;
+    }
+
+.sorting-select {
+    padding: 0.4rem;
+    border-radius: 0.25rem;
+    border: 1px solid #444;
+    background-color: #1a1a1a;
+    color: white;
+}
+*/
+
+.sorting-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 2px solid #a60000;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+}
+
+    .sorting-container label {
+        margin-right: 0.5rem;
+        font-size: 1.2em;
+        color: #ff4d4d;
+        text-shadow: 0 0 5px #000;
+    }
+
+.sorting-select {
+    padding: 0.5rem;
+    border: 2px solid #a60000;
+    background-color: #1a1a1a;
+    color: #ff4d4d;
+    border-radius: 4px;
+    font-size: 1em;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+    .sorting-select:hover {
+        background-color: #2a2a2a;
+        color: #ff0000;
+        border-color: #ff0000;
     }

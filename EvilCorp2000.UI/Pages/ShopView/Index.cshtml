@@ -1,39 +1,111 @@
 ﻿@page
-@using BusinessLayer.Models
-@model ShopMainModel
+@model ShopViewModel
 @{
-    ViewData["Title"] = "Home page";
-    var test = "<b>Hi</b>";
+    ViewData["Title"] = "Villain Shop";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@* Seitenindividuelle Verwendung von Stylesheets *@
+@section Styles {
+    <link rel="stylesheet" href="~/css/shopStyle.css" />
+}
+
+
+@* Sorting UI *@
+@* <div class="sorting-container">
+    <form method="post">
+        <label for="sortSelect">Sort by:</label>
+        <select id="sortSelect" name="SortOrder" class="sorting-select" onchange="this.form.submit()">
+            <option value="default" selected>Default</option>
+            <option value="priceAsc">Price: Low to High</option>
+            <option value="priceDesc">Price: High to Low</option>
+            <option value="discountDesc">Discount: High to Low</option>
+            <option value="discountAsc">Discount: Low to High</option>
+        </select>
+    </form>
+</div> *@
+
+<div class="mb-3">
+    <form method="get">
+        <select name="sortOrderString" class="sorting-select" onchange="this.form.submit()">
+        @foreach (var order in Model.SortOrderString)
+        {
+            @* <option value="@order">@order</option> *@
+            @if (order == Model.SortOrder)
+            {
+                <option value="@order" selected>@order</option>
+            }
+            else
+            {
+                <option value="@order">@order</option>
+            }
+        }
+    </select>
+    </form>
 </div>
 
-<p>@test</p>
-<p>@Html.Raw(test)</p>
 
 
 
-<h2>Products</h2>
+<div class="container">
+    <h2>All Products</h2>
+    <div class="product-grid">
+        @foreach (var product in Model.ProductsForSale)
+        {
+            <div class="product-card">
 
-@foreach (ProductForSaleDTO product in Model.ProductsForSale)
-{
-    <div>
-        <p>
-            <h5>@product.ProductName.Trim()</h5>
-            @if (@product.Categories.Count != 0)
-            { 
-                var categoryLine = @product.Categories.Aggregate((c1, c2) => c1 + ", " + c2);
-                <b>@categoryLine</b>
-                
-            }
-        </p>
-        <p>@product.Price</p>
-        <p>@product.Description</p>
+                <h3>@product.ProductName</h3>
+                @if (product.DiscountedPrice.HasValue)
+                {
+                    <div class="product-box">
+                        <img src="@product.ProductPicture" alt="@product.ProductName" />
+                        <div class="ribbon">@($"{product.Discount.Value}%")</div>
+                    </div>
+                }
+                else
+                {
+                    <img src="@product.ProductPicture" alt="@product.ProductName" />
+                }
+
+                <p>@product.Description</p>
+
+                @if (product.Rating.HasValue)
+                {
+                    <p>@product.Rating.Value.ToString()</p>
+
+
+                    double rating = product.Rating.Value; // z. B. 4.3
+                    var fillPercents = Enumerable.Range(0, 5).Select(i =>
+                    {
+                        if (i < Math.Floor(rating)) return 100;
+                        if (i > rating) return 0;
+                        return (int)((rating - Math.Floor(rating)) * 100);
+                    }).ToList();
+
+
+                    <div class="stars-container">
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            <span class="star-precise" style="--percent: @fillPercents[i]%">★</span>
+                        }
+                    </div>
+                }
+
+                @if (product.DiscountedPrice.HasValue)
+                {
+                    <div class="product-box">
+                        <span class="price strike">@product.Price.ToString("C")</span>
+                        <span class="highlighted-price">@product.DiscountedPrice.Value.ToString("C")</span>
+                    </div>
+                }
+                else
+                {
+                    <span class="price">@product.Price.ToString("C")</span>
+                }
+                <form method="post">
+                    <input type="hidden" name="productId" value="@product.ProductId" />
+                    <button type="submit">Add to Cart</button>
+                </form>
+            </div>
+        }
     </div>
-    
-
-}
-
+</div>
