@@ -67,6 +67,18 @@ namespace DataAccess.Repositories
                         })
                             .OrderByDescending(x => x.ActiveDiscount != null ? x.ActiveDiscount.DiscountPercentage : double.MinValue)
                             .Select(x => x.Product),
+                    ProductSortOrder.RatingDesc => query
+                        .OrderByDescending(p => p.Rating != null ? p.Rating : double.MinValue),
+                    ProductSortOrder.RatingAsc => query
+                        .OrderBy(p => p.Rating != null ? p.Rating : double.MaxValue),
+                    ProductSortOrder.NameAsc => query
+                        .OrderBy(p => p.ProductName),
+                    ProductSortOrder.NameDesc => query
+                        .OrderByDescending(p => p.ProductName),
+                    ProductSortOrder.StockAsc => query
+                        .OrderBy(p => p.AmountOnStock),
+                    ProductSortOrder.StockDesc => query
+                        .OrderByDescending(p => p.AmountOnStock),
                     _ => query
                 };
 

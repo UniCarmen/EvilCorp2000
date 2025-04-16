@@ -1,10 +1,11 @@
 ﻿using BusinessLayer.Models;
+using static Shared.Utilities.Utilities;
 
 namespace BusinessLayer.Services
 {
     public interface IInternalProductManager
     {
-        Task<List<ProductManagementProductDTO>> GetProductsForInternalUse();
+        Task<List<ProductManagementProductDTO>> GetProductsForInternalUse(ProductSortOrder? sortOrderString = null);
         Task<ProductManagementProductDTO> GetProductForInternalUse(Guid id);
         Task<List<CategoryDTO>> GetCategories();
         Task SaveProductToStore(ProductManagementProductDTO productToStore);

@@ -11,18 +11,29 @@ using EvilCorp2000.UIModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics;
+using static Shared.Utilities.Utilities;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
     public partial class ProductManagementModel
     {
 
-        public async Task LoadDataAsync()
+
+        public async Task LoadDataAsync(string? sortOrderString = null)
         {
             try
             {
-                products = await _internalProductManager.GetProductsForInternalUse();
+                if(Enum.TryParse<ProductSortOrder>(sortOrderString, out var sortOrder))
+                {
+                    products = await _internalProductManager.GetProductsForInternalUse(sortOrder);
+                }
+                else
+                {
+                    products = await _internalProductManager.GetProductsForInternalUse();
+                }
+                
                 Categories = await _internalProductManager.GetCategories();
+                SortOrder = sortOrderString ?? "Default";
             }
             catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }
 

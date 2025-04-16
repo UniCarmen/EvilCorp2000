@@ -19,12 +19,15 @@ namespace EvilCorp2000.Pages
 
         public List<ProductForSaleDTO> ProductsForSale { get; private set; } = [];
         public string SortOrder { get; set; } = "Default";
-        public List<string> SortOrderString { get;  } = [
-            ProductSortOrder.Default.ToString(),
-            ProductSortOrder.PriceAsc.ToString(),
-            ProductSortOrder.PriceDesc.ToString(),
-            ProductSortOrder.DiscountDesc.ToString(),
-            ProductSortOrder.DiscountAsc.ToString()];
+
+        public List<(string, string)> SortOrderAndDisplayStrings { get; } = [
+            (ProductSortOrder.Default.ToString(), "Default"),
+            (ProductSortOrder.PriceAsc.ToString(), "Price Ascending"),
+            (ProductSortOrder.PriceDesc.ToString(), "Price Descending"),
+            (ProductSortOrder.DiscountDesc.ToString(), "Discount Descending"),
+            (ProductSortOrder.DiscountAsc.ToString(), "Discount Ascending"),
+            (ProductSortOrder.RatingDesc.ToString(), "Rating")
+            ];
 
         public ShopViewModel(IProductForSaleManager productForSaleManager, ILogger<IndexModel> logger)
         {

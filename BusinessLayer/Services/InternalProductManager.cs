@@ -6,6 +6,7 @@ using BusinessLayer.Mappings;
 using static BusinessLayer.Services.ValidationService;
 using Shared.Utilities;
 using System.Diagnostics.CodeAnalysis;
+using static Shared.Utilities.Utilities;
 
 namespace BusinessLayer.Services
 {
@@ -30,9 +31,9 @@ namespace BusinessLayer.Services
 
         //TODO1: Methoden auslagern, vieles doppelt
 
-        public async Task<List<ProductManagementProductDTO>> GetProductsForInternalUse()
+        public async Task<List<ProductManagementProductDTO>> GetProductsForInternalUse(ProductSortOrder? sortOrderString = null)
         {
-            var products = await _productRepository.GetAllProductsAsync();
+            var products = await _productRepository.GetAllProductsAsync(sortOrderString);
 
             List<ProductManagementProductDTO> productsForInternalUse = [];
 

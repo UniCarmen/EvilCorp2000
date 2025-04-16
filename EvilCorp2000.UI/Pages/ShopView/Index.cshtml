@@ -11,32 +11,18 @@
 
 
 @* Sorting UI *@
-@* <div class="sorting-container">
-    <form method="post">
-        <label for="sortSelect">Sort by:</label>
-        <select id="sortSelect" name="SortOrder" class="sorting-select" onchange="this.form.submit()">
-            <option value="default" selected>Default</option>
-            <option value="priceAsc">Price: Low to High</option>
-            <option value="priceDesc">Price: High to Low</option>
-            <option value="discountDesc">Discount: High to Low</option>
-            <option value="discountAsc">Discount: Low to High</option>
-        </select>
-    </form>
-</div> *@
-
 <div class="mb-3">
     <form method="get">
         <select name="sortOrderString" class="sorting-select" onchange="this.form.submit()">
-        @foreach (var order in Model.SortOrderString)
+        @foreach (var order in Model.SortOrderAndDisplayStrings)
         {
-            @* <option value="@order">@order</option> *@
-            @if (order == Model.SortOrder)
+            @if (order.Item1 == Model.SortOrder)
             {
-                <option value="@order" selected>@order</option>
+                <option value="@order.Item1" selected>@order.Item2</option>
             }
             else
             {
-                <option value="@order">@order</option>
+                <option value="@order.Item1">@order.Item2</option>
             }
         }
     </select>

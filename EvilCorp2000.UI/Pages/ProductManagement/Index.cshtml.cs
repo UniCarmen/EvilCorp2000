@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using EvilCorp2000.UIModels;
 using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics;
+using static Shared.Utilities.Utilities;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -61,6 +62,35 @@ namespace EvilCorp2000.Pages.ProductManagement
         [BindProperty]
         public string CategoryIdsJson { get; set; }
 
+        public string SortOrder { get; set; } = "Default";
+        public List<string> SortOrderString { get; } = [
+            ProductSortOrder.Default.ToString(),
+            ProductSortOrder.PriceAsc.ToString(),
+            ProductSortOrder.PriceDesc.ToString(),
+            ProductSortOrder.DiscountDesc.ToString(),
+            ProductSortOrder.DiscountAsc.ToString(),
+            ProductSortOrder.RatingAsc.ToString(),
+            ProductSortOrder.RatingDesc.ToString(),
+            ProductSortOrder.NameAsc.ToString(),
+            ProductSortOrder.NameDesc.ToString(),
+            ProductSortOrder.StockAsc.ToString(),
+            ProductSortOrder.StockDesc.ToString()
+            ];
+
+        public List<(string, string)> SortOrderAndDisplayStrings { get; } = [
+            (ProductSortOrder.Default.ToString(), "Default"),
+            (ProductSortOrder.PriceAsc.ToString(), "Price Ascending"),
+            (ProductSortOrder.PriceDesc.ToString(), "Price Descending"),
+            (ProductSortOrder.DiscountDesc.ToString(), "Discount Descending"),
+            (ProductSortOrder.DiscountAsc.ToString(), "Discount Ascending"),
+            (ProductSortOrder.RatingDesc.ToString(), "Rating Descending"),
+            (ProductSortOrder.RatingAsc.ToString(),"Rating Ascending"),
+            (ProductSortOrder.NameAsc.ToString(),"Name Ascending"),
+            (ProductSortOrder.NameDesc.ToString(),"Name Descending"),
+            (ProductSortOrder.StockAsc.ToString(),"On Stock Ascending"),
+            (ProductSortOrder.StockDesc.ToString(), "On Stock Descending")
+            ];
+
         public NewProductModalPartialModel PartialModel
         {
             get => new NewProductModalPartialModel
@@ -76,15 +106,11 @@ namespace EvilCorp2000.Pages.ProductManagement
             set { }
         }
 
-
-        public async Task OnGet()
+        public async Task OnGet(string? sortOrderString = null)
         {
             try
             {
-                await LoadDataAsync();
-                //_logger.LogInformation("Test-Log: Dies ist ein Test für Logging.");
-                //_logger.LogWarning("Test-Log: Warnung für Logging.");
-                //_logger.LogError("Test-Log: Fehler für Logging.");
+                await LoadDataAsync(sortOrderString);
             }
             catch (DbUpdateException ex)
             {
