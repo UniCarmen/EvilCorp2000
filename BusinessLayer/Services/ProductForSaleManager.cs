@@ -6,6 +6,7 @@ using DataAccess.Entities;
 using BusinessLayer.Models;
 using Microsoft.Extensions.Logging;
 using static Shared.Utilities.Utilities;
+using Microsoft.Data.SqlClient;
 
 namespace BusinessLayer.Services
 {
@@ -27,15 +28,33 @@ namespace BusinessLayer.Services
             //_categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
-        public async Task<List<ProductForSaleDTO>> GetProductsForSale(ProductSortOrder? sortOrder = null)
+        public async Task<List<ProductForSaleDTO>> GetProductsForSale(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10) 
             //optionaler Parameter zur Sortierung / Filterung
         {
             var products = await _productRepository
-            .GetAllProductsAsync(sortOrder);
+            .GetAllProductsAsync(sortOrder, pageNumber, pageSize);
 
+            return await GetCurrentDiscountsForProducts(products);
+
+            //List<ProductForSaleDTO> productsForSale = [];
+
+            //foreach (Product product in products)
+            //{
+            //    var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(product.ProductId);
+
+            //    var productMapper = new ProductMappings();
+
+            //    productsForSale.Add(productMapper.ProductToProductForSaleDto(product, currentDiscount));
+            //}
+
+            //return productsForSale;
+        }
+
+        public async Task<List<ProductForSaleDTO>> GetCurrentDiscountsForProducts (List<Product> productsWithAllDiscounts)
+        {
             List<ProductForSaleDTO> productsForSale = [];
 
-            foreach (Product product in products)
+            foreach (Product product in productsWithAllDiscounts)
             {
                 var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(product.ProductId);
 
@@ -46,6 +65,15 @@ namespace BusinessLayer.Services
 
             return productsForSale;
         }
+
+        public async Task<List<ProductForSaleDTO>> GetHighlightProducts()
+        {
+            var products = await _productRepository
+            .GetHighlightProducts();
+
+            return await GetCurrentDiscountsForProducts(products);
+        }
+
 
         public async Task<ProductForSaleDTO> GetProductForSale(Guid id)
         {
@@ -58,11 +86,7 @@ namespace BusinessLayer.Services
 
             var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(id);
 
-            //var categories = productEntity.ProductCategoryMappings
-            //        .Select(mapping => mapping.Category.CategoryName)
-            //        .ToList();
-
-            var productMapper = new Mappings.ProductMappings();
+            var productMapper = new ProductMappings();
 
             return productMapper.ProductToProductForSaleDto(productEntity, currentDiscount);
         }

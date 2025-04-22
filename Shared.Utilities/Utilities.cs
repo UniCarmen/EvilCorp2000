@@ -10,9 +10,7 @@ namespace Shared.Utilities
     {
         public enum ProductSortOrder { Default, PriceAsc, PriceDesc, DiscountDesc, DiscountAsc, RatingAsc, RatingDesc, NameAsc, NameDesc, StockAsc, StockDesc }
 
-        //TODO1: generische Methoden für die Nullprüfung in einem Sharedprojekt anlegen? So kann ich alles auslagern
-        //TODO1: evtl diese Schreibweise testen / verwenden: ArgumentNullException.ThrowIfNull(category, nameof(category));
-
+        
         //INFO:  where T: class --> für Reftypen: string, eigene Objekte, nullable und nicht nullable
         [return: NotNull]
         public static T ReturnValueOrThrowExceptionWhenNull<T>(T value, string errorMessage) where T : class? //akzeptiert nullable und nicht nullable
@@ -29,7 +27,13 @@ namespace Shared.Utilities
             return value;
         }
 
+        public class ProductListReturn<T>
+        {
+            public List<T> ProductList = [];
+            public int ProductCount;
+            public int MaxPageCount;
 
+        }
 
         //TODO:
         //DADURCH GEWINNE ICH NICHTS... EVTL, WENN ICH MEHR IM CATCH STEHEN HABE

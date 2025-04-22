@@ -6,6 +6,6 @@ namespace BusinessLayer.Services
     public interface IProductForSaleManager
     {
         Task<ProductForSaleDTO> GetProductForSale(Guid id);
-        Task<List<ProductForSaleDTO>> GetProductsForSale(ProductSortOrder? sortOrder = null);
+        Task<List<ProductForSaleDTO>> GetProductsForSale(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10);
     }
 }

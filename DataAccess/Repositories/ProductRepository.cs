@@ -24,7 +24,40 @@ namespace DataAccess.Repositories
             _logger = logger;
         }
 
-        public async Task<List<Product>> GetAllProductsAsync(ProductSortOrder? sortOrder = null)
+        public async Task<List<Product>> GetHighlightProducts()
+        {
+            try
+            {
+                var random = new Random();
+
+                return await _context.Products
+                    .Include(p => p.Categories)
+                    .Include(p => p.Discounts)
+                    .AsNoTracking()
+                    .AsSplitQuery()
+                    //Producte mit aktivem Discount
+                    .Select(p => new
+                    {
+                        Product = p,
+                        ActiveDiscount = p.Discounts
+                                .Where(d => d.StartDate <= DateTime.Now && d.EndDate >= DateTime.Now)
+                                .FirstOrDefault()
+                    })
+                    .Select(x => x.Product)
+                    //zufällig 2 - versucht keinen Fehler bei Leerer Liste
+                    .OrderBy(_ => random.Next())
+                    .Take(2)
+                    .ToListAsync();
+
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, $"Database error while getting the products");
+                throw;
+            }
+        }
+
+        public async Task<List<Product>> GetAllProductsAsync(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10) 
         {
             try
             {
@@ -82,11 +115,22 @@ namespace DataAccess.Repositories
                     _ => query
                 };
 
-                // PAGINATION - checken, pageNumber und pageSize als parameter - > paging typ anlegen, damit nicht zu viele parameter?
-                //query = query.Skip((pageNumber - 1) * pageSize)
-                //             .Take(pageSize);
+                // TODO1: PAGINATION -> paging typ anlegen, damit nicht zu viele parameter?
 
-                //ausführen der Abfrage und Rückgabe, bis hier kein DB-Zugriff, Sortierung findet in DB statt.
+                query = query.OrderBy(p => p.ProductId)
+                    .Skip((pageNumber.Value - 1) * pageSize.Value)
+                    .Take(pageSize.Value);
+
+                var productList = await query.ToListAsync();
+
+
+                var productCount = query.Count();
+
+                int maxPageCount = (int)Math.Ceiling((double)productCount / pageSize.Value);
+
+
+                //return (productList, productCount, maxPageCount);
+                
                 return await query.ToListAsync();
             }
             catch (DbUpdateException ex)
@@ -96,6 +140,7 @@ namespace DataAccess.Repositories
             }
             
         }
+
 
         //INFO: Product ist nullable, damit die Methode weiß, dass etwas nullable zurückgegeben werden kann
         //INFO: Der Aufrufer entscheidet, was passiert, wenn Null kommt -> Business-Entscheidung.
