@@ -31,13 +31,13 @@ namespace BusinessLayer.Services
 
         //TODO1: Methoden auslagern, vieles doppelt
 
-        public async Task<List<ProductManagementProductDTO>> GetProductsForInternalUse(ProductSortOrder? sortOrderString = null)
+        public async Task<ProductListReturn<ProductManagementProductDTO>> GetProductsForInternalUse(ProductSortOrder? sortOrderString = null)
         {
-            var products = await _productRepository.GetAllProductsAsync(sortOrderString);
+            var productListReturn = await _productRepository.GetAllProductsAsync(sortOrderString);
 
             List<ProductManagementProductDTO> productsForInternalUse = [];
 
-            foreach (Product product in products)
+            foreach (Product product in productListReturn.ProductList)
             {
                 (List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories) = 
                     MapDiscountsAndCategoriesToDTOs(product.Discounts.ToList(), product.Categories.ToList());
@@ -45,7 +45,14 @@ namespace BusinessLayer.Services
                 productsForInternalUse.Add(_productMapper.ProductToProductManagementProductDto(product, currentDiscounts, categories));
             }
 
-            return productsForInternalUse;
+            var productManagementProductReturn = new ProductListReturn<ProductManagementProductDTO>
+            {
+                ProductList = productsForInternalUse,
+                ProductCount = productListReturn.ProductCount,
+                MaxPageCount = productListReturn.MaxPageCount,
+            };
+
+            return productManagementProductReturn;
         }
 
 

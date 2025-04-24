@@ -23,15 +23,22 @@ namespace EvilCorp2000.Pages.ProductManagement
         {
             try
             {
+                ProductListReturn<ProductManagementProductDTO> productListReturn;
+
+
                 if(Enum.TryParse<ProductSortOrder>(sortOrderString, out var sortOrder))
                 {
-                    products = await _internalProductManager.GetProductsForInternalUse(sortOrder);
+                    productListReturn = await _internalProductManager.GetProductsForInternalUse(sortOrder);
                 }
                 else
                 {
-                    products = await _internalProductManager.GetProductsForInternalUse();
+                    productListReturn = await _internalProductManager.GetProductsForInternalUse();
                 }
                 
+                products = productListReturn.ProductList;
+
+                //Todo1 : noc maxcount etc als props
+
                 Categories = await _internalProductManager.GetCategories();
                 SortOrder = sortOrderString ?? "Default";
             }

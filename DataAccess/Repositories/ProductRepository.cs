@@ -30,7 +30,7 @@ namespace DataAccess.Repositories
             {
                 var random = new Random();
 
-                return await _context.Products
+                var products = await _context.Products
                     .Include(p => p.Categories)
                     .Include(p => p.Discounts)
                     .AsNoTracking()
@@ -43,11 +43,17 @@ namespace DataAccess.Repositories
                                 .Where(d => d.StartDate <= DateTime.Now && d.EndDate >= DateTime.Now)
                                 .FirstOrDefault()
                     })
+                    .Where(p => p.ActiveDiscount != null)
                     .Select(x => x.Product)
-                    //zufällig 2 - versucht keinen Fehler bei Leerer Liste
+                    .ToListAsync();
+                //zufällig 2 - versucht keinen Fehler bei Leerer Liste
+
+                var rand2 = products
                     .OrderBy(_ => random.Next())
                     .Take(2)
-                    .ToListAsync();
+                    .ToList();
+
+                return rand2;
 
             }
             catch (DbUpdateException ex)
@@ -57,7 +63,8 @@ namespace DataAccess.Repositories
             }
         }
 
-        public async Task<List<Product>> GetAllProductsAsync(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10) 
+        //public async Task<List<Product>> GetAllProductsAsync(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10) 
+        public async Task<ProductListReturn<Product>> GetAllProductsAsync(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10)
         {
             try
             {
@@ -129,9 +136,14 @@ namespace DataAccess.Repositories
                 int maxPageCount = (int)Math.Ceiling((double)productCount / pageSize.Value);
 
 
-                //return (productList, productCount, maxPageCount);
+                return new ProductListReturn<Product?> 
+                { 
+                    ProductList = productList, 
+                    ProductCount = productCount, 
+                    MaxPageCount = maxPageCount
+                };
                 
-                return await query.ToListAsync();
+                //return await query.ToListAsync();
             }
             catch (DbUpdateException ex)
             {

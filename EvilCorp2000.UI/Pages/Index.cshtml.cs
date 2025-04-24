@@ -3,6 +3,7 @@ using BusinessLayer.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace EvilCorp2000.Pages
 {
@@ -11,9 +12,7 @@ namespace EvilCorp2000.Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly IProductForSaleManager _productForSaleManager;
 
-
-        public List<ProductForSaleDTO> ProductsForSale { get; private set; } = [];
-
+        
         public List<ProductForSaleDTO> RandomDiscountedProducts { get; set; } = [];
 
         public IndexModel(IProductForSaleManager productForSaleManager, ILogger<IndexModel> logger)
@@ -23,22 +22,12 @@ namespace EvilCorp2000.Pages
         }
 
 
-        public async Task<IActionResult> OnGet()
+        public async Task<IActionResult> OnGet() //hier mit parametern?
         {
             try
             {
-                ProductsForSale = await _productForSaleManager.GetProductsForSale();
+                RandomDiscountedProducts = await _productForSaleManager.GetHighlightedProducts();
 
-                var discountedProducts = ProductsForSale.Where(p => p.DiscountedPrice.HasValue).ToList();
-                if (discountedProducts.Count() >= 2)
-                {
-                    var random = new Random();
-                    var randomDiscountedProducts = discountedProducts
-                        .OrderBy(_ => random.Next())
-                        .Take(2)
-                        .ToList();
-                    RandomDiscountedProducts = randomDiscountedProducts;
-                };
             }
             catch (DbUpdateException ex)
             {

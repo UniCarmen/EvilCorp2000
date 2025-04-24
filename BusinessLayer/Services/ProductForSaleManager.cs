@@ -28,14 +28,28 @@ namespace BusinessLayer.Services
             //_categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
-        public async Task<List<ProductForSaleDTO>> GetProductsForSale(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10) 
+        
+
+        public async Task<ProductListReturn<ProductForSaleDTO>> GetProductsForSale(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10) 
             //optionaler Parameter zur Sortierung / Filterung
         {
-            var products = await _productRepository
+            var productListReturn = await _productRepository
             .GetAllProductsAsync(sortOrder, pageNumber, pageSize);
 
-            return await GetCurrentDiscountsForProducts(products);
+            var productList = await GetCurrentDiscountsForProducts(productListReturn.ProductList);
 
+            var productForSaleReturn = new ProductListReturn<ProductForSaleDTO>
+            {
+                ProductList = productList,
+                ProductCount = productListReturn.ProductCount,
+                MaxPageCount = productListReturn.MaxPageCount,
+            };
+
+            return productForSaleReturn;
+            //return await GetCurrentDiscountsForProducts(productListReturn.ProductList);
+
+
+            //TODO1: kann das weg??
             //List<ProductForSaleDTO> productsForSale = [];
 
             //foreach (Product product in products)
@@ -66,13 +80,13 @@ namespace BusinessLayer.Services
             return productsForSale;
         }
 
-        public async Task<List<ProductForSaleDTO>> GetHighlightProducts()
+        public async Task<List<ProductForSaleDTO>> GetHighlightedProducts()
         {
-            var products = await _productRepository
-            .GetHighlightProducts();
+            var products = await _productRepository.GetHighlightProducts();
 
             return await GetCurrentDiscountsForProducts(products);
         }
+
 
 
         public async Task<ProductForSaleDTO> GetProductForSale(Guid id)

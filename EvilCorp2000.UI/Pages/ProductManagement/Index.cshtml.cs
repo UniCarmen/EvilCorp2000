@@ -36,6 +36,11 @@ namespace EvilCorp2000.Pages.ProductManagement
         //Evtl auch für Category und DiscountDTO
         public List<ProductManagementProductDTO>? products;
 
+        public int CountProducts { get; set; }
+        public int MaxPageCount { get; set; }
+        public int PageSize { get; set; }
+        public int PageNumber { get; set; }
+
         [BindProperty(SupportsGet = true)]
         public IFormFile? ImageFile { get; set; }
 

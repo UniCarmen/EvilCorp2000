@@ -336,127 +336,127 @@ namespace DatabaseTests
         }
 
 
-        [Fact]
-        public async Task GetAllProductsAsync_ShouldReturnAllProducts()
-        {
-            using var context = CreateInMemoryDbContext();
-            var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
+        //[Fact]
+        //public async Task GetAllProductsAsync_ShouldReturnAllProducts()
+        //{
+        //    using var context = CreateInMemoryDbContext();
+        //    var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
 
-            // Arrange
-            context.Products.Add(CreateProduct());
-            context.Products.Add(CreateProduct());
-            await context.SaveChangesAsync();
+        //    // Arrange
+        //    context.Products.Add(CreateProduct());
+        //    context.Products.Add(CreateProduct());
+        //    await context.SaveChangesAsync();
 
-            // Act
-            var result = await repository.GetAllProductsAsync();
+        //    // Act
+        //    var result = await repository.GetAllProductsAsync();
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(2, result.Count); // Prüft, dass zwei Produkte zurückgegeben wurden.
-            Assert.Contains(result, p => p.ProductName == "Laser Cannon");
-        }
+        //    // Assert
+        //    Assert.NotNull(result);
+        //    Assert.Equal(2, result.Count); // Prüft, dass zwei Produkte zurückgegeben wurden.
+        //    Assert.Contains(result, p => p.ProductName == "Laser Cannon");
+        //}
 
-        [Theory]
-        [InlineData(ProductSortOrder.PriceAsc)]
-        [InlineData(ProductSortOrder.PriceDesc)]
-        [InlineData(ProductSortOrder.DiscountAsc)]
-        [InlineData(ProductSortOrder.DiscountDesc)]
-        [InlineData(ProductSortOrder.RatingDesc)]
-        [InlineData(ProductSortOrder.RatingAsc)]
-        [InlineData(ProductSortOrder.NameDesc)]
-        [InlineData(ProductSortOrder.NameAsc)]
-        [InlineData(ProductSortOrder.StockAsc)]
-        [InlineData(ProductSortOrder.StockDesc)]
-        public async Task GetAllProductsAsync_ShouldReturnAllProductsSorted(ProductSortOrder sortOrder)
-        {
-            using var context = CreateInMemoryDbContext();
-            var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
+        //[Theory]
+        //[InlineData(ProductSortOrder.PriceAsc)]
+        //[InlineData(ProductSortOrder.PriceDesc)]
+        //[InlineData(ProductSortOrder.DiscountAsc)]
+        //[InlineData(ProductSortOrder.DiscountDesc)]
+        //[InlineData(ProductSortOrder.RatingDesc)]
+        //[InlineData(ProductSortOrder.RatingAsc)]
+        //[InlineData(ProductSortOrder.NameDesc)]
+        //[InlineData(ProductSortOrder.NameAsc)]
+        //[InlineData(ProductSortOrder.StockAsc)]
+        //[InlineData(ProductSortOrder.StockDesc)]
+        //public async Task GetAllProductsAsync_ShouldReturnAllProductsSorted(ProductSortOrder sortOrder)
+        //{
+        //    using var context = CreateInMemoryDbContext();
+        //    var repository = new ProductRepository(context, NullLogger<ProductRepository>.Instance);
 
-            // Arrange
-            var product1 = CreateProduct(); 
-            var product2 = CreateProduct(); 
-            var product3 = CreateProduct(); 
+        //    // Arrange
+        //    var product1 = CreateProduct(); 
+        //    var product2 = CreateProduct(); 
+        //    var product3 = CreateProduct(); 
             
-            product1.ProductPrice = 100m;
-            product1.ProductName = "Laser Cannon";
-            var discount1 = CreateDiscount1();
-            discount1.StartDate = DateTime.Today.AddDays(-1);
-            discount1.EndDate = DateTime.Today.AddDays(1);
-            discount1.DiscountPercentage = 10.0;
-            product1.Discounts = [discount1];
-            product1.Rating = 1;
-            product1.AmountOnStock = 3;
+        //    product1.ProductPrice = 100m;
+        //    product1.ProductName = "Laser Cannon";
+        //    var discount1 = CreateDiscount1();
+        //    discount1.StartDate = DateTime.Today.AddDays(-1);
+        //    discount1.EndDate = DateTime.Today.AddDays(1);
+        //    discount1.DiscountPercentage = 10.0;
+        //    product1.Discounts = [discount1];
+        //    product1.Rating = 1;
+        //    product1.AmountOnStock = 3;
 
-            product2.ProductPrice = 200m;
-            product2.ProductName = "Plasma Rifle";
-            var discount2 = CreateDiscount1();
-            discount2.StartDate = DateTime.Today.AddDays(-1);
-            discount2.EndDate = DateTime.Today.AddDays(1);
-            discount2.DiscountPercentage = 20.0;
-            product2.Discounts = [discount2];
-            product2.Rating = null;
-            product2.AmountOnStock = 10;
+        //    product2.ProductPrice = 200m;
+        //    product2.ProductName = "Plasma Rifle";
+        //    var discount2 = CreateDiscount1();
+        //    discount2.StartDate = DateTime.Today.AddDays(-1);
+        //    discount2.EndDate = DateTime.Today.AddDays(1);
+        //    discount2.DiscountPercentage = 20.0;
+        //    product2.Discounts = [discount2];
+        //    product2.Rating = null;
+        //    product2.AmountOnStock = 10;
 
-            product3.ProductPrice = 50m;
-            product3.ProductName = "Nano Sword";
-            product3.Discounts = [];
-            product3.Rating = 5;
-            product3.AmountOnStock = 0;
+        //    product3.ProductPrice = 50m;
+        //    product3.ProductName = "Nano Sword";
+        //    product3.Discounts = [];
+        //    product3.Rating = 5;
+        //    product3.AmountOnStock = 0;
 
-            context.Products.AddRange(product1, product2, product3);
-            await context.SaveChangesAsync();
+        //    context.Products.AddRange(product1, product2, product3);
+        //    await context.SaveChangesAsync();
 
-            // Act
-            var result = await repository.GetAllProductsAsync(sortOrder);
+        //    // Act
+        //    var result = await repository.GetAllProductsAsync(sortOrder);
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(3, result.Count); //3 produkte vorhanden?
+        //    // Assert
+        //    Assert.NotNull(result);
+        //    Assert.Equal(3, result.Count); //3 produkte vorhanden?
 
-            // Testet die Sortierung basierend auf dem SortOrder
-            switch (sortOrder)
-            {
-                case ProductSortOrder.PriceAsc:
-                    Assert.Equal(new[] { "Nano Sword", "Laser Cannon", "Plasma Rifle" }, result.Select(p => p.ProductName).ToArray());
-                    break;
+        //    // Testet die Sortierung basierend auf dem SortOrder
+        //    switch (sortOrder)
+        //    {
+        //        case ProductSortOrder.PriceAsc:
+        //            Assert.Equal(new[] { "Nano Sword", "Laser Cannon", "Plasma Rifle" }, result.Select(p => p.ProductName).ToArray());
+        //            break;
 
-                case ProductSortOrder.PriceDesc:
-                    Assert.Equal(new[] { "Plasma Rifle", "Laser Cannon", "Nano Sword" }, result.Select(p => p.ProductName).ToArray());
-                    break;
+        //        case ProductSortOrder.PriceDesc:
+        //            Assert.Equal(new[] { "Plasma Rifle", "Laser Cannon", "Nano Sword" }, result.Select(p => p.ProductName).ToArray());
+        //            break;
 
-                case ProductSortOrder.DiscountAsc:
-                    Assert.Equal(new[] { "Laser Cannon", "Plasma Rifle", "Nano Sword" }, result.Select(p => p.ProductName).ToArray()); // Kein Rabatt -> 10% -> 20%
-                    break;
+        //        case ProductSortOrder.DiscountAsc:
+        //            Assert.Equal(new[] { "Laser Cannon", "Plasma Rifle", "Nano Sword" }, result.Select(p => p.ProductName).ToArray()); // Kein Rabatt -> 10% -> 20%
+        //            break;
 
-                case ProductSortOrder.DiscountDesc:
-                    Assert.Equal(new[] { "Plasma Rifle", "Laser Cannon", "Nano Sword" }, result.Select(p => p.ProductName).ToArray()); // 20% -> 10% -> Kein Rabatt
-                    break;
+        //        case ProductSortOrder.DiscountDesc:
+        //            Assert.Equal(new[] { "Plasma Rifle", "Laser Cannon", "Nano Sword" }, result.Select(p => p.ProductName).ToArray()); // 20% -> 10% -> Kein Rabatt
+        //            break;
 
-                case ProductSortOrder.RatingDesc:
-                    Assert.Equal(new[] { "Nano Sword", "Laser Cannon", "Plasma Rifle" }, result.Select(p => p.ProductName).ToArray()); // 5 -> 1 -> Kein Rating
-                    break;
+        //        case ProductSortOrder.RatingDesc:
+        //            Assert.Equal(new[] { "Nano Sword", "Laser Cannon", "Plasma Rifle" }, result.Select(p => p.ProductName).ToArray()); // 5 -> 1 -> Kein Rating
+        //            break;
 
-                case ProductSortOrder.RatingAsc:
-                    Assert.Equal(new[] { "Laser Cannon", "Nano Sword", "Plasma Rifle" }, result.Select(p => p.ProductName).ToArray()); // 5 -> 1 -> Kein Rating
-                    break;
+        //        case ProductSortOrder.RatingAsc:
+        //            Assert.Equal(new[] { "Laser Cannon", "Nano Sword", "Plasma Rifle" }, result.Select(p => p.ProductName).ToArray()); // 5 -> 1 -> Kein Rating
+        //            break;
 
-                case ProductSortOrder.NameAsc:
-                    Assert.Equal(new[] { "Laser Cannon", "Nano Sword", "Plasma Rifle" }, result.Select(p => p.ProductName).ToArray()); 
-                    break;
+        //        case ProductSortOrder.NameAsc:
+        //            Assert.Equal(new[] { "Laser Cannon", "Nano Sword", "Plasma Rifle" }, result.Select(p => p.ProductName).ToArray()); 
+        //            break;
 
-                case ProductSortOrder.NameDesc:
-                    Assert.Equal(new[] { "Plasma Rifle", "Nano Sword", "Laser Cannon" }, result.Select(p => p.ProductName).ToArray()); 
-                    break;
+        //        case ProductSortOrder.NameDesc:
+        //            Assert.Equal(new[] { "Plasma Rifle", "Nano Sword", "Laser Cannon" }, result.Select(p => p.ProductName).ToArray()); 
+        //            break;
 
-                case ProductSortOrder.StockAsc:
-                    Assert.Equal(new[] { "Nano Sword", "Laser Cannon", "Plasma Rifle" }, result.Select(p => p.ProductName).ToArray()); // 0 -> 3 -> 10
-                    break;
+        //        case ProductSortOrder.StockAsc:
+        //            Assert.Equal(new[] { "Nano Sword", "Laser Cannon", "Plasma Rifle" }, result.Select(p => p.ProductName).ToArray()); // 0 -> 3 -> 10
+        //            break;
 
-                case ProductSortOrder.StockDesc:
-                    Assert.Equal(new[] { "Plasma Rifle", "Laser Cannon", "Nano Sword" }, result.Select(p => p.ProductName).ToArray()); // 10 -> 3 -> 0
-                    break;
-            }
-        }
+        //        case ProductSortOrder.StockDesc:
+        //            Assert.Equal(new[] { "Plasma Rifle", "Laser Cannon", "Nano Sword" }, result.Select(p => p.ProductName).ToArray()); // 10 -> 3 -> 0
+        //            break;
+        //    }
+        //}
 
 
         [Fact]

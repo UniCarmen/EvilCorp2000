@@ -5,7 +5,7 @@ namespace BusinessLayer.Services
 {
     public interface IInternalProductManager
     {
-        Task<List<ProductManagementProductDTO>> GetProductsForInternalUse(ProductSortOrder? sortOrderString = null);
+        Task<ProductListReturn<ProductManagementProductDTO>> GetProductsForInternalUse(ProductSortOrder? sortOrderString = null);
         Task<ProductManagementProductDTO> GetProductForInternalUse(Guid id);
         Task<List<CategoryDTO>> GetCategories();
         Task SaveProductToStore(ProductManagementProductDTO productToStore);

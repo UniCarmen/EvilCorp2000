@@ -16,6 +16,10 @@ namespace EvilCorp2000.Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly IProductForSaleManager _productForSaleManager;
 
+        public int CountProducts { get; set; }
+        public int MaxPageCount { get; set; }
+        public int PageSize { get; set; }
+        public int PageNumber { get; set; }
 
         public List<ProductForSaleDTO> ProductsForSale { get; private set; } = [];
         public string SortOrder { get; set; } = "Default";
@@ -41,11 +45,20 @@ namespace EvilCorp2000.Pages
             try
             {
                 SortOrder = sortOrderString ?? "Default";
+
+                ProductListReturn<ProductForSaleDTO> productListReturn;
+
                 if (Enum.TryParse<ProductSortOrder>(sortOrderString, out var sortOrder))
                 {
-                    ProductsForSale = await _productForSaleManager.GetProductsForSale(sortOrder);
+                    productListReturn = await _productForSaleManager.GetProductsForSale(sortOrder);
                 }
-                else { ProductsForSale = await _productForSaleManager.GetProductsForSale(); }
+                else { productListReturn = await _productForSaleManager.GetProductsForSale(); }
+
+                ProductsForSale = productListReturn.ProductList;
+
+                CountProducts = productListReturn.ProductCount;
+
+                MaxPageCount = productListReturn.MaxPageCount;
 
 
             }

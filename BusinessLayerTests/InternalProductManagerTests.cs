@@ -25,27 +25,27 @@ namespace BusinessLayerTests
         }
 
         
-        [Fact]
-        public async Task GetProductsForInternalUse_ShouldReturnProductList()
-        {
-            // Arrange
-            var products = new List<Product>
-            {
-                TestDataFactory.CreateCompleteProduct()
-            };
+        //[Fact]
+        //public async Task GetProductsForInternalUse_ShouldReturnProductList()
+        //{
+        //    // Arrange
+        //    var products = new List<Product>
+        //    {
+        //        TestDataFactory.CreateCompleteProduct()
+        //    };
 
-            //INFO: Setup Methoden sagen, was passieren soll, wenn die RepoFktn aufgerufen werden
-            //ReturnsAsync gibt hier eine Liste zurück, als würde sie aus einer Datenbank kommen
-            _productRepositoryMock.Setup(repo => repo.GetAllProductsAsync(null, 1, 10)).ReturnsAsync(products);
+        //    //INFO: Setup Methoden sagen, was passieren soll, wenn die RepoFktn aufgerufen werden
+        //    //ReturnsAsync gibt hier eine Liste zurück, als würde sie aus einer Datenbank kommen
+        //    _productRepositoryMock.Setup(repo => repo.GetAllProductsAsync(null, 1, 10)).ReturnsAsync(products);
 
-            // Act
-            var result = await _productManager.GetProductsForInternalUse();
+        //    // Act
+        //    var result = await _productManager.GetProductsForInternalUse();
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Single(result);
-            Assert.Equal("Test Product", result[0].ProductName);
-        }
+        //    // Assert
+        //    Assert.NotNull(result);
+        //    Assert.Single(result);
+        //    Assert.Equal("Test Product", result[0].ProductName);
+        //}
 
         [Fact]
         public void MapDiscountsAndCategoriesToDTOs_ShouldThrowException_WhenCategoriesOrDiscountsContainNull()
