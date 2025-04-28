@@ -33,6 +33,11 @@ namespace BusinessLayer.Services
         public async Task<ProductListReturn<ProductForSaleDTO>> GetProductsForSale(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10) 
             //optionaler Parameter zur Sortierung / Filterung
         {
+            pageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
+            pageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
+            sortOrder = sortOrder ?? ProductSortOrder.Default;
+
+
             var productListReturn = await _productRepository
             .GetAllProductsAsync(sortOrder, pageNumber, pageSize);
 

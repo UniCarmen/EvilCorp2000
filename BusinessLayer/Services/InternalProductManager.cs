@@ -7,6 +7,7 @@ using static BusinessLayer.Services.ValidationService;
 using Shared.Utilities;
 using System.Diagnostics.CodeAnalysis;
 using static Shared.Utilities.Utilities;
+using Microsoft.Data.SqlClient;
 
 namespace BusinessLayer.Services
 {
@@ -31,9 +32,13 @@ namespace BusinessLayer.Services
 
         //TODO1: Methoden auslagern, vieles doppelt
 
-        public async Task<ProductListReturn<ProductManagementProductDTO>> GetProductsForInternalUse(ProductSortOrder? sortOrderString = null)
+        public async Task<ProductListReturn<ProductManagementProductDTO>> GetProductsForInternalUse(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10)
         {
-            var productListReturn = await _productRepository.GetAllProductsAsync(sortOrderString);
+            pageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
+            pageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
+            sortOrder = sortOrder ?? ProductSortOrder.Default;
+
+            var productListReturn = await _productRepository.GetAllProductsAsync(sortOrder, pageNumber, pageSize);
 
             List<ProductManagementProductDTO> productsForInternalUse = [];
 
@@ -85,12 +90,15 @@ namespace BusinessLayer.Services
         {
             productToStore = Utilities.ReturnValueOrThrowExceptionWhenNull(productToStore, "ProductToStore is null.");
 
-            var existingProduct = await _productRepository.GetProductById(productToStore.ProductId);
-
-            if (existingProduct != null)
+            if (productToStore.ProductId != Guid.Empty)
             {
-                throw new ArgumentException("Product with this ID already exists.");
+                var existingProduct = await _productRepository.GetProductById(productToStore.ProductId);
+                if (existingProduct != null)
+                {
+                    throw new ArgumentException("Product with this ID already exists.");
+                }
             }
+            
 
             var nameIsUnique = await _productRepository.IsProductNameUniqueAsync(productToStore.ProductName, productToStore.ProductId);
             ValidateProduct(productToStore, nameIsUnique);

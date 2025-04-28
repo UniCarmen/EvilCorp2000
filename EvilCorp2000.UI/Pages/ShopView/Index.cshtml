@@ -10,6 +10,7 @@
 }
 
 
+@* TODO1: Als Partial machen *@
 @* Sorting UI *@
 <div class="mb-3">
     <form method="get">
@@ -30,11 +31,14 @@
 </div>
 
 
-
-
 <div class="container">
     <h2>All Products</h2>
+
+    @await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
+
+
     <div class="product-grid">
+
         @foreach (var product in Model.ProductsForSale)
         {
             <div class="product-card">
@@ -94,4 +98,7 @@
             </div>
         }
     </div>
+
+    @await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
+
 </div>

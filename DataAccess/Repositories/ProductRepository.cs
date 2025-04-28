@@ -68,6 +68,10 @@ namespace DataAccess.Repositories
         {
             try
             {
+                pageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
+                pageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
+                sortOrder = sortOrder ?? ProductSortOrder.Default;
+
                 IQueryable<Product> query = _context.Products
                     .Include(p => p.Categories)
                     .Include(p => p.Discounts)
@@ -80,6 +84,9 @@ namespace DataAccess.Repositories
                 //    query = query.Where(p => p.ProductName.Contains(searchTerm));
                 //}
 
+                var productCount = query.Count();
+
+                int maxPageCount = (int)Math.Ceiling((double)productCount / pageSize.Value);
 
                 query = sortOrder switch
                 {
@@ -131,9 +138,7 @@ namespace DataAccess.Repositories
                 var productList = await query.ToListAsync();
 
 
-                var productCount = query.Count();
-
-                int maxPageCount = (int)Math.Ceiling((double)productCount / pageSize.Value);
+                
 
 
                 return new ProductListReturn<Product?> 

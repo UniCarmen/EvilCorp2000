@@ -1,0 +1,40 @@
+﻿@model (string SortOrder, int PageNumber, int MaxPageCount, int PageSize)
+
+@if (Model.MaxPageCount > 1)
+{
+    <nav class="pagination-nav">
+        <ul class="pagination-list">
+            @if (Model.PageNumber > 1)
+            {
+                <li><a href="?SortOrderString=@Model.SortOrder&PageNumber=1&PageSize=@Model.PageSize">|&lt;</a></li>
+            }
+
+            @{
+                var startPage = Math.Max(1, Model.PageNumber - 1);
+                var endPage = Math.Min(Model.MaxPageCount, startPage + 2);
+
+                if (endPage - startPage < 2 && startPage > 1)
+                {
+                    startPage = Math.Max(1, endPage - 2);
+                }
+            }
+
+            @for (int i = startPage; i <= endPage; i++)
+            {
+                if (i == Model.PageNumber)
+                {
+                    <li class="active-page">@i</li>
+                }
+                else
+                {
+                    <li><a href="?SortOrderString=@Model.SortOrder&PageNumber=@i&PageSize=@Model.PageSize">@i</a></li>
+                }
+            }
+
+            @if (Model.PageNumber < Model.MaxPageCount)
+            {
+                <li><a href="?SortOrderString=@Model.SortOrder&PageNumber=@Model.MaxPageCount&PageSize=@Model.PageSize">&gt;|</a></li>
+            }
+        </ul>
+    </nav>
+}

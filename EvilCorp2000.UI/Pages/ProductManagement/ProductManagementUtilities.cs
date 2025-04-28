@@ -19,16 +19,20 @@ namespace EvilCorp2000.Pages.ProductManagement
     {
 
 
-        public async Task LoadDataAsync(string? sortOrderString = null)
+        public async Task LoadDataAsync(string? sortOrderString = null, int? pageNumber = 1, int? pageSize = 10)
         {
             try
             {
+                PageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
+                PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
+                SortOrder = sortOrderString ?? "Default";
+
                 ProductListReturn<ProductManagementProductDTO> productListReturn;
 
 
                 if(Enum.TryParse<ProductSortOrder>(sortOrderString, out var sortOrder))
                 {
-                    productListReturn = await _internalProductManager.GetProductsForInternalUse(sortOrder);
+                    productListReturn = await _internalProductManager.GetProductsForInternalUse(sortOrder, pageNumber, pageSize);
                 }
                 else
                 {
@@ -36,9 +40,8 @@ namespace EvilCorp2000.Pages.ProductManagement
                 }
                 
                 products = productListReturn.ProductList;
-
-                //Todo1 : noc maxcount etc als props
-
+                CountProducts = productListReturn.ProductCount;
+                MaxPageCount = productListReturn.MaxPageCount;
                 Categories = await _internalProductManager.GetCategories();
                 SortOrder = sortOrderString ?? "Default";
             }
@@ -113,8 +116,8 @@ namespace EvilCorp2000.Pages.ProductManagement
         protected virtual bool IsModelStateValidForProduct(Guid productId)
         {
             var keysToValidate = productId == Guid.Empty
-                ? new[] { "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", /*"ValidatedProduct.ProductPicture",*/ "ValidatedProduct.SelectedCategoryIds" }
-                : new[] {/* "DiscountsJson",*/ "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", /*"ValidatedProduct.ProductPicture",*/ "ValidatedProduct.SelectedCategoryIds", "ValidatedProductJson", "CategoryIdsJson" };
+                ? new[] { "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", "ValidatedProduct.SelectedCategoryIds" }
+                : new[] { "ValidatedProduct.Price", "ValidatedProduct.ProductId", "ValidatedProduct.Description", "ValidatedProduct.ProductName", "ValidatedProduct.AmountOnStock", "ValidatedProduct.SelectedCategoryIds", "ValidatedProductJson", "CategoryIdsJson" };
 
             foreach (var key in keysToValidate)
             {

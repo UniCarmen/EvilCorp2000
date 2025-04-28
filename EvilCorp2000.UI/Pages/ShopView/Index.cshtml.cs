@@ -40,17 +40,19 @@ namespace EvilCorp2000.Pages
         }
 
 
-        public async Task<IActionResult> OnGet(string? sortOrderString = null)
+        public async Task<IActionResult> OnGet(string? sortOrderString = null ,int? pageNumber = 1, int? pageSize = 10)
         {
             try
             {
+                PageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
+                PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
                 SortOrder = sortOrderString ?? "Default";
 
                 ProductListReturn<ProductForSaleDTO> productListReturn;
 
                 if (Enum.TryParse<ProductSortOrder>(sortOrderString, out var sortOrder))
                 {
-                    productListReturn = await _productForSaleManager.GetProductsForSale(sortOrder);
+                    productListReturn = await _productForSaleManager.GetProductsForSale(sortOrder, PageNumber, PageSize);
                 }
                 else { productListReturn = await _productForSaleManager.GetProductsForSale(); }
 
@@ -59,8 +61,6 @@ namespace EvilCorp2000.Pages
                 CountProducts = productListReturn.ProductCount;
 
                 MaxPageCount = productListReturn.MaxPageCount;
-
-
             }
             catch (DbUpdateException ex)
             {

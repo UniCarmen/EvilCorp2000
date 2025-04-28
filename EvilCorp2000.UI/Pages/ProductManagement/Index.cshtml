@@ -10,6 +10,11 @@
     ViewData["Title"] = "Product Management";
 }
 
+@* TODO1: als standard ins layout und das alte wegwerden, standard layout aufräumen *@
+@section Styles {
+    <link rel="stylesheet" href="~/css/backOfficeStyle.css" />
+}
+
 <div id="modalState" data-modal-state="@Model.ShowModal"></div>
 
 <script src="/js/openModalScript.js?v=@DateTime.Now.Ticks"></script>@**@
@@ -35,6 +40,7 @@
 
 <h1 class="mb-4">@ViewData["Title"]</h1>
 
+@* TODO1: Als Partial machen *@
 <div class="mb-3">
     <form method="get">
         <select name="sortOrderString" class="sorting-select" onchange="this.form.submit()">
@@ -54,6 +60,7 @@
 </div>
 
 
+
 <div class="d-flex justify-content-between align-items-center mb-4">
 
     <form method="post" asp-page-handler="ShowNewAndAlterProductModal">
@@ -71,6 +78,8 @@
 
 </div>
 
+
+@await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
 
 
 <table class="table table-striped">
@@ -149,6 +158,7 @@
                     @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && (c.Value == "CEOofDoom" || c.Value == "Overseer")))
                     {
                     <td>
+                        @* TODO1: Warning Modal einbauen *@
                         <form method="post" asp-page-handler="DeleteProduct">
                             <input type="hidden" name="productId" value="@product.ProductId" />
                             <button type="submit" class="btn btn-danger">Delete Product</button>
@@ -165,4 +175,5 @@
     </tbody>
 </table>
 
+@await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
 

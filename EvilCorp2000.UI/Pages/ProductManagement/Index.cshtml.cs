@@ -111,11 +111,11 @@ namespace EvilCorp2000.Pages.ProductManagement
             set { }
         }
 
-        public async Task OnGet(string? sortOrderString = null)
+        public async Task OnGet(string? sortOrderString = null, int? pageNumber = 1, int? pageSize = 10)
         {
             try
             {
-                await LoadDataAsync(sortOrderString);
+                await LoadDataAsync(sortOrderString, pageNumber, pageSize);
             }
             catch (DbUpdateException ex)
             {
