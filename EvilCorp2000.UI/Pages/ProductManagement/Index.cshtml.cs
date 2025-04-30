@@ -68,19 +68,6 @@ namespace EvilCorp2000.Pages.ProductManagement
         public string CategoryIdsJson { get; set; }
 
         public string SortOrder { get; set; } = "Default";
-        public List<string> SortOrderString { get; } = [
-            ProductSortOrder.Default.ToString(),
-            ProductSortOrder.PriceAsc.ToString(),
-            ProductSortOrder.PriceDesc.ToString(),
-            ProductSortOrder.DiscountDesc.ToString(),
-            ProductSortOrder.DiscountAsc.ToString(),
-            ProductSortOrder.RatingAsc.ToString(),
-            ProductSortOrder.RatingDesc.ToString(),
-            ProductSortOrder.NameAsc.ToString(),
-            ProductSortOrder.NameDesc.ToString(),
-            ProductSortOrder.StockAsc.ToString(),
-            ProductSortOrder.StockDesc.ToString()
-            ];
 
         public List<(string, string)> SortOrderAndDisplayStrings { get; } = [
             (ProductSortOrder.Default.ToString(), "Default"),

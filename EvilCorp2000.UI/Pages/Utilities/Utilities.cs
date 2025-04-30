@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Models;
 using EvilCorp2000.UIModels;
+using static Shared.Utilities.Utilities;
 
 namespace EvilCorp2000.Pages.Utilities
 
@@ -41,9 +42,32 @@ namespace EvilCorp2000.Pages.Utilities
         //Es wird immer Euro verwendet
         public static string FormatAsEuro(decimal price) =>
             price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
-        
 
 
+        private static readonly Dictionary<string, ProductSortOrder> _sortDisplayToEnum = new()
+        {
+            ["Default"] = ProductSortOrder.Default,
+            ["Price Ascending"] = ProductSortOrder.PriceAsc,
+            ["Price Descending"] = ProductSortOrder.PriceDesc,
+            ["Discount Descending"] = ProductSortOrder.DiscountDesc,
+            ["Discount Ascending"] = ProductSortOrder.DiscountAsc,
+            ["Rating Descending"] = ProductSortOrder.RatingDesc,
+            ["Rating Ascending"] = ProductSortOrder.RatingAsc,
+            ["Name Ascending"] = ProductSortOrder.NameAsc,
+            ["Name Descending"] = ProductSortOrder.NameDesc,
+            ["On Stock Ascending"] = ProductSortOrder.StockAsc,
+            ["On Stock Descending"] = ProductSortOrder.StockDesc
+        };
+
+        static public ProductSortOrder MapSortOrderString(string? displayName)
+        {
+            if (displayName == null)
+                return ProductSortOrder.Default;
+
+            return _sortDisplayToEnum.TryGetValue(displayName, out var sortOrder)
+                ? sortOrder
+                : ProductSortOrder.Default;
+        }
 
 
         //TODO Edit Discount

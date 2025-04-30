@@ -11,6 +11,7 @@ using EvilCorp2000.UIModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics;
+using static EvilCorp2000.Pages.Utilities.Utilities;
 using static Shared.Utilities.Utilities;
 
 namespace EvilCorp2000.Pages.ProductManagement
@@ -27,17 +28,7 @@ namespace EvilCorp2000.Pages.ProductManagement
                 PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
                 SortOrder = sortOrderString ?? "Default";
 
-                ProductListReturn<ProductManagementProductDTO> productListReturn;
-
-
-                if(Enum.TryParse<ProductSortOrder>(sortOrderString, out var sortOrder))
-                {
-                    productListReturn = await _internalProductManager.GetProductsForInternalUse(sortOrder, pageNumber, pageSize);
-                }
-                else
-                {
-                    productListReturn = await _internalProductManager.GetProductsForInternalUse();
-                }
+                var productListReturn = await _internalProductManager.GetProductsForInternalUse(MapSortOrderString(SortOrder), pageNumber, pageSize);
                 
                 products = productListReturn.ProductList;
                 CountProducts = productListReturn.ProductCount;

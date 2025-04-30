@@ -171,7 +171,7 @@ namespace BusinessLayerTests
             var result = _productMapper.ProductToProductForSaleDto(product, null);
 
             // Assert
-            Assert.Equal(0, result.DiscountedPrice); // Kein Rabatt
+            Assert.Null(result.DiscountedPrice); // Kein Rabatt
             Assert.Equal(0, result.Discount); // Rabattprozent ebenfalls 0
         }
 

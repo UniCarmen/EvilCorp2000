@@ -21,6 +21,7 @@ using Microsoft.Extensions.Primitives;
 using System.Globalization;
 using System.Web.Mvc;
 using System.Security.Claims;
+using static Shared.Utilities.Utilities;
 
 
 namespace EvilCorp2000_UI_Tests
@@ -63,7 +64,6 @@ namespace EvilCorp2000_UI_Tests
         }
 
 
-
         // Falls forceInvalidModelState = true, gibt die Methode immer FALSE zurück (als ob ModelState fehlschlägt)
         protected override bool IsModelStateValidForProduct(Guid productId) => !_forceInvalidModelState;
 
@@ -76,6 +76,17 @@ namespace EvilCorp2000_UI_Tests
 
         //In UI-Tests: Immer neue Mocks pro Test, da die Tests das Verhalten der Mocks pro Test verändern und sich beeinflussen könnten.
 
+        readonly ProductListReturn<ProductManagementProductDTO> _returnValues = new ProductListReturn<ProductManagementProductDTO>
+        {
+            ProductList = [],
+            MaxPageCount = 1,
+            ProductCount = 2
+        };
+
+        private readonly ProductSortOrder _sortOrder = Shared.Utilities.Utilities.ProductSortOrder.Default;
+        private readonly int _pageNumber = 1;
+        private readonly int _pageSize = 10;
+
 
         [Fact]
         public async Task LoadDataAsync_ShouldCallGetProductsAndCategories()
@@ -86,15 +97,26 @@ namespace EvilCorp2000_UI_Tests
             var envMock = new Mock<IWebHostEnvironment>();
             var authMock = new Mock<IAuthorizationService>();
 
+            //ProductListReturn<ProductManagementProductDTO> returnValues = new ProductListReturn<ProductManagementProductDTO>
+            //{
+            //    ProductList = [],
+            //    MaxPageCount = 1,
+            //    ProductCount = 2
+            //};
+
+            //var sortOrder = Shared.Utilities.Utilities.ProductSortOrder.Default;
+            //var pageNumber = 1;
+            //var pageSize = 10;
+
             //INFO Simuliert Rückgabewerte für Methodenaufrufe
-            productManagerMock.Setup(m => m.GetProductsForInternalUse()).ReturnsAsync(new List<ProductManagementProductDTO>());
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize)).ReturnsAsync(_returnValues);
             productManagerMock.Setup(m => m.GetCategories()).ReturnsAsync(new List<CategoryDTO>());
 
             //INFO erstellt das PageModel mit den Mock-Objekten
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object);
 
             // Act
-            await model.LoadDataAsync();
+            await model.LoadDataAsync(_sortOrder.ToString(), _pageNumber, _pageSize);
 
             // Assert
             //INFO Verify: stellt sicher, dass Methoden mit bestimmten Parametern aufgerufen werden
@@ -103,7 +125,7 @@ namespace EvilCorp2000_UI_Tests
             //INFO Es geht nicht darum, ob die Methode korrekt arbeitet, sondern OB sie die richtigen Methoden überhaupt aufruft und Fehler richtig behandelt / geloggt werden
             //INFO Das Prüfen, ob z. B. Product oder Categorie sgefüllt sind, wäre falsch, da ich so die BL/DAL testen würde
 
-            productManagerMock.Verify(m => m.GetProductsForInternalUse(), Times.Once);
+            productManagerMock.Verify(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize), Times.Once);
             productManagerMock.Verify(m => m.GetCategories(), Times.Once);
         }
 
@@ -116,7 +138,7 @@ namespace EvilCorp2000_UI_Tests
             var envMock = new Mock<IWebHostEnvironment>();
             var authMock = new Mock<IAuthorizationService>();
 
-            productManagerMock.Setup(m => m.GetProductsForInternalUse()).ThrowsAsync(new Exception("Database error"));
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize)).ThrowsAsync(new Exception("Database error"));
             productManagerMock.Setup(m => m.GetCategories()).ThrowsAsync(new Exception("Database error"));
 
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object);
@@ -321,9 +343,11 @@ namespace EvilCorp2000_UI_Tests
             Directory.CreateDirectory(imageFolder);
             envMock.Setup(e => e.WebRootPath).Returns(Path.GetTempPath());
 
+
+
             // Act
             var result = await model.OnPostImageUpload();
-            Console.WriteLine($"Result Type: {result.GetType().Name}");
+            Debug.WriteLine($"Result Type: {result.GetType().Name}");
 
             // Assert
             Assert.IsType<PageResult>(result); // Fehler -> bleibt auf der Seite
@@ -333,7 +357,7 @@ namespace EvilCorp2000_UI_Tests
                 It.Is<It.IsAnyType>((o, t) => true),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
-            ), Times.Once);
+            ), Times.Exactly(2));
         }
 
 
@@ -427,7 +451,9 @@ namespace EvilCorp2000_UI_Tests
                 
             };
 
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize)).ReturnsAsync(_returnValues);
             model.ModelState.AddModelError("ProductName", "Product name is required"); // Manuelle ModelState-Fehlermeldung
+            //await model.LoadDataAsync(_sortOrder.ToString(), _pageNumber, _pageSize);
 
             // Act
             var result = await model.OnPostSaveProduct();
@@ -514,8 +540,15 @@ namespace EvilCorp2000_UI_Tests
                 Discounts = new List<DiscountDTO>()
             };
 
-            productManagerMock.Setup(m => m.GetProductsForInternalUse())
-                .ReturnsAsync(new List<ProductManagementProductDTO> { testProduct });
+            ProductListReturn<ProductManagementProductDTO> expectedReturnValues = new ProductListReturn<ProductManagementProductDTO>
+            {
+                ProductList = [testProduct],
+                MaxPageCount = 1,
+                ProductCount = 2
+            };
+
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize))
+                .ReturnsAsync(expectedReturnValues);
 
             productManagerMock.Setup(m => m.GetCategories())
                 .ReturnsAsync(new List<CategoryDTO> { new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "Test Category" } });
@@ -523,7 +556,7 @@ namespace EvilCorp2000_UI_Tests
 
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object)
             {
-                products = new List<ProductManagementProductDTO> { testProduct }
+                products = new List<ProductManagementProductDTO> { expectedReturnValues.ProductList.First() }
             };
 
             // Act
@@ -632,6 +665,13 @@ namespace EvilCorp2000_UI_Tests
                     }
                 };
 
+            ProductListReturn<ProductManagementProductDTO> expectedReturnValues = new ProductListReturn<ProductManagementProductDTO>
+            {
+                ProductList = testModel.products,
+                MaxPageCount = 1,
+                ProductCount = 2
+            };
+
             testModel.ValidatedProductJson = JsonSerializer.Serialize(testModel.ValidatedProduct);
             testModel.CategoryIdsJson = JsonSerializer.Serialize(new List<Guid> { Guid.NewGuid() });
             testModel.DiscountsJson = JsonSerializer.Serialize(new List<DiscountDTO>());
@@ -644,7 +684,7 @@ namespace EvilCorp2000_UI_Tests
                 Discounts = new List<DiscountDTO>() // Liste initialisieren!
             };
 
-            productManagerMock.Setup(m => m.GetProductsForInternalUse()).ReturnsAsync(new List<ProductManagementProductDTO> { testProduct });
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize)).ReturnsAsync(_returnValues);
             productManagerMock.Setup(m => m.GetCategories()).ReturnsAsync(new List<CategoryDTO> { new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "Test Category" } });
 
             await testModel.LoadDataAsync();

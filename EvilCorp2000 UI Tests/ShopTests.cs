@@ -15,15 +15,19 @@ using static Shared.Utilities.Utilities;
 
 namespace EvilCorp2000_UI_Tests
 {
-    public class IndexModelTests
+    public class ShopTests
     {
         private readonly Mock<IProductForSaleManager> _productForSaleManagerMock;
-        private readonly Mock<ILogger<IndexModel>> _loggerMock;
+        private readonly Mock<ILogger<ShopViewModel>> _loggerMock;
 
-        public IndexModelTests()
+        private readonly ProductSortOrder _sortOrder = Shared.Utilities.Utilities.ProductSortOrder.Default;
+        private readonly int _pageNumber = 1;
+        private readonly int _pageSize = 10;
+
+        public ShopTests()
         {
             _productForSaleManagerMock = new Mock<IProductForSaleManager>();
-            _loggerMock = new Mock<ILogger<IndexModel>>();
+            _loggerMock = new Mock<ILogger<ShopViewModel>>();
         }
 
         [Fact]
@@ -36,23 +40,42 @@ namespace EvilCorp2000_UI_Tests
                 new ProductForSaleDTO { ProductName = "Test2" }
             };
 
-            _productForSaleManagerMock
-                .Setup(m => m.GetHighlightedProducts())
-                .ReturnsAsync(expectedProducts);
+            ProductListReturn<ProductForSaleDTO> expectedReturnValues = new ProductListReturn<ProductForSaleDTO>
+            {
+                ProductList = expectedProducts,
+                MaxPageCount = 1,
+                ProductCount = 2
+            };
 
-            var pageModel = new IndexModel(_productForSaleManagerMock.Object, _loggerMock.Object);
+
+            _productForSaleManagerMock
+                .Setup(m => m.GetProductsForSale(
+                    It.IsAny<ProductSortOrder>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>()))
+                .ReturnsAsync(expectedReturnValues);
+
+            var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object);
 
             // ACT
             await pageModel.OnGet();
 
             // ASSERT
-            Assert.Equal(expectedProducts, pageModel.RandomDiscountedProducts);
+            var returnedObject = new ProductListReturn<ProductForSaleDTO>
+            {
+                ProductList = pageModel.ProductsForSale,
+                MaxPageCount = pageModel.MaxPageCount,
+                ProductCount = pageModel.CountProducts
+            };
+
+            //Mit Equivalent werden nur die Werte verglichen und nicht die Objekte, da diese verschiedene Referenzen haben können (wie in diesem Fall)
+            Assert.Equivalent(expectedReturnValues, returnedObject);
 
             // No model error
             Assert.True(pageModel.ModelState.IsValid);
 
             // Verify the manager method was called once
-            _productForSaleManagerMock.Verify(m => m.GetHighlightedProducts(), Times.Once);
+            _productForSaleManagerMock.Verify(m => m.GetProductsForSale(_sortOrder, _pageNumber, _pageSize), Times.Once);
 
             // Verify no error log
             _loggerMock.Verify(
@@ -70,10 +93,10 @@ namespace EvilCorp2000_UI_Tests
         public async Task OnGet_ShouldAddModelError_AndReturnPage_ExceptionThrown()
         {
             _productForSaleManagerMock
-                .Setup(m => m.GetHighlightedProducts())
+                .Setup(m => m.GetProductsForSale(_sortOrder, _pageNumber, _pageSize))
                 .ThrowsAsync(new Exception("Fehler beim Laden der Produkte."));
 
-            var pageModel = new IndexModel(_productForSaleManagerMock.Object, _loggerMock.Object);
+            var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object);
 
             // ACT
             await pageModel.OnGet();
@@ -100,10 +123,10 @@ namespace EvilCorp2000_UI_Tests
         {
             // ARRANGE
             _productForSaleManagerMock
-                .Setup(m => m.GetHighlightedProducts())
+                .Setup(m => m.GetProductsForSale(_sortOrder, _pageNumber, _pageSize))
                 .ThrowsAsync(new Exception("Something else went wrong"));
 
-            var pageModel = new IndexModel(_productForSaleManagerMock.Object, _loggerMock.Object);
+            var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object);
 
             // ACT
             await pageModel.OnGet();
@@ -125,5 +148,9 @@ namespace EvilCorp2000_UI_Tests
                 Times.Once
             );
         }
+
+
+        //[Fact]
+        //Paging Tests
     }
 }

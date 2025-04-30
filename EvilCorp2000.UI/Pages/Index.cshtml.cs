@@ -29,11 +29,8 @@ namespace EvilCorp2000.Pages
                 RandomDiscountedProducts = await _productForSaleManager.GetHighlightedProducts();
 
             }
-            catch (DbUpdateException ex)
-            {
-                LogAndAddModelError("Fehler in der Datenbank", ex);
-            }
-            catch (Exception ex)
+            //Info: Kein DBUpdateException, da ja nur Lesezugriff
+            catch (Exception ex) 
             {
                 LogAndAddModelError("Fehler beim Laden der Produkte.", ex);
             }

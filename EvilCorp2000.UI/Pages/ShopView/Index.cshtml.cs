@@ -8,12 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client.Extensions.Msal;
 using Serilog;
 using static Shared.Utilities.Utilities;
+using static EvilCorp2000.Pages.Utilities.Utilities;
 
 namespace EvilCorp2000.Pages
 {
     public class ShopViewModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
+        private readonly ILogger<ShopViewModel> _logger;
         private readonly IProductForSaleManager _productForSaleManager;
 
         public int CountProducts { get; set; }
@@ -33,7 +34,7 @@ namespace EvilCorp2000.Pages
             (ProductSortOrder.RatingDesc.ToString(), "Rating")
             ];
 
-        public ShopViewModel(IProductForSaleManager productForSaleManager, ILogger<IndexModel> logger)
+        public ShopViewModel(IProductForSaleManager productForSaleManager, ILogger<ShopViewModel> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _productForSaleManager = productForSaleManager ?? throw new ArgumentNullException(nameof(productForSaleManager));
@@ -48,13 +49,7 @@ namespace EvilCorp2000.Pages
                 PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
                 SortOrder = sortOrderString ?? "Default";
 
-                ProductListReturn<ProductForSaleDTO> productListReturn;
-
-                if (Enum.TryParse<ProductSortOrder>(sortOrderString, out var sortOrder))
-                {
-                    productListReturn = await _productForSaleManager.GetProductsForSale(sortOrder, PageNumber, PageSize);
-                }
-                else { productListReturn = await _productForSaleManager.GetProductsForSale(); }
+                var productListReturn = await _productForSaleManager.GetProductsForSale(MapSortOrderString(SortOrder) , PageNumber, PageSize);
 
                 ProductsForSale = productListReturn.ProductList;
 
