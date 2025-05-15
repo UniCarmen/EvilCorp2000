@@ -9,3 +9,39 @@
 .modal-visible {
     display: block !important;
 }
+
+.evilcorp-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    /*margin-bottom: 10px;*/
+    /*padding-left: 4px;*/
+}
+
+.evilcorp-logo-small {
+    width: 70px;
+    height: auto;
+    display: inline-block;
+}
+
+.evilcorp-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #a60000;
+    letter-spacing: 1px;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+    /* Kein Farbwechsel beim Hover, Focus oder Visited */
+    a:hover {
+        color: #a60000;
+    }
+    a:focus,
+    a:visited {
+        color: #a60000;
+        text-decoration: none;
+    }

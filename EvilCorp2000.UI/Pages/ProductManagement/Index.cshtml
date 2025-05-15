@@ -38,6 +38,7 @@
 } *@
 
 
+
 <h1 class="mb-4">@ViewData["Title"]</h1>
 
 @* TODO1: Als Partial machen *@
@@ -110,11 +111,7 @@
                             @await Html.PartialAsync("Partials/ProductDetailsModalPartial", new ProductDetailsModalPartialModel { Product = product })
                         </p>
 
-                        @* Button öffnet Modal zum Ändern der Daten *@
-                        <form method="post" asp-page-handler="ShowNewAndAlterProductModal">
-                            <input type="hidden" name="SelectedProductId" value="@product.ProductId" />
-                            <button type="submit" class="btn btn-primary">Alter Product</button>
-                        </form>
+                        
                     </td>
                     <td>
                         <p>
@@ -154,17 +151,24 @@
                     <td>
                         <p>@product.AmountOnStock</p>
                     </td>
-                    
-                    @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && (c.Value == "CEOofDoom" || c.Value == "Overseer")))
-                    {
+
+
                     <td>
-                        @* TODO1: Warning Modal einbauen *@
-                        <form method="post" asp-page-handler="DeleteProduct">
-                            <input type="hidden" name="productId" value="@product.ProductId" />
-                            <button type="submit" class="btn btn-danger">Delete Product</button>
+                        @* Button öffnet Modal zum Ändern der Daten *@
+                        <form method="post" asp-page-handler="ShowNewAndAlterProductModal">
+                            <input type="hidden" name="SelectedProductId" value="@product.ProductId" />
+                                <button type="submit" class="btn-alter">Alter Product</button>
                         </form>
+                        @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && (c.Value == "CEOofDoom" || c.Value == "Overseer")))
+                        {
+                            @* TODO1: Warning Modal einbauen *@
+                            <form method="post" asp-page-handler="DeleteProduct">
+                                <input type="hidden" name="productId" value="@product.ProductId" />
+                                    <button type="submit" class="btn-delete">Delete Product</button>
+                            </form>
+                        }
                     </td>
-                    }
+                    
                         
 
                     

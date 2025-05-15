@@ -145,3 +145,51 @@ h1 {
         font-weight: bold;
         cursor: default;
     }
+
+/* Flex-Layout für vertikale Anordnung */
+/*.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}*/
+
+/* Button für "Alter Product" */
+.btn-alter {
+    width: 100%;
+    padding: 8px 14px;
+    margin: 10px 0px;
+    font-size: 1rem;
+    background-color: #000;
+    border: 1px solid #000;
+    color: white;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    cursor: pointer;
+    text-align: center;
+}
+
+    .btn-alter:hover {
+        background-color: #333;
+        border-color: #333;
+    }
+
+/* Button für "Delete Product" */
+.btn-delete {
+    width: 100%;
+    padding: 8px 14px;
+    font-size: 1rem;
+    background-color: #dc3545;
+    border: 1px solid #dc3545;
+    color: white;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    cursor: pointer;
+    text-align: center;
+}
+
+    .btn-delete:hover {
+        background-color: #b02a37;
+        border-color: #b02a37;
+    }
+
+

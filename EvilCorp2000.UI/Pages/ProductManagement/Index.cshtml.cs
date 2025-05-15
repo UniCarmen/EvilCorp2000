@@ -131,12 +131,17 @@ namespace EvilCorp2000.Pages.ProductManagement
             SelectedProductId = selectedProductId;
 
             await LoadDataAsync();
-            Debug.WriteLine($"Products Count after LoadDataAsync: {products?.Count ?? 0}");
             if (selectedProductId != Guid.Empty)
             {
                 try
                 {
-                    var selectedProduct = products.FirstOrDefault(p => p.ProductId == selectedProductId);
+                    //neu
+                    var selectedProduct =
+                        await _internalProductManager.GetProductForInternalUse(selectedProductId);
+                    //
+
+                    //var selectedProduct =                        
+                    //    products.FirstOrDefault(p => p.ProductId == selectedProductId);
                     var categoryIds = selectedProduct.Categories.Select(c => c.CategoryId).ToList();
 
 

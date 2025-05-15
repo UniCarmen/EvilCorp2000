@@ -43,10 +43,12 @@
                             </ul>
                         </div>
                         <div class="col-md-8">
-                            <h4>Discounts</h4>
+                            <h4>Discount</h4>
+                            @* Bestimmen: aktueller, vergangener oder zukünftiger Discount, bzw. kein Disocunt *@
                             @if (Model.Product.Discounts.Any())
                             {
                                 <ul class="list-group">
+                                    @* Im moment immer nur ein Discount durch GetAllProducts angezeigt*@
                                     @foreach (var discount in Model.Product.Discounts)
                                     {
                                         <li class="list-group-item">
@@ -58,7 +60,7 @@
                             }
                             else
                             {
-                                <p>Keine Rabatte verfügbar.</p>
+                                <p>No Discount available.</p>
                             }
                         </div>
                     </div>

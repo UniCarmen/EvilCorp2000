@@ -8,6 +8,8 @@ using Shared.Utilities;
 using System.Diagnostics.CodeAnalysis;
 using static Shared.Utilities.Utilities;
 using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace BusinessLayer.Services
 {
@@ -32,6 +34,11 @@ namespace BusinessLayer.Services
 
         //TODO1: Methoden auslagern, vieles doppelt
 
+        private static bool IsCurrent(DateTime start, DateTime end) 
+        {
+            return (start <= DateTime.Today && end >= DateTime.Today);
+        }
+
         public async Task<ProductListReturn<ProductManagementProductDTO>> GetProductsForInternalUse(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10)
         {
             pageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
@@ -44,8 +51,42 @@ namespace BusinessLayer.Services
 
             foreach (Product product in productListReturn.ProductList)
             {
+                List<Discount> shownDiscount;
+
+                if (!product.Discounts.IsNullOrEmpty())
+                {
+                    //nur den aktuellen, den letzten oder gar keinen discount anzeigen
+                    var currentDiscount = product.Discounts.Where(d => IsCurrent(d.StartDate, d.EndDate)).ToList();
+
+                    //entweder den nächsten zukünftigen
+                    var nextDiscount = product.Discounts
+                        .Select(d => (d.StartDate, d))
+                        .Where (d  => d.StartDate > DateTime.Now)
+                        .OrderBy(d => d.StartDate)
+                        .Take(1)
+                        .Select(d => d.d)
+                        .ToList();
+
+                    //oder den vorigen, wenn kein zukünftiger
+                    var lastDiscount = product.Discounts
+                        .Select(d => (d.EndDate, d))
+                        .Where(d => d.EndDate < DateTime.Now)
+                        .OrderByDescending(d => d.EndDate)
+                        .Take(1)
+                        .Select((d) => d.d)
+                        .ToList();
+
+                    if (currentDiscount.Any()) { shownDiscount = currentDiscount; }
+                    else if (nextDiscount.Any()) { shownDiscount = nextDiscount;  }
+                    else { shownDiscount = lastDiscount; }
+
+                }
+
+                else { shownDiscount = []; }
+                
+                
                 (List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories) = 
-                    MapDiscountsAndCategoriesToDTOs(product.Discounts.ToList(), product.Categories.ToList());
+                    MapDiscountsAndCategoriesToDTOs(/*product.Discounts.ToList()*/shownDiscount, product.Categories.ToList());
                 
                 productsForInternalUse.Add(_productMapper.ProductToProductManagementProductDto(product, currentDiscounts, categories));
             }
