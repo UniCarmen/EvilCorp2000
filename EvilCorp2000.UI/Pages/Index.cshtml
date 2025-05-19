@@ -12,16 +12,15 @@
 <div class="hero-section">
     <div class="overlay"></div>
     <div class="hero-content">
-        <h1>Welcome to the Darkest Marketplace</h1>
-        <p>Premium gear for aspiring overlords</p>
+        <h1>The World's Darkest Marketplace</h1>
+        <p>Premium Overlord Gear</p>
+        <a asp-page="/ShopView/Index" class="hero-button">Visit the shop</a>
     </div>
 </div>
 
 
-
     
 <div class="highlight-section">
-    <h2>🔥 Evil Deals</h2>
     <div class="highlight-grid">
         @foreach (var product in Model.RandomDiscountedProducts)
         {

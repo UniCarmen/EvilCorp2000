@@ -1,37 +1,37 @@
-html {
+/*html {
   font-size: 14px;
-}
+}*/
 
-@media (min-width: 768px) {
+/*@media (min-width: 768px) {
   html {
     font-size: 16px;
   }
-}
+}*/
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+/*.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
+}*/
 
-html {
+/*html {
   position: relative;
   min-height: 100%;
-}
+}*/
 
-body {
+/*body {
   margin-bottom: 60px;
-}
+}*/
 
-.custom-list-image {
+/*.custom-list-image {
     max-height: 100px;
     width: auto;
     max-width: 100px;
     height: auto;
-}
+}*/
 
-.custom-display-image {
+/*.custom-display-image {
     max-height: 300px;
     width: auto;
     max-width: 300px;
     height: auto;
-}
+}*/
 

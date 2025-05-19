@@ -10,7 +10,6 @@
     ViewData["Title"] = "Product Management";
 }
 
-@* TODO1: als standard ins layout und das alte wegwerden, standard layout aufräumen *@
 @section Styles {
     <link rel="stylesheet" href="~/css/backOfficeStyle.css" />
 }
@@ -37,31 +36,46 @@
     </div>
 } *@
 
+<div class="toolbar-section">
+    <div class="left-action">
+        <form method="post" asp-page-handler="ShowNewAndAlterProductModal">
+            <input type="hidden" name="SelectedProductId" value="@Guid.Empty" />
+            <button type="submit" class="btn btn-primary">Add New Product</button>
+        </form>
+    </div>
 
+    <div class="center-pagination pagination-wrapper">
+        @await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
+    </div>
+    
 
-<h1 class="mb-4">@ViewData["Title"]</h1>
-
-@* TODO1: Als Partial machen *@
-<div class="mb-3">
-    <form method="get">
-        <select name="sortOrderString" class="sorting-select" onchange="this.form.submit()">
-            @foreach (var order in Model.SortOrderAndDisplayStrings)
-            {
-                @if (order.Item1 == Model.SortOrder)
+    @* TODO1: Als Partial machen *@
+    <div class="right-sort">
+        <form method="get">
+            <select name="sortOrderString" class="sorting-select" onchange="this.form.submit()">
+                @foreach (var order in Model.SortOrderAndDisplayStrings)
+                {
+                    <option value="@order.Item1" selected="@(order.Item1 == Model.SortOrder)">
+                        @order.Item2
+                    </option>
+                }
+                @* @if (order.Item1 == Model.SortOrder)
                 {
                     <option value="@order.Item1" selected>@order.Item2</option>
                 }
                 else
                 {
                     <option value="@order.Item1">@order.Item2</option>
-                }
-            }
-        </select>
-    </form>
+                } *@
+            </select>
+        </form>
+    </div>
 </div>
 
+@* <h1 class="mb-4">@ViewData["Title"]</h1> *@
 
 
+@* 
 <div class="d-flex justify-content-between align-items-center mb-4">
 
     <form method="post" asp-page-handler="ShowNewAndAlterProductModal">
@@ -69,18 +83,18 @@
         <button type="submit" class="btn btn-primary">Add New Product</button>
     </form>
 
-    @*Modal für NewProduct*@
-    @if (Model.ShowModal == true && Model.SelectedProductId == Guid.Empty)
-    {
-        <div class="modal fade modal-visible" id="newAndAlterProductModal" tabindex="-1" aria-labelledby="newProduct" aria-hidden="true" data-bs-backdrop="static">
-            @await Html.PartialAsync("Partials/NewAndAlterProductModalPartial", new NewProductModalPartialModel { ValidatedProduct = new ValidatedProduct {ProductId = Guid.Empty}, Categories = Model.Categories })
-        </div>
-    }
+    
 
-</div>
+</div> *@
 
+@if (Model.ShowModal == true && Model.SelectedProductId == Guid.Empty)
+{
+    <div class="modal fade modal-visible" id="newAndAlterProductModal" tabindex="-1" aria-labelledby="newProduct" aria-hidden="true" data-bs-backdrop="static">
+        @await Html.PartialAsync("Partials/NewAndAlterProductModalPartial", new NewProductModalPartialModel { ValidatedProduct = new ValidatedProduct { ProductId = Guid.Empty }, Categories = Model.Categories })
+    </div>
+}
 
-@await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
+@* @await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize)) *@
 
 
 <table class="table table-striped">
@@ -157,14 +171,14 @@
                         @* Button öffnet Modal zum Ändern der Daten *@
                         <form method="post" asp-page-handler="ShowNewAndAlterProductModal">
                             <input type="hidden" name="SelectedProductId" value="@product.ProductId" />
-                                <button type="submit" class="btn-alter">Alter Product</button>
+                                <button type="submit" class="btn-alter">Alter</button>
                         </form>
                         @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && (c.Value == "CEOofDoom" || c.Value == "Overseer")))
                         {
                             @* TODO1: Warning Modal einbauen *@
                             <form method="post" asp-page-handler="DeleteProduct">
                                 <input type="hidden" name="productId" value="@product.ProductId" />
-                                    <button type="submit" class="btn-delete">Delete Product</button>
+                                    <button type="submit" class="btn-delete">Delete</button>
                             </form>
                         }
                     </td>

@@ -1,22 +1,26 @@
-﻿body {
+﻿/*body {
     
 }
 
 .descriptionTh {
     width: 30%;
 }
-
-.modal-visible {
+*/
+/*.modal-visible {
     display: block !important;
-}
+}*/
 
-.evilcorp-header {
+
+
+
+
+/*.evilcorp-header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 12px;*/
     /*margin-bottom: 10px;*/
     /*padding-left: 4px;*/
-}
+/*}
 
 .evilcorp-logo-small {
     width: 70px;
@@ -34,14 +38,125 @@
 a {
     text-decoration: none;
     color: inherit;
-}
+}*/
 
     /* Kein Farbwechsel beim Hover, Focus oder Visited */
-    a:hover {
+    /*a:hover {
         color: #a60000;
     }
     a:focus,
     a:visited {
         color: #a60000;
         text-decoration: none;
+    }*/
+
+.evilcorp-header {
+    background-color: #000;
+    color: white;
+    padding: 0.5rem 0;
+    border-bottom: 3px solid #a60000;
+    font-family: verdana, sans-serif;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+
+.evilcorp-navbar {
+    display: flex;
+    justify-content: center;
+}
+
+.evilcorp-container {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    flex-wrap: wrap;
+}
+
+.evilcorp-branding {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.evilcorp-logo {
+    height: 40px;
+    width: auto;
+}
+
+.evilcorp-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+    .evilcorp-title:hover {
+        color: #ff4d4d;
     }
+
+.evilcorp-nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+    .evilcorp-nav-links a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+        .evilcorp-nav-links a:hover {
+            color: #ff4d4d;
+        }
+
+.evilcorp-auth {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.evilcorp-user {
+    color: white;
+    margin-right: 10px;
+    font-size: 0.95rem;
+}
+
+.evilcorp-login-btn,
+.evilcorp-logout-btn {
+    background-color: #a60000;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+    .evilcorp-login-btn:hover,
+    .evilcorp-logout-btn:hover {
+        background-color: #ff0000;
+    }
+
+.evilcorp-footer {
+    background-color: #111; /* dunkler Hintergrund */
+    color: #ccc; /* dezentes hellgrau */
+    border-top: 2px solid #a60000;
+    padding: 20px 0;
+    text-align: center;
+    font-size: 0.95rem;
+    margin-top: 40px;
+}
+
+.evilcorp-footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}

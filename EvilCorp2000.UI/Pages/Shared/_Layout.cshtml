@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EvilCorp2000</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/customModal.css"/>
     @* <link rel="stylesheet" href="~/EvilCorp2000.styles.css" asp-append-version="true" /> *@
     <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
@@ -18,71 +17,55 @@
 </head>
 <body>
     @* <div class="container"> *@
-        <header>
-            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-                <div class="container">
-                    <div class="evilcorp-header">
-                        <img src="~/images/evilcorp_logo.png" alt="EvilCorp2000 Logo" class="evilcorp-logo-small" />
-                        <a class="evilcorp-brand" asp-area="" asp-page="/Index">EvilCorp2000</a>
-                    </div>
-                
-                    @*Zeigt auf kleinen Bildschirmen ein Menu für die beiden unteren Links an*@
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                            aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                        <ul class="navbar-nav flex-grow-1">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/ShopView/Index">Shop View</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/ProductManagement/Index">ProductManagement</a>
-                            </li>
-                        @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && c.Value == "CEOofDoom"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/UserManagement/ManageUsers">User Management</a>
-                            </li>
-                        }
-                            
-                        </ul>
-                    </div>
+    <header class="evilcorp-header">
+        <nav class="evilcorp-navbar">
+            <div class="evilcorp-container">
+                <div class="evilcorp-branding">                    
+                    <a class="evilcorp-title" asp-area="" asp-page="/Index"><img src="~/images/evilcorp_header.png" alt="EvilCorp2000 Logo" class="evilcorp-logo" /></a>
+                </div>
 
+                
+
+                <ul class="evilcorp-nav-links">
+                    <li><a asp-page="/ShopView/Index">Shop</a></li>
+                    
+                    @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && c.Value == "CEOofDoom"))
+                    {
+                        <li><a asp-page="/ProductManagement/Index">Product Management</a></li>
+                        <li><a asp-page="/UserManagement/ManageUsers">User Management</a></li>
+                    }
+                </ul>
+
+                <div class="evilcorp-auth">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <p style="color: #000">Angemeldet als: @User.Identity.Name</p>
-                    }
-
-
-                    @* Für Login und Logout *@
-                    @if (User.Identity?.IsAuthenticated ?? false)
-                    {
-                    <form method="post" asp-area="Identity" asp-page="/Account/Logout">
-                            <button type="submit" class="btn btn-danger">Logout</button>
+                        <span class="evilcorp-user">Angemeldet als: @User.Identity.Name</span>
+                        <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                            <button type="submit" class="evilcorp-logout-btn">Logout</button>
                         </form>
                     }
                     else
                     {
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary">Login</a>
+                        <a asp-area="Identity" asp-page="/Account/Login" class="evilcorp-login-btn">Login</a>
                     }
                 </div>
-            
-            </nav>
-        </header>
-        <div class="container">
-            <main role="main" class="pb-3">
-                @RenderBody()
-            </main>
-        </div>
-
-
-
-        <footer class="border-top footer text-muted">
-            <div class="container">
-            &copy; 2024 - EvilCorp2000
             </div>
-        </footer>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+
+
+    <footer class="evilcorp-footer">
+        <div class="evilcorp-footer-container">
+            &copy; 2025 - EvilCorp2000
+        </div>
+    </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

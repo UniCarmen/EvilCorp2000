@@ -5,6 +5,10 @@
     ViewData["Title"] = "User Management";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/backOfficeStyle.css" />
+}
+
 @if (Model.ShowDeletionConfirmation)
 {
     <div class="custom-modal visible">
@@ -13,9 +17,8 @@
     <div class="custom-modal-overlay"></div>
 }
 
-<h2 class="mb-4">User Management</h2>
 
-<div class="card shadow-sm">
+<div class="card shadow-sm mt-4">
     <div class="card-body">
         <h4 class="card-title">Create a New User</h4>
         <form method="post" asp-page-handler="NewUser">
