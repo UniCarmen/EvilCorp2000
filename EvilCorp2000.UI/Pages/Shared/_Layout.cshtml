@@ -4,54 +4,76 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EvilCorp2000</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/customModal.css"/>
-    @* <link rel="stylesheet" href="~/EvilCorp2000.styles.css" asp-append-version="true" /> *@
     <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+    
     @* Platzhalter für css Style, der auf einzelnen Seiten befüllt wird, wenn eine Unterseite den Style nicht verwendet, wird kein Fehler ausgelöst *@
     @RenderSection("Styles", required: false)
+    
 </head>
+
 <body>
-    @* <div class="container"> *@
     <header class="evilcorp-header">
-        <nav class="evilcorp-navbar">
-            <div class="evilcorp-container">
-                <div class="evilcorp-branding">                    
-                    <a class="evilcorp-title" asp-area="" asp-page="/Index"><img src="~/images/evilcorp_header.png" alt="EvilCorp2000 Logo" class="evilcorp-logo" /></a>
+
+        
+        <nav class="navbar navbar-expand-lg navbar-dark bg-black px-3">
+            <div class="evilcorp-container container-fluid justify-content-between align-items-center">
+
+                <!-- LEFT: Logo + Brand -->
+                <div class="d-flex align-items-center me-auto" style="min-width: 200px;">
+                    <a class="navbar-brand d-flex align-items-center" asp-page="/Index">
+                        <img src="~/images/evilcorp_header.png" alt="Logo" style="height: 40px;" />
+                        <span class="ms-2">EvilCorp2000</span>
+                    </a>
                 </div>
 
-                
+                <!-- CENTER: Navigation -->
+                <div class="collapse navbar-collapse justify-content-center" id="evilcorpNavbar">
+                    <ul class="navbar-nav mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/ShopView/Index">Shop</a>
+                        </li>
+                        @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && c.Value == "CEOofDoom"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/ProductManagement/Index">Product Management</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/UserManagement/ManageUsers">User Management</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
 
-                <ul class="evilcorp-nav-links">
-                    <li><a asp-page="/ShopView/Index">Shop</a></li>
-                    
-                    @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && c.Value == "CEOofDoom"))
-                    {
-                        <li><a asp-page="/ProductManagement/Index">Product Management</a></li>
-                        <li><a asp-page="/UserManagement/ManageUsers">User Management</a></li>
-                    }
-                </ul>
-
-                <div class="evilcorp-auth">
+                <!-- RIGHT: User info + Auth button -->
+                <div class="d-flex align-items-center ms-auto" style="min-width: 200px; justify-content: end;">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <span class="evilcorp-user">Angemeldet als: @User.Identity.Name</span>
+                        <span class="text-white me-2 small">Angemeldet als: @User.Identity.Name</span>
                         <form method="post" asp-area="Identity" asp-page="/Account/Logout">
-                            <button type="submit" class="evilcorp-logout-btn">Logout</button>
+                            <button type="submit" class="btn btn-danger btn-sm">Logout</button>
                         </form>
                     }
                     else
                     {
-                        <a asp-area="Identity" asp-page="/Account/Login" class="evilcorp-login-btn">Login</a>
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-sm">Login</a>
                     }
                 </div>
+
+                <!-- Burger -->
+                <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#evilcorpNavbar"
+                        aria-controls="evilcorpNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
             </div>
+
         </nav>
+        
     </header>
+
+
 
     <div class="container">
         <main role="main" class="pb-3">
@@ -68,11 +90,11 @@
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <partial name="_ValidationScriptsPartial" />
 
     @await RenderSectionAsync("Scripts", required: false)
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

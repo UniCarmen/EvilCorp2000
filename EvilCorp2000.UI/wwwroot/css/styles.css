@@ -1,56 +1,4 @@
-﻿/*body {
-    
-}
-
-.descriptionTh {
-    width: 30%;
-}
-*/
-/*.modal-visible {
-    display: block !important;
-}*/
-
-
-
-
-
-/*.evilcorp-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;*/
-    /*margin-bottom: 10px;*/
-    /*padding-left: 4px;*/
-/*}
-
-.evilcorp-logo-small {
-    width: 70px;
-    height: auto;
-    display: inline-block;
-}
-
-.evilcorp-brand {
-    font-weight: bold;
-    font-size: 1.5rem;
-    color: #a60000;
-    letter-spacing: 1px;
-}
-
-a {
-    text-decoration: none;
-    color: inherit;
-}*/
-
-    /* Kein Farbwechsel beim Hover, Focus oder Visited */
-    /*a:hover {
-        color: #a60000;
-    }
-    a:focus,
-    a:visited {
-        color: #a60000;
-        text-decoration: none;
-    }*/
-
-.evilcorp-header {
+﻿.evilcorp-header {
     background-color: #000;
     color: white;
     padding: 0.5rem 0;
@@ -62,7 +10,7 @@ a {
 
 
 .evilcorp-navbar {
-    display: flex;
+    /*display: flex;*/
     justify-content: center;
 }
 
@@ -160,3 +108,46 @@ a {
     margin: 0 auto;
     padding: 0 1rem;
 }
+
+/*.evilcorp-navbar-toggler {
+    border-color: #fff;*/ /* Weißer Rahmen */
+/*}
+
+.evilcorp-navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='white' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}*/
+
+@media (max-width: 991.98px) {
+    .evilcorp-nav-links {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .evilcorp-auth {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.evilcorp-header {
+    border-bottom: 3px solid #a60000;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: white;
+}
+
+    .navbar-dark .navbar-nav .nav-link:hover {
+        color: #ff4d4d;
+    }
+
+/*#evilcorpNavbar.collapse {
+    display: none;
+}
+
+    #evilcorpNavbar.collapse.show {
+        display: block;
+    }*/
+
