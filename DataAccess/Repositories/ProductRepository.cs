@@ -126,12 +126,12 @@ namespace DataAccess.Repositories
                         .OrderBy(p => p.AmountOnStock),
                     ProductSortOrder.StockDesc => query
                         .OrderByDescending(p => p.AmountOnStock),
-                    _ => query
+                    _ => query.OrderBy(p => p.ProductId)
                 };
 
                 // TODO1: PAGINATION -> paging typ anlegen, damit nicht zu viele parameter?
 
-                query = query.OrderBy(p => p.ProductId)
+                query = query/*.OrderBy(p => p.ProductId)*/
                     .Skip((pageNumber.Value - 1) * pageSize.Value)
                     .Take(pageSize.Value);
 

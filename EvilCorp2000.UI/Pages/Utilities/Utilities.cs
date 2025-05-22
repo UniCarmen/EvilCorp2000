@@ -46,17 +46,17 @@ namespace EvilCorp2000.Pages.Utilities
 
         private static readonly Dictionary<string, ProductSortOrder> _sortDisplayToEnum = new()
         {
-            ["Default"] = ProductSortOrder.Default,
-            ["Price Ascending"] = ProductSortOrder.PriceAsc,
-            ["Price Descending"] = ProductSortOrder.PriceDesc,
-            ["Discount Descending"] = ProductSortOrder.DiscountDesc,
-            ["Discount Ascending"] = ProductSortOrder.DiscountAsc,
-            ["Rating Descending"] = ProductSortOrder.RatingDesc,
-            ["Rating Ascending"] = ProductSortOrder.RatingAsc,
-            ["Name Ascending"] = ProductSortOrder.NameAsc,
-            ["Name Descending"] = ProductSortOrder.NameDesc,
-            ["On Stock Ascending"] = ProductSortOrder.StockAsc,
-            ["On Stock Descending"] = ProductSortOrder.StockDesc
+            [/*"Default"*/ProductSortOrder.Default.ToString()] = ProductSortOrder.Default,
+            [/*"Price Ascending"*/ ProductSortOrder.PriceAsc.ToString()] = ProductSortOrder.PriceAsc,
+            [/*"Price Descending"*/ ProductSortOrder.PriceDesc.ToString()] = ProductSortOrder.PriceDesc,
+            [/*"Discount Descending"*/ ProductSortOrder.DiscountDesc.ToString()] = ProductSortOrder.DiscountDesc,
+            [/*"Discount Ascending"*/ ProductSortOrder.DiscountAsc.ToString()] = ProductSortOrder.DiscountAsc,
+            [/*"Rating Descending"*/ ProductSortOrder.RatingDesc.ToString()] = ProductSortOrder.RatingDesc,
+            [/*"Rating Ascending"*/ ProductSortOrder.RatingAsc.ToString()] = ProductSortOrder.RatingAsc,
+            [/*"Name Ascending"*/ ProductSortOrder.NameAsc.ToString()] = ProductSortOrder.NameAsc,
+            [/*"Name Descending"*/ ProductSortOrder.NameDesc.ToString()] = ProductSortOrder.NameDesc,
+            [/*"On Stock Ascending"*/ ProductSortOrder.StockAsc.ToString()] = ProductSortOrder.StockAsc,
+            [/*"On Stock Descending"*/ ProductSortOrder.StockDesc.ToString()] = ProductSortOrder.StockDesc
         };
 
         static public ProductSortOrder MapSortOrderString(string? displayName)
