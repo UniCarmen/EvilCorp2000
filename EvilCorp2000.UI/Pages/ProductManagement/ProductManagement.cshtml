@@ -170,7 +170,11 @@
                     <td>
                         @* Button öffnet Modal zum Ändern der Daten *@
                         <form method="post" asp-page-handler="ShowNewAndAlterProductModal">
+                            @* <input type="hidden" name="SelectedProductId" value="@product.ProductId, Model.SortOrder, Model.PageNumber, Model.PageSize" /> *@
                             <input type="hidden" name="SelectedProductId" value="@product.ProductId" />
+                            <input type="hidden" name="sortOrderString" value="@Model.SortOrder" />
+                            <input type="hidden" name="pageNumber" value="@Model.PageNumber" />
+                            <input type="hidden" name="pageSize" value="@Model.PageSize" />
                                 <button type="submit" class="btn-alter">Alter</button>
                         </form>
                         @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && (c.Value == "CEOofDoom" || c.Value == "Overseer")))

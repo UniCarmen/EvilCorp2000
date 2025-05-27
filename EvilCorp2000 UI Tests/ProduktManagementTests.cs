@@ -26,16 +26,6 @@ using static Shared.Utilities.Utilities;
 
 namespace EvilCorp2000_UI_Tests
 {
-    //LoadDataAsync
-    //ReInitializeModalWithProduct
-    //OnPostImageUpload
-    //OnPostSaveProduct
-    //OnPostDeleteProduct
-    //OnPostShowNewAndAlterProductModal(Guid selectedProductId)
-    //OnPostAddDiscount()
-    //OnPostDeleteDiscount(Guid discountId, Guid productId)
-
-
     public class TestableProductManagementModel : ProductManagementModel
     {
         private readonly bool _forceInvalidModelState;
@@ -537,10 +527,12 @@ namespace EvilCorp2000_UI_Tests
                 ProductId = Guid.NewGuid(),
                 ProductName = "Existing Product",
                 Categories = new List<CategoryDTO> { new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "Test Category" } },
-                Discounts = new List<DiscountDTO>()
+                Discounts = new List<DiscountDTO>()                
             };
 
-            ProductListReturn<ProductManagementProductDTO> expectedReturnValues = new ProductListReturn<ProductManagementProductDTO>
+
+
+            ProductListReturn<ProductManagementProductDTO> productReturnValues = new ProductListReturn<ProductManagementProductDTO>
             {
                 ProductList = [testProduct],
                 MaxPageCount = 1,
@@ -548,7 +540,15 @@ namespace EvilCorp2000_UI_Tests
             };
 
             productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize))
-                .ReturnsAsync(expectedReturnValues);
+                .ReturnsAsync(productReturnValues);
+
+            productManagerMock.Setup(m => m.GetProductForInternalUse(testProduct.ProductId))
+                .ReturnsAsync(testProduct);
+
+            //ProductManagementProductDTO
+
+            //var selectedProduct =
+            //            await _internalProductManager.GetProductForInternalUse(selectedProductId);
 
             productManagerMock.Setup(m => m.GetCategories())
                 .ReturnsAsync(new List<CategoryDTO> { new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "Test Category" } });
@@ -556,15 +556,20 @@ namespace EvilCorp2000_UI_Tests
 
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object)
             {
-                products = new List<ProductManagementProductDTO> { expectedReturnValues.ProductList.First() }
+                products = new List<ProductManagementProductDTO> { productReturnValues.ProductList.First() },
+                PageSize = 10,
+                PageNumber = 1,
+                SortOrder = "Default"
             };
 
+
+
             // Act
-            var result = await model.OnPostShowNewAndAlterProductModal(testProduct.ProductId);
+            var result = await model.OnPostShowNewAndAlterProductModal(testProduct.ProductId, model.SortOrder, model.PageNumber, model.PageSize);
 
             // Debugging
-            Debug.WriteLine($"Product Found: {model.ValidatedProduct?.ProductName ?? "NULL"}");
-            Debug.WriteLine($"ShowModal: {model.ShowModal}");
+            Console.WriteLine($"Product Found: {model.ValidatedProduct?.ProductName ?? "NULL"}");
+            Console.WriteLine($"ShowModal: {model.ShowModal}");
 
             // Assert
             Assert.IsType<PageResult>(result);
@@ -651,7 +656,10 @@ namespace EvilCorp2000_UI_Tests
                     EndDate = DateTime.Now, 
                     DiscountPercentage = 1,
                 },
-                Categories = [new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "Category"}]
+                Categories = [new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "Category"}],
+                PageSize = 10,
+                PageNumber = 2,
+                SortOrder = "Default"
             };
 
             testModel.products = new List<ProductManagementProductDTO>
@@ -687,10 +695,10 @@ namespace EvilCorp2000_UI_Tests
             productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize)).ReturnsAsync(_returnValues);
             productManagerMock.Setup(m => m.GetCategories()).ReturnsAsync(new List<CategoryDTO> { new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "Test Category" } });
 
-            await testModel.LoadDataAsync();
+            await testModel.LoadDataAsync(testModel.SortOrder, testModel.PageNumber, testModel.PageNumber);
 
             // Act
-            var result = await testModel.OnPostAddDiscount();
+            var result = await testModel.OnPostAddDiscount(testProduct.ProductId, testModel.SortOrder, testModel.PageNumber, testModel.PageNumber);
 
             // Workaround: Manuell Discount zur Liste hinzufügen, da kein echter DB-Kontext vorhanden ist
             testModel.ValidatedProduct.Discounts.Add(new DiscountDTO
@@ -734,11 +742,14 @@ namespace EvilCorp2000_UI_Tests
                 DiscountsJson = "[]",
                 CategoryIdsJson = JsonSerializer.Serialize(new List<Guid>()), 
                 ValidatedProductJson = JsonSerializer.Serialize(testProduct), 
-                Categories = testCategories 
+                Categories = testCategories,
+                PageSize = 10,
+                PageNumber = 2,
+                SortOrder = "Default"
             };
 
             // Act
-            var result = await testModel.OnPostAddDiscount();
+            var result = await testModel.OnPostAddDiscount(testProduct.ProductId, testModel.SortOrder, testModel.PageNumber, testModel.PageNumber);
 
             // Assert
             Assert.IsType<PageResult>(result);

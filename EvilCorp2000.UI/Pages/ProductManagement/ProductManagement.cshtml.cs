@@ -40,6 +40,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         public int MaxPageCount { get; set; }
         public int PageSize { get; set; }
         public int PageNumber { get; set; }
+        public string SortOrder { get; set; } = "Default";
 
         [BindProperty(SupportsGet = true)]
         public IFormFile? ImageFile { get; set; }
@@ -67,7 +68,6 @@ namespace EvilCorp2000.Pages.ProductManagement
         [BindProperty]
         public string CategoryIdsJson { get; set; }
 
-        public string SortOrder { get; set; } = "Default";
 
         public List<(string, string)> SortOrderAndDisplayStrings { get; } = [
             (ProductSortOrder.Default.ToString(), "Default"),
@@ -93,7 +93,10 @@ namespace EvilCorp2000.Pages.ProductManagement
                 ValidatedProductJson = ValidatedProductJson,
                 CategoryIdsJson = CategoryIdsJson,
                 DiscountOverlap = DiscountOverlap,
-                NewDiscount = new ValidatedDiscount()
+                NewDiscount = new ValidatedDiscount(),
+                SortOrder = SortOrder,
+                PageSize = PageSize,
+                PageNumber = PageNumber
             };
             set { }
         }
@@ -126,7 +129,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         //    return Page();
         //}
 
-        public async Task<IActionResult> OnPostShowNewAndAlterProductModal(Guid selectedProductId)
+        public async Task<IActionResult> OnPostShowNewAndAlterProductModal(Guid selectedProductId, string? sortOrderString = null, int? pageNumber = 1, int? pageSize = 10)
         {
             SelectedProductId = selectedProductId;
 
@@ -155,6 +158,10 @@ namespace EvilCorp2000.Pages.ProductManagement
 
                     ValidatedProduct = validatedProduct;
 
+                    PageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
+                    PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
+                    SortOrder = sortOrderString ?? "Default";
+
                     DiscountsJson = JsonSerializer.Serialize(selectedProduct.Discounts);
                     ValidatedProductJson = JsonSerializer.Serialize(selectedProduct);
                     CategoryIdsJson = JsonSerializer.Serialize(categoryIds);
@@ -173,10 +180,10 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        public async Task<IActionResult> OnPostCloseModal()
+        public async Task<IActionResult> OnPostCloseModal(string? sortOrderString = null, int? pageNumber = 1, int? pageSize = 10)
         {
             ShowModal = false;
-            await LoadDataAsync();
+            await LoadDataAsync(sortOrderString, pageNumber, pageSize);
             return Page();
         }
 
@@ -224,7 +231,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        public async Task<IActionResult> OnPostAddDiscount()
+        public async Task<IActionResult> OnPostAddDiscount(Guid selectedProductId, string? sortOrderString = null, int? pageNumber = 1, int? pageSize = 10)
         {
             if (IsModelStateIsInvalidForDiscount(ModelState))
             {
@@ -232,7 +239,7 @@ namespace EvilCorp2000.Pages.ProductManagement
                 return await ReInitializeModalAfterDiscountValidationError(CategoryIdsJson, Categories, ValidatedProductJson);
             }
 
-            await LoadDataAsync();
+            await LoadDataAsync(sortOrderString, pageNumber, pageSize);
 
             var newDiscount = new DiscountDTO
             {
@@ -292,7 +299,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             // neues Product mit allen Discounts inkl. dem Neuem von DBContext holen (hat jetzt eine GUID)
             var selectedProduct = products.FirstOrDefault(p => p.ProductId == validatedProduct.ProductId);
 
-            return await ReInitializeModalWithProduct(validatedProduct, categoryIds, selectedProduct.Discounts);
+            return await ReInitializeModalWithProduct(validatedProduct, categoryIds, selectedProduct.Discounts, SortOrder, PageNumber, PageSize);
         }
 
 

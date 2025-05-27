@@ -41,7 +41,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        public async Task<IActionResult> ReInitializeModalWithProduct(ValidatedProduct validatedProduct, List<Guid> categoryIds, List<DiscountDTO> discounts)
+        public async Task<IActionResult> ReInitializeModalWithProduct(ValidatedProduct validatedProduct, List<Guid> categoryIds, List<DiscountDTO> discounts, string? sortOrderString = null, int? pageNumber = 1, int? pageSize = 10)
         {
             validatedProduct.SelectedCategoryIds = categoryIds;
             validatedProduct.Discounts = discounts;
@@ -51,7 +51,7 @@ namespace EvilCorp2000.Pages.ProductManagement
                 validatedProduct.Discounts = validatedProduct.Discounts.OrderBy(d => d.StartDate).ToList();
             }
 
-            await LoadDataAsync();
+            await LoadDataAsync(sortOrderString, pageNumber, pageSize);
 
             //FEHLER: funktioniert nicht, Felder sind immer noch gefüllt
             //NewDiscount = new ValidatedDiscount { DiscountPercentage = 0, StartDate = null, EndDate = null};

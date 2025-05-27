@@ -28,6 +28,10 @@ namespace EvilCorp2000.Pages.ProductManagement.Partials
             //}
         }
 
+        public int PageSize { get; set; }
+        public int PageNumber { get; set; }
+        public string SortOrder { get; set; } = "Default";
+
         public List<CategoryDTO> Categories { get; set; }
 
         [BindProperty]

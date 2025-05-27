@@ -33,12 +33,12 @@
                 <div class="collapse navbar-collapse justify-content-center" id="evilcorpNavbar">
                     <ul class="navbar-nav mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link" asp-page="/ShopView/Index">Shop</a>
+                            <a class="nav-link" asp-page="/ShopView/ShopView">Shop</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && c.Value == "CEOofDoom"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-page="/ProductManagement/Index">Product Management</a>
+                                <a class="nav-link" asp-page="/ProductManagement/ProductManagement">Product Management</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-page="/UserManagement/ManageUsers">User Management</a>
