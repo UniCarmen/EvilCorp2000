@@ -136,7 +136,7 @@ namespace EvilCorp2000_UI_Tests
             Assert.Contains("Fehler beim Laden der Produkte.", pageModel.ModelState[string.Empty]?.Errors[0].ErrorMessage);
 
             // Verify an error log was created:
-            // We can't do logger.LogError("message", It.IsAny<Exception>()) because it's an extension method.
+            // Can't do logger.LogError("message", It.IsAny<Exception>()) because it's an extension method.
             // So we check the underlying Log call at LogLevel.Error. 
             _loggerMock.Verify(
                 logger => logger.Log(
@@ -149,8 +149,50 @@ namespace EvilCorp2000_UI_Tests
             );
         }
 
+        [Theory]
+        [InlineData(1, 10)]
+        [InlineData(2, 10)]
+        [InlineData(3, 15)]
+        public async Task OnGet_ShouldRespectPaginationParameters(int pageNumber, int pageSize)
+        {
+            // ARRANGE
+            var expectedProducts = new List<ProductForSaleDTO>
+                {
+                    new ProductForSaleDTO { ProductName = $"Product page {pageNumber}" }
+                };
 
-        //[Fact]
-        //Paging Tests
+            ProductListReturn<ProductForSaleDTO> expectedReturn = new ProductListReturn<ProductForSaleDTO>
+            {
+                ProductList = expectedProducts,
+                MaxPageCount = 4,
+                ProductCount = 40
+            };
+
+            _productForSaleManagerMock
+                .Setup(m => m.GetProductsForSale(
+                    It.IsAny<ProductSortOrder>(),
+                    pageNumber,
+                    pageSize))
+                .ReturnsAsync(expectedReturn);
+
+            var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object)
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            // ACT
+            await pageModel.OnGet("Default", pageNumber, pageSize);
+            //Calls GetProductsForSale 
+
+            // ASSERT
+            Assert.Equal(expectedProducts, pageModel.ProductsForSale);
+            Assert.Equal(expectedReturn.MaxPageCount, pageModel.MaxPageCount);
+            Assert.Equal(expectedReturn.ProductCount, pageModel.CountProducts);
+
+            _productForSaleManagerMock.Verify(m =>
+                m.GetProductsForSale(It.IsAny<ProductSortOrder>(), pageNumber, pageSize), Times.Once);
+        }
+
     }
 }

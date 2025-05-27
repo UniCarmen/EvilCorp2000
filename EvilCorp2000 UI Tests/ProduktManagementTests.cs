@@ -119,6 +119,52 @@ namespace EvilCorp2000_UI_Tests
             productManagerMock.Verify(m => m.GetCategories(), Times.Once);
         }
 
+
+        [Fact]
+        public async Task LoadDataAsync_ShouldPassPaginationParametersToService()
+        {
+            // Arrange
+            var mockManager = new Mock<IInternalProductManager>();
+            var loggerMock = new Mock<ILogger<ProductManagementModel>>();
+            var envMock = new Mock<IWebHostEnvironment>();
+            var authMock = new Mock<IAuthorizationService>();
+
+            var expectedPageNumber = 3;
+            var expectedPageSize = 20;
+            var expectedSortOrder = ProductSortOrder.PriceAsc;
+
+            var returnData = new ProductListReturn<ProductManagementProductDTO>
+            {
+                ProductList = new List<ProductManagementProductDTO> { new() { ProductName = "Test" } },
+                ProductCount = 1,
+                MaxPageCount = 1
+            };
+
+            mockManager
+                .Setup(m => m.GetProductsForInternalUse(expectedSortOrder, expectedPageNumber, expectedPageSize))
+                .ReturnsAsync(returnData);
+
+            mockManager
+                .Setup(m => m.GetCategories())
+                .ReturnsAsync(new List<CategoryDTO>());
+
+            var model = new ProductManagementModel(mockManager.Object, loggerMock.Object, envMock.Object, authMock.Object);
+
+            // Act
+            await model.LoadDataAsync(expectedSortOrder.ToString(), expectedPageNumber, expectedPageSize);
+
+            // Assert
+            mockManager.Verify(m =>
+                m.GetProductsForInternalUse(expectedSortOrder, expectedPageNumber, expectedPageSize), Times.Once);
+
+            mockManager.Verify(m => m.GetCategories(), Times.Once);
+
+            Assert.Equal(expectedPageNumber, model.PageNumber);
+            Assert.Equal(expectedPageSize, model.PageSize);
+            Assert.Equal(expectedSortOrder.ToString(), model.SortOrder);
+        }
+
+
         [Fact]
         public async Task LoadDataAsync_ShouldHandleException_AndLogError()
         {
@@ -566,10 +612,6 @@ namespace EvilCorp2000_UI_Tests
 
             // Act
             var result = await model.OnPostShowNewAndAlterProductModal(testProduct.ProductId, model.SortOrder, model.PageNumber, model.PageSize);
-
-            // Debugging
-            Console.WriteLine($"Product Found: {model.ValidatedProduct?.ProductName ?? "NULL"}");
-            Console.WriteLine($"ShowModal: {model.ShowModal}");
 
             // Assert
             Assert.IsType<PageResult>(result);

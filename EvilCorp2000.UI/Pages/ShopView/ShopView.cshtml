@@ -10,43 +10,10 @@
 }
 
 
-@* TODO1: Als Partial machen *@
-@* Sorting UI *@
-@* <div class="mb-3">
-    <form method="get">
-        <select name="sortOrderString" class="sorting-select" onchange="this.form.submit()">
-        @foreach (var order in Model.SortOrderAndDisplayStrings)
-        {
-            @if (order.Item1 == Model.SortOrder)
-            {
-                <option value="@order.Item1" selected>@order.Item2</option>
-            }
-            else
-            {
-                <option value="@order.Item1">@order.Item2</option>
-            }
-        }
-    </select>
-    </form>
-</div> *@
-@* <div class="shop-toolbar">
-
-    <div class="sort-section">
-        <label for="sortOrderSelect">Sort by:</label>
-        <form method="get">
-            <select id="sortOrderSelect" name="sortOrderString" class="sorting-select" onchange="this.form.submit()">
-                @foreach (var order in Model.SortOrderAndDisplayStrings)
-                {
-                    <option value="@order.Item1" selected="@(order.Item1 == Model.SortOrder)">
-                        @order.Item2
-                    </option>
-                }
-            </select>
-        </form>
-    </div>
-</div> *@
-
 <div class="shop-toolbar">
+    
+    @* TODO1 Filter einbauen *@
+    @* <div> suche</div> *@
     <div class="pagination-wrapper">
         @await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
     </div>
