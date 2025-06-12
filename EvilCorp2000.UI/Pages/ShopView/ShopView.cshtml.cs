@@ -9,6 +9,7 @@ using Microsoft.Identity.Client.Extensions.Msal;
 using Serilog;
 using static Shared.Utilities.Utilities;
 using static EvilCorp2000.Pages.Utilities.Utilities;
+using Microsoft.Data.SqlClient;
 
 namespace EvilCorp2000.Pages
 {
@@ -21,9 +22,13 @@ namespace EvilCorp2000.Pages
         public int MaxPageCount { get; set; }
         public int PageSize { get; set; }
         public int PageNumber { get; set; }
+        public string? Search {  get; set; }
+        public CategoryDTO? FilterCategory {  get; set; }
+        public List<CategoryDTO>? categories { get; set; }
+
 
         public List<ProductForSaleDTO> ProductsForSale { get; private set; } = [];
-        public string SortOrder { get; set; } = "Default";
+        public string SortOrderString { get; set; } = "Default";
 
         public List<(string, string)> SortOrderAndDisplayStrings { get; } = [
             (ProductSortOrder.Default.ToString(), "Default"),
@@ -41,15 +46,23 @@ namespace EvilCorp2000.Pages
         }
 
 
-        public async Task<IActionResult> OnGet(string? sortOrderString = null ,int? pageNumber = 1, int? pageSize = 10)
+        public async Task<IActionResult> OnGet(UIGetProductsParameters parameters)
         {
             try
             {
-                PageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
-                PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
-                SortOrder = sortOrderString ?? "Default";
+                PageNumber = (parameters.PageNumber.HasValue && parameters.PageNumber.Value > 0) ? parameters.PageNumber.Value : 1;
+                PageSize = (parameters.PageSize.HasValue && parameters.PageSize.Value > 0) ? parameters.PageSize.Value : 10;
+                SortOrderString = parameters.SortOrderString ?? "Default";
 
-                var productListReturn = await _productForSaleManager.GetProductsForSale(MapSortOrderString(SortOrder) , PageNumber, PageSize);
+                GetProductsParameters parametersWithSortOrder = new GetProductsParameters()
+                {
+                    SortOrder = MapSortOrderString(SortOrderString),
+                    PageNumber = PageNumber,
+                    PageSize = PageSize
+                };
+
+                var productListReturn = await _productForSaleManager.GetProductsForSale(
+                    parametersWithSortOrder);
 
                 ProductsForSale = productListReturn.ProductList;
 
@@ -72,7 +85,7 @@ namespace EvilCorp2000.Pages
 
         public async Task<IActionResult> OnPostSort (string sortOrder)
         {
-            SortOrder = sortOrder; // Den Wert speichern, der vom Formular gesendet wurde
+            SortOrderString = sortOrder; // Den Wert speichern, der vom Formular gesendet wurde
             //neues loadSortedProducts - oder mit optionalem parameter in onget (enum oder so, welcher sortierungsreihenfolge)
             //Backend SortedLoadingFunctionen und als Liste zurückgeben (async)
 

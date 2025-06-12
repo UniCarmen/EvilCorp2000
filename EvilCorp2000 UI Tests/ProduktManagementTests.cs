@@ -73,6 +73,9 @@ namespace EvilCorp2000_UI_Tests
             ProductCount = 2
         };
 
+        private readonly GetProductsParameters parameters = new GetProductsParameters();
+        private readonly UIGetProductsParameters parametersUI = new UIGetProductsParameters();
+
         private readonly ProductSortOrder _sortOrder = Shared.Utilities.Utilities.ProductSortOrder.Default;
         private readonly int _pageNumber = 1;
         private readonly int _pageSize = 10;
@@ -99,14 +102,14 @@ namespace EvilCorp2000_UI_Tests
             //var pageSize = 10;
 
             //INFO Simuliert Rückgabewerte für Methodenaufrufe
-            productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize)).ReturnsAsync(_returnValues);
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(parameters)).ReturnsAsync(_returnValues);
             productManagerMock.Setup(m => m.GetCategories()).ReturnsAsync(new List<CategoryDTO>());
 
             //INFO erstellt das PageModel mit den Mock-Objekten
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object);
 
             // Act
-            await model.LoadDataAsync(_sortOrder.ToString(), _pageNumber, _pageSize);
+            await model.LoadDataAsync(parametersUI);
 
             // Assert
             //INFO Verify: stellt sicher, dass Methoden mit bestimmten Parametern aufgerufen werden
@@ -115,7 +118,7 @@ namespace EvilCorp2000_UI_Tests
             //INFO Es geht nicht darum, ob die Methode korrekt arbeitet, sondern OB sie die richtigen Methoden überhaupt aufruft und Fehler richtig behandelt / geloggt werden
             //INFO Das Prüfen, ob z. B. Product oder Categorie sgefüllt sind, wäre falsch, da ich so die BL/DAL testen würde
 
-            productManagerMock.Verify(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize), Times.Once);
+            productManagerMock.Verify(m => m.GetProductsForInternalUse(parameters), Times.Once);
             productManagerMock.Verify(m => m.GetCategories(), Times.Once);
         }
 
@@ -129,9 +132,17 @@ namespace EvilCorp2000_UI_Tests
             var envMock = new Mock<IWebHostEnvironment>();
             var authMock = new Mock<IAuthorizationService>();
 
-            var expectedPageNumber = 3;
-            var expectedPageSize = 20;
-            var expectedSortOrder = ProductSortOrder.PriceAsc;
+            var expectedParameters = parameters;
+
+            expectedParameters.PageNumber = 3;
+            expectedParameters.PageSize = 20;
+            expectedParameters.SortOrder = ProductSortOrder.PriceAsc;
+
+            var expectedUIParameters = parametersUI;
+
+            expectedUIParameters.PageNumber = 3;
+            expectedUIParameters.PageSize = 20;
+            expectedUIParameters.SortOrderString = "PriceAsc";
 
             var returnData = new ProductListReturn<ProductManagementProductDTO>
             {
@@ -141,7 +152,7 @@ namespace EvilCorp2000_UI_Tests
             };
 
             mockManager
-                .Setup(m => m.GetProductsForInternalUse(expectedSortOrder, expectedPageNumber, expectedPageSize))
+                .Setup(m => m.GetProductsForInternalUse(expectedParameters))
                 .ReturnsAsync(returnData);
 
             mockManager
@@ -151,17 +162,17 @@ namespace EvilCorp2000_UI_Tests
             var model = new ProductManagementModel(mockManager.Object, loggerMock.Object, envMock.Object, authMock.Object);
 
             // Act
-            await model.LoadDataAsync(expectedSortOrder.ToString(), expectedPageNumber, expectedPageSize);
+            await model.LoadDataAsync(expectedUIParameters);
 
             // Assert
             mockManager.Verify(m =>
-                m.GetProductsForInternalUse(expectedSortOrder, expectedPageNumber, expectedPageSize), Times.Once);
+                m.GetProductsForInternalUse(expectedParameters), Times.Once);
 
             mockManager.Verify(m => m.GetCategories(), Times.Once);
 
-            Assert.Equal(expectedPageNumber, model.PageNumber);
-            Assert.Equal(expectedPageSize, model.PageSize);
-            Assert.Equal(expectedSortOrder.ToString(), model.SortOrder);
+            Assert.Equal(expectedUIParameters.PageNumber, model.PageNumber);
+            Assert.Equal(expectedUIParameters.PageSize, model.PageSize);
+            Assert.Equal(expectedUIParameters.SortOrderString, model.SortOrder);
         }
 
 
@@ -174,13 +185,13 @@ namespace EvilCorp2000_UI_Tests
             var envMock = new Mock<IWebHostEnvironment>();
             var authMock = new Mock<IAuthorizationService>();
 
-            productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize)).ThrowsAsync(new Exception("Database error"));
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(parameters)).ThrowsAsync(new Exception("Database error"));
             productManagerMock.Setup(m => m.GetCategories()).ThrowsAsync(new Exception("Database error"));
 
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object);
 
             // Act
-            await model.LoadDataAsync();
+            await model.LoadDataAsync(null);
 
             // Assert
             //INFO Überprüft, ob das Logging korrekt aufgerufen wurde
@@ -487,7 +498,7 @@ namespace EvilCorp2000_UI_Tests
                 
             };
 
-            productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize)).ReturnsAsync(_returnValues);
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(parameters)).ReturnsAsync(_returnValues);
             model.ModelState.AddModelError("ProductName", "Product name is required"); // Manuelle ModelState-Fehlermeldung
             //await model.LoadDataAsync(_sortOrder.ToString(), _pageNumber, _pageSize);
 
@@ -585,7 +596,7 @@ namespace EvilCorp2000_UI_Tests
                 ProductCount = 2
             };
 
-            productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize))
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(parameters))
                 .ReturnsAsync(productReturnValues);
 
             productManagerMock.Setup(m => m.GetProductForInternalUse(testProduct.ProductId))
@@ -603,15 +614,14 @@ namespace EvilCorp2000_UI_Tests
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object)
             {
                 products = new List<ProductManagementProductDTO> { productReturnValues.ProductList.First() },
-                PageSize = 10,
-                PageNumber = 1,
-                SortOrder = "Default"
+                //PageSize = 10,
+                //PageNumber = 1,
+                //SortOrder = "Default"
             };
 
 
-
             // Act
-            var result = await model.OnPostShowNewAndAlterProductModal(testProduct.ProductId, model.SortOrder, model.PageNumber, model.PageSize);
+            var result = await model.OnPostShowNewAndAlterProductModal(testProduct.ProductId, parametersUI);
 
             // Assert
             Assert.IsType<PageResult>(result);
@@ -633,7 +643,7 @@ namespace EvilCorp2000_UI_Tests
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object);
 
             // Act
-            var result = await model.OnPostShowNewAndAlterProductModal(Guid.Empty);
+            var result = await model.OnPostShowNewAndAlterProductModal(Guid.Empty, parametersUI);
 
             // Assert
             Assert.IsType<PageResult>(result);
@@ -655,7 +665,7 @@ namespace EvilCorp2000_UI_Tests
             };
 
             // Act
-            var result = await model.OnPostShowNewAndAlterProductModal(Guid.NewGuid());
+            var result = await model.OnPostShowNewAndAlterProductModal(Guid.NewGuid(), parametersUI);
 
             // Assert
             Assert.IsType<PageResult>(result);
@@ -679,6 +689,8 @@ namespace EvilCorp2000_UI_Tests
                 Discounts = new List<DiscountDTO>()
             };
 
+            var getProductParametersOfPage2 = parametersUI;
+            getProductParametersOfPage2.PageNumber = 2;
 
             var testModel = new TestableProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object, false, false) // 👈 Beide valid
             {
@@ -703,6 +715,8 @@ namespace EvilCorp2000_UI_Tests
                 PageNumber = 2,
                 SortOrder = "Default"
             };
+
+            
 
             testModel.products = new List<ProductManagementProductDTO>
                 {
@@ -734,13 +748,13 @@ namespace EvilCorp2000_UI_Tests
                 Discounts = new List<DiscountDTO>() // Liste initialisieren!
             };
 
-            productManagerMock.Setup(m => m.GetProductsForInternalUse(_sortOrder, _pageNumber, _pageSize)).ReturnsAsync(_returnValues);
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(parameters)).ReturnsAsync(_returnValues);
             productManagerMock.Setup(m => m.GetCategories()).ReturnsAsync(new List<CategoryDTO> { new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "Test Category" } });
 
-            await testModel.LoadDataAsync(testModel.SortOrder, testModel.PageNumber, testModel.PageNumber);
+            await testModel.LoadDataAsync(getProductParametersOfPage2);
 
             // Act
-            var result = await testModel.OnPostAddDiscount(testProduct.ProductId, testModel.SortOrder, testModel.PageNumber, testModel.PageNumber);
+            var result = await testModel.OnPostAddDiscount(testProduct.ProductId, getProductParametersOfPage2);
 
             // Workaround: Manuell Discount zur Liste hinzufügen, da kein echter DB-Kontext vorhanden ist
             testModel.ValidatedProduct.Discounts.Add(new DiscountDTO
@@ -774,9 +788,12 @@ namespace EvilCorp2000_UI_Tests
             };
 
             var testCategories = new List<CategoryDTO>
-    {
-        new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "TestCategory" }
-    };
+            {
+                new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "TestCategory" }
+            };
+
+            var getProductParametersOfPage2 = parametersUI;
+            getProductParametersOfPage2.PageNumber = 2;
 
             var testModel = new TestableProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object, false, true) // 👈 Discount-Validation schlägt fehl
             {
@@ -791,7 +808,7 @@ namespace EvilCorp2000_UI_Tests
             };
 
             // Act
-            var result = await testModel.OnPostAddDiscount(testProduct.ProductId, testModel.SortOrder, testModel.PageNumber, testModel.PageNumber);
+            var result = await testModel.OnPostAddDiscount(testProduct.ProductId, getProductParametersOfPage2);
 
             // Assert
             Assert.IsType<PageResult>(result);

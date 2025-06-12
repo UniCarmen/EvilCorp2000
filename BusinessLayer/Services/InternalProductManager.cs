@@ -39,13 +39,14 @@ namespace BusinessLayer.Services
             return (start <= DateTime.Today && end >= DateTime.Today);
         }
 
-        public async Task<ProductListReturn<ProductManagementProductDTO>> GetProductsForInternalUse(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10)
+        public async Task<ProductListReturn<ProductManagementProductDTO>> GetProductsForInternalUse(GetProductsParameters parameters)
         {
-            pageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
-            pageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
-            sortOrder = sortOrder ?? ProductSortOrder.Default;
+            parameters.PageNumber = (parameters.PageNumber.HasValue && parameters.PageNumber.Value > 0) ? parameters.PageNumber.Value : 1;
+            parameters.PageSize = (parameters.PageSize.HasValue && parameters.PageSize.Value > 0) ? parameters.PageSize.Value : 10;
 
-            var productListReturn = await _productRepository.GetAllProductsAsync(sortOrder, pageNumber, pageSize);
+
+
+            var productListReturn = await _productRepository.GetAllProductsAsync(parameters);
 
             List<ProductManagementProductDTO> productsForInternalUse = [];
 

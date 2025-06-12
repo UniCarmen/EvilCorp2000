@@ -24,6 +24,10 @@ namespace EvilCorp2000_UI_Tests
         private readonly int _pageNumber = 1;
         private readonly int _pageSize = 10;
 
+        private readonly GetProductsParameters parameters = new GetProductsParameters();
+        private readonly UIGetProductsParameters parametersUI = new UIGetProductsParameters();
+
+
         public ShopTests()
         {
             _productForSaleManagerMock = new Mock<IProductForSaleManager>();
@@ -50,15 +54,17 @@ namespace EvilCorp2000_UI_Tests
 
             _productForSaleManagerMock
                 .Setup(m => m.GetProductsForSale(
-                    It.IsAny<ProductSortOrder>(),
-                    It.IsAny<int>(),
-                    It.IsAny<int>()))
+                    It.IsAny</*ProductSortOrder*/GetProductsParameters>()
+                    //,
+                    //It.IsAny<int>(),
+                    //It.IsAny<int>()
+                    ))
                 .ReturnsAsync(expectedReturnValues);
 
             var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object);
 
             // ACT
-            await pageModel.OnGet();
+            await pageModel.OnGet(parametersUI);
 
             // ASSERT
             var returnedObject = new ProductListReturn<ProductForSaleDTO>
@@ -75,7 +81,7 @@ namespace EvilCorp2000_UI_Tests
             Assert.True(pageModel.ModelState.IsValid);
 
             // Verify the manager method was called once
-            _productForSaleManagerMock.Verify(m => m.GetProductsForSale(_sortOrder, _pageNumber, _pageSize), Times.Once);
+            _productForSaleManagerMock.Verify(m => m.GetProductsForSale(parameters), Times.Once);
 
             // Verify no error log
             _loggerMock.Verify(
@@ -93,13 +99,13 @@ namespace EvilCorp2000_UI_Tests
         public async Task OnGet_ShouldAddModelError_AndReturnPage_ExceptionThrown()
         {
             _productForSaleManagerMock
-                .Setup(m => m.GetProductsForSale(_sortOrder, _pageNumber, _pageSize))
+                .Setup(m => m.GetProductsForSale(parameters))
                 .ThrowsAsync(new Exception("Fehler beim Laden der Produkte."));
 
             var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object);
 
             // ACT
-            await pageModel.OnGet();
+            await pageModel.OnGet(parametersUI);
 
             // ASSERT
             Assert.False(pageModel.ModelState.IsValid);
@@ -123,13 +129,13 @@ namespace EvilCorp2000_UI_Tests
         {
             // ARRANGE
             _productForSaleManagerMock
-                .Setup(m => m.GetProductsForSale(_sortOrder, _pageNumber, _pageSize))
+                .Setup(m => m.GetProductsForSale(parameters))
                 .ThrowsAsync(new Exception("Something else went wrong"));
 
             var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object);
 
             // ACT
-            await pageModel.OnGet();
+            await pageModel.OnGet(parametersUI);
 
             // ASSERT            
             Assert.False(pageModel.ModelState.IsValid);
@@ -170,9 +176,11 @@ namespace EvilCorp2000_UI_Tests
 
             _productForSaleManagerMock
                 .Setup(m => m.GetProductsForSale(
-                    It.IsAny<ProductSortOrder>(),
-                    pageNumber,
-                    pageSize))
+                    It.IsAny</*ProductSortOrder*/GetProductsParameters>()
+                    //,
+                    //pageNumber,
+                    //pageSize
+                    ))
                 .ReturnsAsync(expectedReturn);
 
             var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object)
@@ -181,8 +189,12 @@ namespace EvilCorp2000_UI_Tests
                 PageSize = pageSize
             };
 
+            var uIparametersWithNotStandardValues = parametersUI;
+            uIparametersWithNotStandardValues.PageNumber = pageNumber;
+            uIparametersWithNotStandardValues.PageSize = pageSize;
+
             // ACT
-            await pageModel.OnGet("Default", pageNumber, pageSize);
+            await pageModel.OnGet(uIparametersWithNotStandardValues);
             //Calls GetProductsForSale 
 
             // ASSERT
@@ -191,7 +203,9 @@ namespace EvilCorp2000_UI_Tests
             Assert.Equal(expectedReturn.ProductCount, pageModel.CountProducts);
 
             _productForSaleManagerMock.Verify(m =>
-                m.GetProductsForSale(It.IsAny<ProductSortOrder>(), pageNumber, pageSize), Times.Once);
+                m.GetProductsForSale(It.IsAny<GetProductsParameters/*ProductSortOrder*/>()
+                //, pageNumber, pageSize
+                ), Times.Once);
         }
 
     }

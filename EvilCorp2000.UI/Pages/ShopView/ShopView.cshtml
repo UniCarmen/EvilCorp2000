@@ -15,7 +15,7 @@
     @* TODO1 Filter einbauen *@
     @* <div> suche</div> *@
     <div class="pagination-wrapper">
-        @await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
+        @await Html.PartialAsync("_PaginationPartial", (Model.SortOrderString, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
     </div>
 
     <div class="sort-section">
@@ -24,7 +24,7 @@
             <select id="sortOrderSelect" name="sortOrderString" class="sorting-select" onchange="this.form.submit()">
                 @foreach (var order in Model.SortOrderAndDisplayStrings)
                 {
-                    <option value="@order.Item1" selected="@(order.Item1 == Model.SortOrder)">
+                    <option value="@order.Item1" selected="@(order.Item1 == Model.SortOrderString)">
                         @order.Item2
                     </option>
                 }
@@ -98,6 +98,6 @@
         }
     </div>
 
-    @await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
+    @await Html.PartialAsync("_PaginationPartial", (Model.SortOrderString, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
 
 </div>

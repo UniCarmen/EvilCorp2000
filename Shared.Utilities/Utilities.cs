@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 using Serilog;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Shared.Utilities
@@ -35,6 +36,24 @@ namespace Shared.Utilities
 
         }
 
+        public class UIGetProductsParameters
+        {
+            public string? SortOrderString { get; set; } = null;
+            public int? PageNumber { get; set; } = 1;
+            public int? PageSize { get; set; } = 10;
+            public string? Search { get; set; } = "";
+            public Guid? CategoryId { get; set; } = null;
+        }
+
+        public class GetProductsParameters
+        {
+            public ProductSortOrder SortOrder { get; set; } = ProductSortOrder.Default;
+            public int? PageNumber { get; set; } = 1;
+            public int? PageSize { get; set; } = 10;
+            public string? Search { get; set; } = "";
+            public Guid? CategoryId { get; set; } = null;
+        }
+        
         //TODO:
         //DADURCH GEWINNE ICH NICHTS... EVTL, WENN ICH MEHR IM CATCH STEHEN HABE
         //LOHTN SICH IM MOMENT NOCH NICHT, DAS AUSZULAGERN IN SHARED

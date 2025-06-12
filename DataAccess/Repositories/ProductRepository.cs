@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
+using Microsoft.IdentityModel.Tokens;
 using Shared.Utilities;
 using System.Diagnostics;
 using System.Linq.Expressions;
@@ -64,31 +65,51 @@ namespace DataAccess.Repositories
         }
 
         //public async Task<List<Product>> GetAllProductsAsync(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10) 
-        public async Task<ProductListReturn<Product>> GetAllProductsAsync(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10)
+        public async Task<ProductListReturn<Product>> GetAllProductsAsync(
+            GetProductsParameters parameters)
         {
             try
             {
-                pageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
-                pageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
-                sortOrder = sortOrder ?? ProductSortOrder.Default;
+                parameters.PageNumber = (parameters.PageNumber.HasValue && parameters.PageNumber.Value > 0) ? parameters.PageNumber.Value : 1;
+                parameters.PageSize = (parameters.PageSize.HasValue && parameters.PageSize.Value > 0) ? parameters.PageSize.Value : 10;
 
-                IQueryable<Product> query = _context.Products
+                IQueryable<Product> query = _context.Products;
+
+                if (!parameters.Search.IsNullOrEmpty())
+                {
+                    query = query.Where(x =>
+                        x.ProductDescription.Contains(parameters.Search) ||
+                        x.ProductName.Contains(parameters.Search));
+                }
+
+                query = query
                     .Include(p => p.Categories)
-                    .Include(p => p.Discounts)
+                    .Include(p => p.Discounts);
+
+                if (parameters.CategoryId != null)
+                {
+                    query = query.Where(x => x.Categories.Any(c => c.CategoryId == parameters.CategoryId));
+                }
+
+                query = query
                     .AsNoTracking()
-                    .AsSplitQuery(); //INFO: teilt Abfrage in mehrere einfache SQL-Abfragen, verbessert Performance bei bielen Includes.
+                    .AsSplitQuery(); //INFO: teilt Abfrage in mehrere einfache SQL-Abfragen, verbessert Performance bei vielen Includes.
+
+
+                //IQueryable<Product> query = _context.Products
+                //    .Include(p => p.Categories)
+                //    .Include(p => p.Discounts)
+                //    .AsNoTracking()
+                //    .AsSplitQuery(); //INFO: teilt Abfrage in mehrere einfache SQL-Abfragen, verbessert Performance bei bielen Includes.
 
                 //für Filter -> checken, searchTerm als Parameter, ich bräuchte auch Kategorie, Bewertung und sowas als Parameter... Suchtyp anlegen?
-                //if (!string.IsNullOrEmpty(searchTerm))
-                //{
-                //    query = query.Where(p => p.ProductName.Contains(searchTerm));
-                //}
+                
 
                 var productCount = query.Count();
 
-                int maxPageCount = (int)Math.Ceiling((double)productCount / pageSize.Value);
+                int maxPageCount = (int)Math.Ceiling((double)productCount / parameters.PageSize.Value);
 
-                query = sortOrder switch
+                query = parameters.SortOrder switch
                 {
                     ProductSortOrder.PriceAsc => query.OrderBy(p => p.ProductPrice),
                     ProductSortOrder.PriceDesc => query.OrderByDescending(p => p.ProductPrice),
@@ -132,8 +153,8 @@ namespace DataAccess.Repositories
                 // TODO1: PAGINATION -> paging typ anlegen, damit nicht zu viele parameter?
 
                 query = query/*.OrderBy(p => p.ProductId)*/
-                    .Skip((pageNumber.Value - 1) * pageSize.Value)
-                    .Take(pageSize.Value);
+                    .Skip((parameters.PageNumber.Value - 1) * parameters.PageSize.Value)
+                    .Take(parameters.PageSize.Value);
 
                 var productList = await query.ToListAsync();
 

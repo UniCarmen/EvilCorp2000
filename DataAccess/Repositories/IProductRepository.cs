@@ -7,7 +7,7 @@ namespace DataAccess.Repositories
     {
         Task AddProduct(Product product);
         Task DeleteProduct(Guid productId);
-        Task<ProductListReturn<Product>> GetAllProductsAsync(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10);
+        Task<ProductListReturn<Product>> GetAllProductsAsync(GetProductsParameters parameters);
         //Task<List<Product>> GetAllProductsAsync(ProductSortOrder? sortOrder = null, int? pageNumber = 1, int? pageSize = 10);
         Task<List<Product>> GetHighlightProducts(); 
         Task<Product?> GetProductByIdWithCategoriesAnsdDiscounts(Guid id);

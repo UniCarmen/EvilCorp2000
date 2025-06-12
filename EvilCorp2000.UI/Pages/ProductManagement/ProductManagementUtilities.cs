@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics;
 using static EvilCorp2000.Pages.Utilities.Utilities;
 using static Shared.Utilities.Utilities;
+using DataAccess.Entities;
 
 namespace EvilCorp2000.Pages.ProductManagement
 {
@@ -20,21 +21,28 @@ namespace EvilCorp2000.Pages.ProductManagement
     {
 
 
-        public async Task LoadDataAsync(string? sortOrderString = null, int? pageNumber = 1, int? pageSize = 10)
+        public async Task LoadDataAsync(UIGetProductsParameters? parameters)
         {
             try
             {
-                PageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
-                PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
-                SortOrder = sortOrderString ?? "Default";
+                PageNumber = (parameters.PageNumber.HasValue && parameters.PageNumber.Value > 0) ? parameters.PageNumber.Value : 1;
+                PageSize = (parameters.PageSize.HasValue && parameters.PageSize.Value > 0) ? parameters.PageSize.Value : 10;
+                //SortOrder = parameters.SortOrderString ?? "Default";
 
-                var productListReturn = await _internalProductManager.GetProductsForInternalUse(MapSortOrderString(SortOrder), pageNumber, pageSize);
+                var getProductParameters = new GetProductsParameters()
+                {
+                    SortOrder = MapSortOrderString(parameters.SortOrderString),
+                    PageNumber = PageNumber,
+                    PageSize = PageSize,
+                };
+
+                var productListReturn = await _internalProductManager.GetProductsForInternalUse(getProductParameters);
                 
                 products = productListReturn.ProductList;
                 CountProducts = productListReturn.ProductCount;
                 MaxPageCount = productListReturn.MaxPageCount;
                 Categories = await _internalProductManager.GetCategories();
-                SortOrder = sortOrderString ?? "Default";
+                SortOrder = parameters.SortOrderString ?? "Default";
             }
             catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }
 
@@ -51,7 +59,14 @@ namespace EvilCorp2000.Pages.ProductManagement
                 validatedProduct.Discounts = validatedProduct.Discounts.OrderBy(d => d.StartDate).ToList();
             }
 
-            await LoadDataAsync(sortOrderString, pageNumber, pageSize);
+            UIGetProductsParameters getProductsParams = new UIGetProductsParameters()
+            {
+                SortOrderString = sortOrderString,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            await LoadDataAsync(getProductsParams);
 
             //FEHLER: funktioniert nicht, Felder sind immer noch gefüllt
             //NewDiscount = new ValidatedDiscount { DiscountPercentage = 0, StartDate = null, EndDate = null};
@@ -144,7 +159,8 @@ namespace EvilCorp2000.Pages.ProductManagement
                 _logger.LogError(logError);
                 ModelState.AddModelError(string.Empty, modelStateError);
                 ShowModal = true;
-                await LoadDataAsync();
+
+                await LoadDataAsync(null);
                 return (default, Page());
             }
         }
@@ -156,7 +172,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             //_logger.LogError(logError, ex);
             ModelState.AddModelError(string.Empty, modelStateError);
             ShowModal = true;
-            await LoadDataAsync();
+            await LoadDataAsync(null);
             return Page();
         }
 
@@ -165,7 +181,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         {
             ModelState.AddModelError(string.Empty, modelStateError);
             ShowModal = true;
-            await LoadDataAsync();
+            await LoadDataAsync(null);
             return Page();
         }
 

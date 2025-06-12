@@ -68,6 +68,9 @@ namespace EvilCorp2000.Pages.ProductManagement
         [BindProperty]
         public string CategoryIdsJson { get; set; }
 
+        public string? Search {  get; set; }
+        public CategoryDTO? FilterCategory { get; set; }
+
 
         public List<(string, string)> SortOrderAndDisplayStrings { get; } = [
             (ProductSortOrder.Default.ToString(), "Default"),
@@ -101,11 +104,11 @@ namespace EvilCorp2000.Pages.ProductManagement
             set { }
         }
 
-        public async Task OnGet(string? sortOrderString = null, int? pageNumber = 1, int? pageSize = 10)
+        public async Task OnGet(UIGetProductsParameters parameters)
         {
             try
             {
-                await LoadDataAsync(sortOrderString, pageNumber, pageSize);
+                await LoadDataAsync(parameters);
             }
             catch (DbUpdateException ex)
             {
@@ -129,11 +132,11 @@ namespace EvilCorp2000.Pages.ProductManagement
         //    return Page();
         //}
 
-        public async Task<IActionResult> OnPostShowNewAndAlterProductModal(Guid selectedProductId, string? sortOrderString = null, int? pageNumber = 1, int? pageSize = 10)
+        public async Task<IActionResult> OnPostShowNewAndAlterProductModal(Guid selectedProductId, UIGetProductsParameters parameters)
         {
             SelectedProductId = selectedProductId;
 
-            await LoadDataAsync();
+            await LoadDataAsync(null);
             if (selectedProductId != Guid.Empty)
             {
                 try
@@ -158,9 +161,9 @@ namespace EvilCorp2000.Pages.ProductManagement
 
                     ValidatedProduct = validatedProduct;
 
-                    PageNumber = (pageNumber.HasValue && pageNumber.Value > 0) ? pageNumber.Value : 1;
-                    PageSize = (pageSize.HasValue && pageSize.Value > 0) ? pageSize.Value : 10;
-                    SortOrder = sortOrderString ?? "Default";
+                    PageNumber = (parameters.PageNumber.HasValue && parameters.PageNumber.Value > 0) ? parameters.PageNumber.Value : 1;
+                    PageSize = (parameters.PageSize.HasValue && parameters.PageSize.Value > 0) ? parameters.PageSize.Value : 10;
+                    SortOrder = parameters.SortOrderString ?? "Default";
 
                     DiscountsJson = JsonSerializer.Serialize(selectedProduct.Discounts);
                     ValidatedProductJson = JsonSerializer.Serialize(selectedProduct);
@@ -180,10 +183,10 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        public async Task<IActionResult> OnPostCloseModal(string? sortOrderString = null, int? pageNumber = 1, int? pageSize = 10)
+        public async Task<IActionResult> OnPostCloseModal(UIGetProductsParameters parameters)
         {
             ShowModal = false;
-            await LoadDataAsync(sortOrderString, pageNumber, pageSize);
+            await LoadDataAsync(parameters);
             return Page();
         }
 
@@ -194,7 +197,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             {
 
                 ShowModal = true;
-                await LoadDataAsync();
+                await LoadDataAsync(null);
                 return await ReInitializeModalWithProduct(ValidatedProduct, ValidatedProduct.SelectedCategoryIds, ValidatedProduct.Discounts);
             }
 
@@ -231,15 +234,15 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
-        public async Task<IActionResult> OnPostAddDiscount(Guid selectedProductId, string? sortOrderString = null, int? pageNumber = 1, int? pageSize = 10)
+        public async Task<IActionResult> OnPostAddDiscount(Guid selectedProductId, UIGetProductsParameters parameters)
         {
             if (IsModelStateIsInvalidForDiscount(ModelState))
             {
-                await LoadDataAsync();
+                await LoadDataAsync(null);
                 return await ReInitializeModalAfterDiscountValidationError(CategoryIdsJson, Categories, ValidatedProductJson);
             }
 
-            await LoadDataAsync(sortOrderString, pageNumber, pageSize);
+            await LoadDataAsync(parameters);
 
             var newDiscount = new DiscountDTO
             {
