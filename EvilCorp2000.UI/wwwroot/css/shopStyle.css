@@ -196,6 +196,9 @@ button {
     gap: 2px;
     font-size: 1.5rem;
 }
+.stars-container-ratingNumber {
+    font-size: 1rem;
+}
 
 .star {
     position: relative;
@@ -240,7 +243,7 @@ button {
     text-fill-color: transparent;
 }
 
-.sorting-container {
+/*.sorting-container {
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -258,8 +261,26 @@ button {
         color: #ff4d4d;
         text-shadow: 0 0 5px #000;
     }
+*//*.sorting-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 2px solid #a60000;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+}
 
-.sorting-select {
+    .sorting-container label {
+        margin-right: 0.5rem;
+        font-size: 1.2em;
+        color: #ff4d4d;
+        text-shadow: 0 0 5px #000;
+    }
+*/
+.sorting-filter-select {
     padding: 0.5rem;
     border: 2px solid #a60000;
     background-color: #1a1a1a;
@@ -274,6 +295,10 @@ button {
         color: #ff0000;
         border-color: #ff0000;
     }
+
+.sort-filter-section + .sort-filter-section {
+    margin-top: 0.75rem;
+}
 
 .pagination-nav {
     margin-top: 30px;
@@ -324,30 +349,6 @@ button {
     }
 
 
-/*.shop-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin: 20px 0;
-    padding: 10px 20px;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 8px;
-    border: 2px solid #a60000;
-    box-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
-}
-
-.sort-section {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-    .sort-section label {
-        color: #ff4d4d;
-        font-size: 1.1rem;
-        font-weight: 500;
-    }*/
-
 .shop-toolbar {
     display: flex;
     justify-content: space-between;
@@ -366,8 +367,22 @@ button {
     justify-content: center;
 }
 
-.sort-section {
+.sort-filter-section {
     display: flex;
     align-items: center;
     gap: 10px;
 }
+
+.sf-button {
+    background: darkred;
+    color: white;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    font-size: 1em;
+    /*line-height: 0.1;*/
+}
+
+    .sf-button:hover {
+        background: red;
+    }

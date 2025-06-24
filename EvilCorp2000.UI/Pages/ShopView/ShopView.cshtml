@@ -1,4 +1,5 @@
 ﻿@page
+@using BusinessLayer.Models
 @model ShopViewModel
 @{
     ViewData["Title"] = "Villain Shop";
@@ -11,26 +12,62 @@
 
 
 <div class="shop-toolbar">
-    
-    @* TODO1 Filter einbauen *@
-    @* <div> suche</div> *@
+
+    <div class="sort-filter-section">
+        <form method="get">
+            <input type="hidden" name="Search" value="@Model.Search" />
+            <input type="hidden" name="FilterCategoryString" value="@Model.FilterCategoryString" />
+            <label for="SortOrderString">Sort by:</label>
+            <select id="SortOrderString" name="SortOrderString" class="sorting-filter-select">
+                @foreach (var (value, text) in Model.SortOrderAndDisplayStrings)
+                {
+                    <option value="@value" selected="@(value == Model.SortOrderString)">
+                        @text
+                    </option>
+                }
+            </select>
+            <button type="submit" class="sf-button">Sort</button>
+        </form>
+    </div>
+
     <div class="pagination-wrapper">
         @await Html.PartialAsync("_PaginationPartial", (Model.SortOrderString, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
     </div>
 
-    <div class="sort-section">
-        <label for="sortOrderSelect">Sort by:</label>
-        <form method="get">
-            <select id="sortOrderSelect" name="sortOrderString" class="sorting-select" onchange="this.form.submit()">
-                @foreach (var order in Model.SortOrderAndDisplayStrings)
-                {
-                    <option value="@order.Item1" selected="@(order.Item1 == Model.SortOrderString)">
-                        @order.Item2
-                    </option>
-                }
-            </select>
-        </form>
+
+    <div>
+        @if (Model.categories != null)
+        {
+            <div class="sort-filter-section">
+                <form method="get">
+                    <input type="hidden" name="Search" value="@Model.Search" />
+                    <label for="FilterCategoryString">Filter Category:</label>
+                    <select id="FilterCategoryString" name="FilterCategoryString" class="sorting-filter-select">
+                        <option value="null" selected="@(null == Model.FilterCategory)">
+                            No Filter
+                        </option>
+                        @foreach (CategoryDTO category in Model.categories)
+                        {
+                            <option value="@category.CategoryId" selected="@(category.CategoryId == Model.FilterCategory)">
+                                @category.CategoryName
+                            </option>
+                        }
+                    </select>
+                    <button type="submit" class="sf-button">Filter</button>
+                </form>
+            </div>
+        }
+
+        <div class="sort-filter-section">
+            <form method="get">
+                <input type="hidden" name="FilterCategoryString" value="@Model.FilterCategoryString" />
+                <label for="Search">Search:</label>
+                <input type="text" id="Search" name="Search" value="@Model.Search" class="sorting-filter-select" placeholder="Search products..." />
+                <button type="submit" class="sf-button">Search</button>
+            </form>
+        </div>
     </div>
+
 </div>
 
 
@@ -57,11 +94,29 @@
 
                 <p>@product.Description</p>
 
+                <p>
+                @if (product.Categories.Count != 1)
+                {
+                    @foreach (var category in product.Categories)
+                    {
+                        @category
+                        if (category != product.Categories.Last())
+                        {
+                            <span>- </span>;
+                        }
+                    }
+                }
+                else 
+                {
+                    @product.Categories.First()
+                }
+                    
+                </p>
+                
+
                 @if (product.Rating.HasValue)
                 {
-                    <p>@product.Rating.Value.ToString()</p>
-
-
+                    
                     double rating = product.Rating.Value; // z. B. 4.3
                     var fillPercents = Enumerable.Range(0, 5).Select(i =>
                     {
@@ -76,6 +131,7 @@
                         {
                             <span class="star-precise" style="--percent: @fillPercents[i]%">★</span>
                         }
+                        <p class="stars-container-ratingNumber">(@product.Rating.Value.ToString())</p>
                     </div>
                 }
 

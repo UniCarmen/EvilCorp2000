@@ -19,16 +19,28 @@ namespace BusinessLayer.Services
     {
         private readonly IDiscountRepository _discoutRepository;
         private readonly IProductRepository _productRepository;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly CategoryMappings _categoryMapper = new();
         //private readonly ICategoryRepository _categoryRepository;
 
-        public ProductForSaleManager(IDiscountRepository discoutRepository, IProductRepository productRepository/*, ICategoryRepository categoryRepository*/)
+        public ProductForSaleManager(IDiscountRepository discoutRepository, IProductRepository productRepository, ICategoryRepository categoryRepository)
         {
             _discoutRepository = discoutRepository ?? throw new ArgumentNullException(nameof(discoutRepository));
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            //_categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
+            _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
-        
+
+        public async Task<List<CategoryDTO>> GetCategories()
+        {
+            return
+                ServiceUtilities.MapWithNullChecks(
+                    await _categoryRepository.GetAllCategories(),
+                    _categoryMapper.CategoryToCategoryDto,
+                    "Category List")
+                .ToList();
+        }
+
 
         public async Task<ProductListReturn<ProductForSaleDTO>> GetProductsForSale(GetProductsParameters parameters) 
             //optionaler Parameter zur Sortierung / Filterung

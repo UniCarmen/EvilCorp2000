@@ -38,11 +38,12 @@ namespace Shared.Utilities
 
         public class UIGetProductsParameters
         {
-            public string? SortOrderString { get; set; } = null;
+            public string? SortOrderString { get; set; } = "Default";
             public int? PageNumber { get; set; } = 1;
             public int? PageSize { get; set; } = 10;
             public string? Search { get; set; } = "";
-            public Guid? CategoryId { get; set; } = null;
+            //public Guid? FilterCategory { get; set; } = null;
+            public string? FilterCategoryString {get; set;} = "";
         }
 
         public class GetProductsParameters
