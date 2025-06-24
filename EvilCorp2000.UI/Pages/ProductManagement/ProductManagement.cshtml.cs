@@ -69,7 +69,12 @@ namespace EvilCorp2000.Pages.ProductManagement
         public string CategoryIdsJson { get; set; }
 
         public string? Search {  get; set; }
-        public CategoryDTO? FilterCategory { get; set; }
+        //public CategoryDTO? FilterCategory { get; set; }
+
+        public Guid? FilterCategory { get; set; }
+        public string? FilterCategoryString { get; set; } // wird für das Dropdown benötigt
+
+
 
 
         public List<(string, string)> SortOrderAndDisplayStrings { get; } = [

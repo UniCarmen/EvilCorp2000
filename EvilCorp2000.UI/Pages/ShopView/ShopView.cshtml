@@ -36,7 +36,7 @@
 
 
     <div>
-        @if (Model.categories != null)
+        @if (Model._categories != null)
         {
             <div class="sort-filter-section">
                 <form method="get">
@@ -46,7 +46,7 @@
                         <option value="null" selected="@(null == Model.FilterCategory)">
                             No Filter
                         </option>
-                        @foreach (CategoryDTO category in Model.categories)
+                        @foreach (CategoryDTO category in Model._categories)
                         {
                             <option value="@category.CategoryId" selected="@(category.CategoryId == Model.FilterCategory)">
                                 @category.CategoryName

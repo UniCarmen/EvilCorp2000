@@ -26,7 +26,7 @@ namespace EvilCorp2000.Pages
         public string? Search {  get; set; }
         public Guid? FilterCategory {  get; set; }
         public string? FilterCategoryString { get; set; } // wird für das Dropdown benötigt
-        public List<CategoryDTO>? categories { get; set; }
+        public List<CategoryDTO>? _categories { get; set; }
 
 
         public List<ProductForSaleDTO> ProductsForSale { get; private set; } = [];
@@ -52,16 +52,16 @@ namespace EvilCorp2000.Pages
         {
             try
             {
-                categories = await _productForSaleManager.GetCategories();
+                _categories = await _productForSaleManager.GetCategories();
 
                 PageNumber = (parameters.PageNumber.HasValue && parameters.PageNumber.Value > 0) ? parameters.PageNumber.Value : 1;
                 PageSize = (parameters.PageSize.HasValue && parameters.PageSize.Value > 0) ? parameters.PageSize.Value : 10;
                 SortOrderString = parameters.SortOrderString ?? "Default";
                 Search = parameters.Search ?? "";
-                if (!parameters.FilterCategoryString.IsNullOrEmpty() && !categories.IsNullOrEmpty())
+                if (!parameters.FilterCategoryString.IsNullOrEmpty() && !_categories.IsNullOrEmpty())
                 {
                     FilterCategory =
-                    categories
+                    _categories
                     .Find(c => c.CategoryId == Guid.Parse(parameters.FilterCategoryString)).CategoryId;
                     FilterCategoryString = parameters.FilterCategoryString;
                     //hier muss ich anhanf FilterCAtegoryString (GUID) die id (richtige Guid raussuchen)

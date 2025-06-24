@@ -25,15 +25,29 @@ namespace EvilCorp2000.Pages.ProductManagement
         {
             try
             {
+                Categories = await _internalProductManager.GetCategories();
+
                 PageNumber = (parameters.PageNumber.HasValue && parameters.PageNumber.Value > 0) ? parameters.PageNumber.Value : 1;
                 PageSize = (parameters.PageSize.HasValue && parameters.PageSize.Value > 0) ? parameters.PageSize.Value : 10;
-                //SortOrder = parameters.SortOrderString ?? "Default";
+                Search = parameters.Search ?? "";
+                if (!parameters.FilterCategoryString.IsNullOrEmpty() && !Categories.IsNullOrEmpty())
+                {
+                    FilterCategory =
+                    Categories
+                    .Find(c => c.CategoryId == Guid.Parse(parameters.FilterCategoryString)).CategoryId;
+                    FilterCategoryString = parameters.FilterCategoryString;
+                    //hier muss ich anhanf FilterCAtegoryString (GUID) die id (richtige Guid raussuchen)
+                    //parameters.FilterCategory;
+                }
+
 
                 var getProductParameters = new GetProductsParameters()
                 {
                     SortOrder = MapSortOrderString(parameters.SortOrderString),
                     PageNumber = PageNumber,
                     PageSize = PageSize,
+                    CategoryId = FilterCategory,
+                    Search = Search
                 };
 
                 var productListReturn = await _internalProductManager.GetProductsForInternalUse(getProductParameters);

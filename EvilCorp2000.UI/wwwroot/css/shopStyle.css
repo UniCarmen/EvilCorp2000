@@ -243,43 +243,6 @@ button {
     text-fill-color: transparent;
 }
 
-/*.sorting-container {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 2px solid #a60000;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
-}
-
-    .sorting-container label {
-        margin-right: 0.5rem;
-        font-size: 1.2em;
-        color: #ff4d4d;
-        text-shadow: 0 0 5px #000;
-    }
-*//*.sorting-container {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 2px solid #a60000;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
-}
-
-    .sorting-container label {
-        margin-right: 0.5rem;
-        font-size: 1.2em;
-        color: #ff4d4d;
-        text-shadow: 0 0 5px #000;
-    }
-*/
 .sorting-filter-select {
     padding: 0.5rem;
     border: 2px solid #a60000;
