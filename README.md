@@ -14,24 +14,23 @@ Since I don't use JS, a big challenge here is that the product overview opens in
 * Saving and Loading Product Images (path is stored in DB, images in the project as an indermediate step to storing them in a blob storage)
 * Implementation of Identity - Log In, Log Out with different Roles and authorizations, ErrorPages
 * Shop View
+* Pagination, Sorting, Filtering
 
 ### Programming concepts included 
-* Data is stored in a MS SQL Server DB
+* Data is stored in a MS SQL Server DB, query manipulation (sort, filter, pagination)
 * Seperation of concerns (DAL, BL, UI): different projects (there is still a relic of which I wanted to take care and DTOs which are used in both UI and BL)
 * Errorlogging with Serilog in Console (Debug), File (Warning) and Db (Error)
 * Unit Tests
 * First big refactor
 
 ### Planned next
-
-* UI Improvements: Pagination, Sorting, Filtering
+* UI Improvements: Ratingsystem
 * Shopping Cart
 * Customer Identity
 * Checkout - Product OnStock-changes
 * Fictional Orders
-* Ratingsystem
 
-### Planned in the future
+### In the darkness of the far future there are only plans
 * Add, alter, delete(?) Categories
 * Customize Currency?
 * Produktstate as a Property of Product: aktiv / inaktiv?
