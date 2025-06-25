@@ -73,12 +73,9 @@ namespace EvilCorp2000_UI_Tests
             ProductCount = 2
         };
 
+        //TODO1: evtl weg, immer neu erzeugen in den Tests
         private readonly GetProductsParameters parameters = new GetProductsParameters();
         private readonly UIGetProductsParameters parametersUI = new UIGetProductsParameters();
-
-        private readonly ProductSortOrder _sortOrder = Shared.Utilities.Utilities.ProductSortOrder.Default;
-        private readonly int _pageNumber = 1;
-        private readonly int _pageSize = 10;
 
 
         [Fact]
@@ -90,20 +87,9 @@ namespace EvilCorp2000_UI_Tests
             var envMock = new Mock<IWebHostEnvironment>();
             var authMock = new Mock<IAuthorizationService>();
 
-            //ProductListReturn<ProductManagementProductDTO> returnValues = new ProductListReturn<ProductManagementProductDTO>
-            //{
-            //    ProductList = [],
-            //    MaxPageCount = 1,
-            //    ProductCount = 2
-            //};
-
-            //var sortOrder = Shared.Utilities.Utilities.ProductSortOrder.Default;
-            //var pageNumber = 1;
-            //var pageSize = 10;
-
-            //INFO Simuliert Rückgabewerte für Methodenaufrufe
-            productManagerMock.Setup(m => m.GetProductsForInternalUse(parameters)).ReturnsAsync(_returnValues);
-            productManagerMock.Setup(m => m.GetCategories()).ReturnsAsync(new List<CategoryDTO>());
+            //INFO Simuliert Rückgabewerte für Methodenaufrufe --> nicht nötig, da nur Aufruf getestet wird
+            //productManagerMock.Setup(m => m.GetProductsForInternalUse(parameters)).ReturnsAsync(_returnValues); 
+            //productManagerMock.Setup(m => m.GetCategories()).ReturnsAsync(new List<CategoryDTO>());
 
             //INFO erstellt das PageModel mit den Mock-Objekten
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object);
@@ -111,20 +97,14 @@ namespace EvilCorp2000_UI_Tests
             // Act
             await model.LoadDataAsync(parametersUI);
 
-            // Assert
-            //INFO Verify: stellt sicher, dass Methoden mit bestimmten Parametern aufgerufen werden
-            //INFO Assert: prüft den Endzustand von Objekten
-            //INFO in der UI wird keine Logik ausgeführt, UI koordiniert Methodenaufrufe, leitet Benutzeranfragen an BL/DAL
-            //INFO Es geht nicht darum, ob die Methode korrekt arbeitet, sondern OB sie die richtigen Methoden überhaupt aufruft und Fehler richtig behandelt / geloggt werden
-            //INFO Das Prüfen, ob z. B. Product oder Categorie sgefüllt sind, wäre falsch, da ich so die BL/DAL testen würde
-
-            productManagerMock.Verify(m => m.GetProductsForInternalUse(parameters), Times.Once);
+            // Assert: Methoden werden aufgerufen
+            productManagerMock.Verify(m => m.GetProductsForInternalUse(It.IsAny<GetProductsParameters>()), Times.Once);
             productManagerMock.Verify(m => m.GetCategories(), Times.Once);
         }
 
 
         [Fact]
-        public async Task LoadDataAsync_ShouldPassPaginationParametersToService()
+        public async Task LoadDataAsync_CallsServiceWithExpectedParameters()
         {
             // Arrange
             var mockManager = new Mock<IInternalProductManager>();
@@ -132,49 +112,72 @@ namespace EvilCorp2000_UI_Tests
             var envMock = new Mock<IWebHostEnvironment>();
             var authMock = new Mock<IAuthorizationService>();
 
-            var expectedParameters = parameters;
+            var searchCatergoryId = Guid.NewGuid();
 
-            expectedParameters.PageNumber = 3;
-            expectedParameters.PageSize = 20;
-            expectedParameters.SortOrder = ProductSortOrder.PriceAsc;
+            var categories = new List<CategoryDTO>
+            {
+                new CategoryDTO() {CategoryName = "1", CategoryId = searchCatergoryId }
+            };
 
-            var expectedUIParameters = parametersUI;
+            var expectedParameters = new GetProductsParameters
+            {
+                PageNumber = 3,
+                PageSize = 20,
+                SortOrder = ProductSortOrder.PriceAsc,
+                Search = "Test",
+                CategoryId = searchCatergoryId
+            };
 
-            expectedUIParameters.PageNumber = 3;
-            expectedUIParameters.PageSize = 20;
-            expectedUIParameters.SortOrderString = "PriceAsc";
+            var uIParameters = new UIGetProductsParameters
+            {
+                PageNumber = 3,
+                PageSize = 20,
+                SortOrderString = "PriceAsc",
+                Search = "Test",
+                FilterCategoryString = searchCatergoryId.ToString()
+            };
 
             var returnData = new ProductListReturn<ProductManagementProductDTO>
             {
-                ProductList = new List<ProductManagementProductDTO> { new() { ProductName = "Test" } },
-                ProductCount = 1,
-                MaxPageCount = 1
+                ProductList = new List<ProductManagementProductDTO> {
+                    new() { ProductName = "Test", ProductId = searchCatergoryId }},
+                    ProductCount = 1,
+                    MaxPageCount = 1
             };
 
+            //weil am Ende immer Prüfung auf Referenzgleichheit
             mockManager
-                .Setup(m => m.GetProductsForInternalUse(expectedParameters))
+                .Setup(m => m.GetProductsForInternalUse(It.IsAny<GetProductsParameters>()))
                 .ReturnsAsync(returnData);
 
             mockManager
                 .Setup(m => m.GetCategories())
-                .ReturnsAsync(new List<CategoryDTO>());
+                .ReturnsAsync(categories);
 
             var model = new ProductManagementModel(mockManager.Object, loggerMock.Object, envMock.Object, authMock.Object);
 
             // Act
-            await model.LoadDataAsync(expectedUIParameters);
+            await model.LoadDataAsync(uIParameters);
 
             // Assert
             mockManager.Verify(m =>
-                m.GetProductsForInternalUse(expectedParameters), Times.Once);
+                m.GetProductsForInternalUse(It.Is<GetProductsParameters>(p =>
+                    p.PageNumber == expectedParameters.PageNumber &&
+                    p.PageSize == expectedParameters.PageSize &&
+                    p.SortOrder == expectedParameters.SortOrder &&
+                    p.Search == expectedParameters.Search &&
+                    p.CategoryId == expectedParameters.CategoryId
+                )), Times.Once);
 
-            mockManager.Verify(m => m.GetCategories(), Times.Once);
-
-            Assert.Equal(expectedUIParameters.PageNumber, model.PageNumber);
-            Assert.Equal(expectedUIParameters.PageSize, model.PageSize);
-            Assert.Equal(expectedUIParameters.SortOrderString, model.SortOrder);
+            Assert.Equal(uIParameters.PageNumber, model.PageNumber);
+            Assert.Equal(uIParameters.PageSize, model.PageSize);
+            Assert.Equal(uIParameters.SortOrderString, model.SortOrder);
+            Assert.Equal(uIParameters.Search, model.Search);
+            Assert.Equal(uIParameters.FilterCategoryString, model.FilterCategoryString);
         }
+        
 
+        //TODO1: ab hier prüfen
 
         [Fact]
         public async Task LoadDataAsync_ShouldHandleException_AndLogError()

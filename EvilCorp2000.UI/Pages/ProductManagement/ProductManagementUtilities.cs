@@ -30,6 +30,7 @@ namespace EvilCorp2000.Pages.ProductManagement
                 PageNumber = (parameters.PageNumber.HasValue && parameters.PageNumber.Value > 0) ? parameters.PageNumber.Value : 1;
                 PageSize = (parameters.PageSize.HasValue && parameters.PageSize.Value > 0) ? parameters.PageSize.Value : 10;
                 Search = parameters.Search ?? "";
+                SortOrder = parameters.SortOrderString ?? "Default";
                 if (!parameters.FilterCategoryString.IsNullOrEmpty() && !Categories.IsNullOrEmpty())
                 {
                     FilterCategory =
@@ -43,7 +44,7 @@ namespace EvilCorp2000.Pages.ProductManagement
 
                 var getProductParameters = new GetProductsParameters()
                 {
-                    SortOrder = MapSortOrderString(parameters.SortOrderString),
+                    SortOrder = MapSortOrderString(SortOrder),
                     PageNumber = PageNumber,
                     PageSize = PageSize,
                     CategoryId = FilterCategory,
@@ -56,7 +57,7 @@ namespace EvilCorp2000.Pages.ProductManagement
                 CountProducts = productListReturn.ProductCount;
                 MaxPageCount = productListReturn.MaxPageCount;
                 Categories = await _internalProductManager.GetCategories();
-                SortOrder = parameters.SortOrderString ?? "Default";
+                
             }
             catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }
 

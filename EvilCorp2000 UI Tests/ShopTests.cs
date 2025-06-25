@@ -12,6 +12,9 @@ using BusinessLayer.Models;
 using BusinessLayer.Services;
 using Microsoft.Data.SqlClient;
 using static Shared.Utilities.Utilities;
+using EvilCorp2000.Pages.ProductManagement;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 
 namespace EvilCorp2000_UI_Tests
 {
@@ -81,7 +84,7 @@ namespace EvilCorp2000_UI_Tests
             Assert.True(pageModel.ModelState.IsValid);
 
             // Verify the manager method was called once
-            _productForSaleManagerMock.Verify(m => m.GetProductsForSale(parameters), Times.Once);
+            _productForSaleManagerMock.Verify(m => m.GetProductsForSale(It.IsAny<GetProductsParameters>()), Times.Once);
 
             // Verify no error log
             _loggerMock.Verify(
@@ -155,57 +158,69 @@ namespace EvilCorp2000_UI_Tests
             );
         }
 
+
+        //TODO1: Check Tests above
+
         [Theory]
         [InlineData(1, 10)]
-        [InlineData(2, 10)]
-        [InlineData(3, 15)]
-        public async Task OnGet_ShouldRespectPaginationParameters(int pageNumber, int pageSize)
+        [InlineData(2, 20)]
+        public async Task OnGet_ShouldPassExpectedParametersAndMapResponse(int pageNumber, int pageSize)
         {
-            // ARRANGE
-            var expectedProducts = new List<ProductForSaleDTO>
-                {
-                    new ProductForSaleDTO { ProductName = $"Product page {pageNumber}" }
-                };
-
-            ProductListReturn<ProductForSaleDTO> expectedReturn = new ProductListReturn<ProductForSaleDTO>
+            // Arrange
+            var expectedReturn = new ProductListReturn<ProductForSaleDTO>
             {
-                ProductList = expectedProducts,
-                MaxPageCount = 4,
-                ProductCount = 40
+                ProductList = new List<ProductForSaleDTO>
+                {
+                    new ProductForSaleDTO { ProductName = $"Page {pageNumber}" }
+                },
+                MaxPageCount = 5,
+                ProductCount = 42
+            };
+
+            var expectedParameters = new GetProductsParameters
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SortOrder = ProductSortOrder.PriceAsc,
+                Search = "Test",
+                CategoryId = Guid.NewGuid()
+            };
+
+            var uiParameters = new UIGetProductsParameters
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SortOrderString = "PriceAsc",
+                Search = "Test",
+                FilterCategoryString = expectedParameters.CategoryId.ToString()
             };
 
             _productForSaleManagerMock
-                .Setup(m => m.GetProductsForSale(
-                    It.IsAny</*ProductSortOrder*/GetProductsParameters>()
-                    //,
-                    //pageNumber,
-                    //pageSize
-                    ))
+                .Setup(m => m.GetProductsForSale(It.IsAny<GetProductsParameters>()))
                 .ReturnsAsync(expectedReturn);
 
-            var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object)
-            {
-                PageNumber = pageNumber,
-                PageSize = pageSize
-            };
+            _productForSaleManagerMock
+                .Setup(m => m.GetCategories())
+                .ReturnsAsync(new List<CategoryDTO>());
 
-            var uIparametersWithNotStandardValues = parametersUI;
-            uIparametersWithNotStandardValues.PageNumber = pageNumber;
-            uIparametersWithNotStandardValues.PageSize = pageSize;
+            var model = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object);
 
-            // ACT
-            await pageModel.OnGet(uIparametersWithNotStandardValues);
-            //Calls GetProductsForSale 
+            // Act
+            await model.OnGet(uiParameters);
 
-            // ASSERT
-            Assert.Equal(expectedProducts, pageModel.ProductsForSale);
-            Assert.Equal(expectedReturn.MaxPageCount, pageModel.MaxPageCount);
-            Assert.Equal(expectedReturn.ProductCount, pageModel.CountProducts);
-
+            // Assert
             _productForSaleManagerMock.Verify(m =>
-                m.GetProductsForSale(It.IsAny<GetProductsParameters/*ProductSortOrder*/>()
-                //, pageNumber, pageSize
-                ), Times.Once);
+                m.GetProductsForSale(It.Is<GetProductsParameters>(p =>
+                    p.PageNumber == pageNumber &&
+                    p.PageSize == pageSize &&
+                    p.SortOrder == ProductSortOrder.PriceAsc &&
+                    p.Search == "Test" &&
+                    p.CategoryId != Guid.Empty // oder dein Test-GUID
+                )), Times.Once);
+
+            Assert.Equal(expectedReturn.ProductList, model.ProductsForSale);
+            Assert.Equal(expectedReturn.MaxPageCount, model.MaxPageCount);
+            Assert.Equal(expectedReturn.ProductCount, model.CountProducts);
         }
 
     }
