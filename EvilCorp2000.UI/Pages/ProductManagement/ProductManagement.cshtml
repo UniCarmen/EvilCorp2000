@@ -45,7 +45,7 @@
     </div>
 
     <div class="center-pagination pagination-wrapper">
-        @await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
+        @await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize, Model.Search, Model.FilterCategoryString))
     </div>
     
 
@@ -248,5 +248,5 @@
     </tbody>
 </table>
 
-@await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
+@await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize, Model.Search, Model.FilterCategoryString))
 

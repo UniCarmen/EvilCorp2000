@@ -31,7 +31,7 @@
     </div>
 
     <div class="pagination-wrapper">
-        @await Html.PartialAsync("_PaginationPartial", (Model.SortOrderString, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
+        @await Html.PartialAsync("_PaginationPartial", (Model.SortOrderString, Model.PageNumber, Model.MaxPageCount, Model.PageSize, Model.Search, Model.FilterCategoryString))
     </div>
 
 
@@ -154,6 +154,6 @@
         }
     </div>
 
-    @await Html.PartialAsync("_PaginationPartial", (Model.SortOrderString, Model.PageNumber, Model.MaxPageCount, Model.PageSize))
+    @await Html.PartialAsync("_PaginationPartial", (Model.SortOrderString, Model.PageNumber, Model.MaxPageCount, Model.PageSize, Model.Search, Model.FilterCategoryString))
 
 </div>

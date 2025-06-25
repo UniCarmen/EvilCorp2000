@@ -1,12 +1,32 @@
-﻿@model (string SortOrder, int PageNumber, int MaxPageCount, int PageSize)
+﻿@using Microsoft.AspNetCore.WebUtilities
+
+@model (string SortOrder, int PageNumber, int MaxPageCount, int PageSize, string? Search, string? FilterCategoryString)
+
+@functions {
+    private string BuildPageLink(int pageNumber)
+    {
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["SortOrderString"] = Model.SortOrder,
+            ["PageSize"] = Model.PageSize.ToString(),
+            ["Search"] = Model.Search,
+            ["FilterCategory"] = Model.FilterCategoryString,
+                ["PageNumber"] = pageNumber.ToString()
+        };
+
+        return QueryHelpers.AddQueryString("", queryParams);
+    }
+}
+
 
 @if (Model.MaxPageCount > 1)
 {
+
     <nav class="pagination-nav">
         <ul class="pagination-list">
             @if (Model.PageNumber > 1)
             {
-                <li><a href="?SortOrderString=@Model.SortOrder&PageNumber=1&PageSize=@Model.PageSize">|&lt;</a></li>
+                <li><a href="@BuildPageLink(1)">|&lt;</a></li>
             }
 
             @{
@@ -27,13 +47,13 @@
                 }
                 else
                 {
-                    <li><a href="?SortOrderString=@Model.SortOrder&PageNumber=@i&PageSize=@Model.PageSize">@i</a></li>
+                    <li><a href="@BuildPageLink(i)">@i</a></li>
                 }
             }
 
             @if (Model.PageNumber < Model.MaxPageCount)
             {
-                <li><a href="?SortOrderString=@Model.SortOrder&PageNumber=@Model.MaxPageCount&PageSize=@Model.PageSize">&gt;|</a></li>
+                <li><a href="@BuildPageLink(Model.MaxPageCount)">&gt;|</a></li>
             }
         </ul>
     </nav>

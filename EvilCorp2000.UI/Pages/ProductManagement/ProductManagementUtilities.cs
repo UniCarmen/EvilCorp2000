@@ -15,6 +15,8 @@ using static EvilCorp2000.Pages.Utilities.Utilities;
 using static Shared.Utilities.Utilities;
 using DataAccess.Entities;
 
+
+
 namespace EvilCorp2000.Pages.ProductManagement
 {
     public partial class ProductManagementModel
@@ -26,6 +28,9 @@ namespace EvilCorp2000.Pages.ProductManagement
             try
             {
                 Categories = await _internalProductManager.GetCategories();
+
+                if (parameters == null)
+                { parameters = new UIGetProductsParameters(); }
 
                 PageNumber = (parameters.PageNumber.HasValue && parameters.PageNumber.Value > 0) ? parameters.PageNumber.Value : 1;
                 PageSize = (parameters.PageSize.HasValue && parameters.PageSize.Value > 0) ? parameters.PageSize.Value : 10;
@@ -256,5 +261,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             _environment = environment;
             _authorizationService = authorizationService;
         }
+
+
     }
 }
