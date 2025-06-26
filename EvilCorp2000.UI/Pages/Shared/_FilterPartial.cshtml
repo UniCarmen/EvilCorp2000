@@ -1,0 +1,37 @@
+﻿@using BusinessLayer.Models
+@using EvilCorp2000.Pages.Shared.ViewModels;
+
+@model FilterPartialViewModel
+
+@if (Model.Categories != null)
+        {
+            <div class="sort-filter-section">
+                <form method="get">
+                    <input type="hidden" name="Search" value="@Model.Search" />
+                    <input type="hidden" name="SortOrderString" value="@Model.SortOrderString" />
+                    <label for="FilterCategoryString">Filter Category:</label>
+                    <select id="FilterCategoryString" name="FilterCategoryString" class="sorting-filter-select">
+                        <option value="null" selected="@(null == Model.FilterCategory)">
+                            No Filter
+                        </option>
+                        @foreach (CategoryDTO category in Model.Categories)
+                        {
+                            <option value="@category.CategoryId" selected="@(category.CategoryId == Model.FilterCategory)">
+                                @category.CategoryName
+                            </option>
+                        }
+                    </select>
+                    <button type="submit" class="sf-button">Filter</button>
+                </form>
+            </div>
+        }
+
+        <div class="sort-filter-section">
+            <form method="get">
+                <input type="hidden" name="FilterCategoryString" value="@Model.FilterCategoryString" />
+                <input type="hidden" name="SortOrderString" value="@Model.SortOrderString" />
+                <label for="Search">Search:</label>
+                <input type="text" id="Search" name="Search" value="@Model.Search" class="sorting-filter-select" placeholder="Search products..." />
+                <button type="submit" class="sf-button">Search</button>
+            </form>
+        </div>

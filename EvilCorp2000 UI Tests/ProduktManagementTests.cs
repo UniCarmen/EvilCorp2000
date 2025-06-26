@@ -171,7 +171,7 @@ namespace EvilCorp2000_UI_Tests
 
             Assert.Equal(uIParameters.PageNumber, model.PageNumber);
             Assert.Equal(uIParameters.PageSize, model.PageSize);
-            Assert.Equal(uIParameters.SortOrderString, model.SortOrder);
+            Assert.Equal(uIParameters.SortOrderString, model.SortOrderString);
             Assert.Equal(uIParameters.Search, model.Search);
             Assert.Equal(uIParameters.FilterCategoryString, model.FilterCategoryString);
         }
@@ -716,7 +716,7 @@ namespace EvilCorp2000_UI_Tests
                 Categories = [new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "Category"}],
                 PageSize = 10,
                 PageNumber = 2,
-                SortOrder = "Default"
+                SortOrderString = "Default"
             };
 
             
@@ -807,7 +807,7 @@ namespace EvilCorp2000_UI_Tests
                 Categories = testCategories,
                 PageSize = 10,
                 PageNumber = 2,
-                SortOrder = "Default"
+                SortOrderString = "Default"
             };
 
             // Act

@@ -1,0 +1,21 @@
+﻿@using BusinessLayer.Models
+@using EvilCorp2000.Pages.Shared.ViewModels;
+
+@model SortPartialViewModel
+
+<div class="sort-filter-section">
+    <form method="get">
+        <input type="hidden" name="Search" value="@Model.Search" />
+        <input type="hidden" name="FilterCategoryString" value="@Model.FilterCategoryString" />
+        <label for="SortOrderString">Sort by:</label>
+        <select id="SortOrderString" name="SortOrderString" class="sorting-filter-select">
+            @foreach (var order in Model.SortOrderAndDisplayStrings)
+            {
+                <option value="@order.Item1" selected="@(order.Item1 == Model.SortOrderString)">
+                    @order.Item2
+                </option>
+            }
+        </select>
+        <button type="submit" class="sf-button">Sort</button>
+    </form>
+</div>

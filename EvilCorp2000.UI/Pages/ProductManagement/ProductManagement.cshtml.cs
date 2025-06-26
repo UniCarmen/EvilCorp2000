@@ -40,7 +40,7 @@ namespace EvilCorp2000.Pages.ProductManagement
         public int MaxPageCount { get; set; }
         public int PageSize { get; set; }
         public int PageNumber { get; set; }
-        public string SortOrder { get; set; } = "Default";
+        public string SortOrderString { get; set; } = "Default";
 
         [BindProperty(SupportsGet = true)]
         public IFormFile? ImageFile { get; set; }
@@ -102,7 +102,7 @@ namespace EvilCorp2000.Pages.ProductManagement
                 CategoryIdsJson = CategoryIdsJson,
                 DiscountOverlap = DiscountOverlap,
                 NewDiscount = new ValidatedDiscount(),
-                SortOrder = SortOrder,
+                SortOrder = SortOrderString,
                 PageSize = PageSize,
                 PageNumber = PageNumber
             };
@@ -168,7 +168,7 @@ namespace EvilCorp2000.Pages.ProductManagement
 
                     PageNumber = (parameters.PageNumber.HasValue && parameters.PageNumber.Value > 0) ? parameters.PageNumber.Value : 1;
                     PageSize = (parameters.PageSize.HasValue && parameters.PageSize.Value > 0) ? parameters.PageSize.Value : 10;
-                    SortOrder = parameters.SortOrderString ?? "Default";
+                    SortOrderString = parameters.SortOrderString ?? "Default";
 
                     DiscountsJson = JsonSerializer.Serialize(selectedProduct.Discounts);
                     ValidatedProductJson = JsonSerializer.Serialize(selectedProduct);
@@ -307,7 +307,7 @@ namespace EvilCorp2000.Pages.ProductManagement
             // neues Product mit allen Discounts inkl. dem Neuem von DBContext holen (hat jetzt eine GUID)
             var selectedProduct = products.FirstOrDefault(p => p.ProductId == validatedProduct.ProductId);
 
-            return await ReInitializeModalWithProduct(validatedProduct, categoryIds, selectedProduct.Discounts, SortOrder, PageNumber, PageSize);
+            return await ReInitializeModalWithProduct(validatedProduct, categoryIds, selectedProduct.Discounts, SortOrderString, PageNumber, PageSize);
         }
 
 

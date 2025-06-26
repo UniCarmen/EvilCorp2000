@@ -67,7 +67,8 @@
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 300px)) /*repeat(auto-fit, minmax(250px, 1fr))*/;
+    justify-content: center;
     gap: 20px;
 }
 
@@ -321,7 +322,7 @@ button {
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 8px;
     flex-wrap: wrap;
-
+    gap: 1rem;
 }
 
 .pagination-wrapper {

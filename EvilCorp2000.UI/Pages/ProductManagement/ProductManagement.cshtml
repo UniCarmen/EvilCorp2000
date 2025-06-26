@@ -1,6 +1,7 @@
 ﻿@page
 @model ProductManagementModel
 @using BusinessLayer.Models
+@using EvilCorp2000.Pages.Shared.ViewModels
 @using EvilCorp2000.UIModels
 @using EvilCorp2000.Pages.ProductManagement
 @using EvilCorp2000.Pages.ProductManagement.Partials
@@ -19,16 +20,15 @@
 <script src="/js/openModalScript.js?v=@DateTime.Now.Ticks"></script>@**@
 
 
-@*Modal für AlterProduct aus der Tabelle extrahiert, damit nur eines gerendert wird*@
+@*INFO: Modal für AlterProduct aus der Tabelle extrahiert, damit nur eines gerendert wird*@
 @if (Model.ShowModal == true && Model.SelectedProductId != Guid.Empty)
 {
     <div class="modal fade modal-visible" id="newAndAlterProductModal" tabindex="-1" aria-labelledby="alterProduct" aria-hidden="true" data-bs-backdrop="static">
-        @* @await Html.PartialAsync("Partials/NewAndAlterProductModalPartial", new NewProductModalPartialModel1 { ValidatedProduct = @Model.ValidatedProduct, Categories = Model.Categories, DiscountsJson = Model.DiscountsJson, ValidatedProductJson = Model.ValidatedProductJson, CategoryIdsJson = Model.CategoryIdsJson, DiscountOverlap = Model.DiscountOverlap }) *@
         @await Html.PartialAsync("Partials/NewAndAlterProductModalPartial", Model.PartialModel)
     </div>
 }
 
-@* Modal für DeleteProduct - Produktansicht muss erst umgebaut werden*@
+@* TODO: Modal für DeleteProduct - Produktansicht muss erst umgebaut werden*@
 @* @if (Model.ShowDeletionConfirmation == true)
 {
     <div class="modal fade modal-visible" id="ConfirmDeleteModal" tabindex="-1" aria-labelledby="deletionConfirmation" aria-hidden="true" data-bs-backdrop="static">
@@ -45,98 +45,30 @@
     </div>
 
     <div class="center-pagination pagination-wrapper">
-        @await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize, Model.Search, Model.FilterCategoryString))
+        @await Html.PartialAsync("_PaginationPartial", (Model.SortOrderString, Model.PageNumber, Model.MaxPageCount, Model.PageSize, Model.Search, Model.FilterCategoryString))
     </div>
     
-
     <div>
-        @* TODO1: Als Partial machen *@
-        @* <div class="right-sort">
-            <form method="get">
-                <label for="sortOrderString">Sort By:</label>
-                <select name="sortOrderString" class="sorting-select" onchange="this.form.submit()">
-                    @foreach (var order in Model.SortOrderAndDisplayStrings)
-                    {
-                        <option value="@order.Item1" selected="@(order.Item1 == Model.SortOrder)">
-                            @order.Item2
-                        </option>
-                    }
-
-                </select>
-            </form>
-        </div> *@
-
-        <div class="sort-filter-section">
-            <form method="get">
-                <input type="hidden" name="Search" value="@Model.Search" />
-                <input type="hidden" name="FilterCategoryString" value="@Model.FilterCategoryString" />
-                <label for="SortOrderString">Sort by:</label>
-                <select id="SortOrderString" name="SortOrderString" class="sorting-filter-select">
-                    @foreach (var order in Model.SortOrderAndDisplayStrings)
-                    {
-                        <option value="@order.Item1" selected="@(order.Item1 == Model.SortOrder)">
-                            @order.Item2
-                        </option>
-                    }
-                    
-                </select>
-                <button type="submit" class="sf-button">Sort</button>
-            </form>
-        </div>
-
+        @await Html.PartialAsync("_SortPartial", new SortPartialViewModel
+            {
+                Search = Model.Search,
+                SortOrderString = Model.SortOrderString,
+                FilterCategoryString = Model.FilterCategoryString,
+                FilterCategory = Model.FilterCategory,
+                SortOrderAndDisplayStrings = Model.SortOrderAndDisplayStrings
+            })
         
-        @if (Model.Categories != null)
+        @await Html.PartialAsync("_FilterPartial", new FilterPartialViewModel
         {
-            <div class="sort-filter-section">
-                <form method="get">
-                    <input type="hidden" name="Search" value="@Model.Search" />
-                    <label for="FilterCategoryString">Filter Category:</label>
-                    <select id="FilterCategoryString" name="FilterCategoryString" class="sorting-filter-select">
-                        <option value="null" selected="@(null == Model.FilterCategory)">
-                            No Filter
-                        </option>
-                        @foreach (CategoryDTO category in Model.Categories)
-                        {
-                            <option value="@category.CategoryId" selected="@(category.CategoryId == Model.FilterCategory)">
-                                @category.CategoryName
-                            </option>
-                        }
-                    </select>
-                    <button type="submit" class="sf-button">Filter</button>
-                </form>
-            </div>
-        }
-
-        <div class="sort-filter-section">
-            <form method="get">
-                <input type="hidden" name="FilterCategoryString" value="@Model.FilterCategoryString" />
-                <label for="Search">Search:</label>
-                <input type="text" id="Search" name="Search" value="@Model.Search" class="sorting-filter-select" placeholder="Search products..." />
-                <button type="submit" class="sf-button">Search</button>
-            </form>
-        </div>
-
-    </div>
-    
-
-
-    
+            Search = Model.Search,
+            SortOrderString = Model.SortOrderString,
+            FilterCategoryString = Model.FilterCategoryString,
+            FilterCategory = Model.FilterCategory,
+            Categories = Model.Categories
+        })
+    </div>  
 </div>
 
-@* <h1 class="mb-4">@ViewData["Title"]</h1> *@
-
-
-@* 
-<div class="d-flex justify-content-between align-items-center mb-4">
-
-    <form method="post" asp-page-handler="ShowNewAndAlterProductModal">
-        <input type="hidden" name="SelectedProductId" value="@Guid.Empty" />
-        <button type="submit" class="btn btn-primary">Add New Product</button>
-    </form>
-
-    
-
-</div> *@
 
 @if (Model.ShowModal == true && Model.SelectedProductId == Guid.Empty)
 {
@@ -223,7 +155,7 @@
                         <form method="post" asp-page-handler="ShowNewAndAlterProductModal">
                             @* <input type="hidden" name="SelectedProductId" value="@product.ProductId, Model.SortOrder, Model.PageNumber, Model.PageSize" /> *@
                             <input type="hidden" name="SelectedProductId" value="@product.ProductId" />
-                            <input type="hidden" name="sortOrderString" value="@Model.SortOrder" />
+                            <input type="hidden" name="sortOrderString" value="@Model.SortOrderString" />
                             <input type="hidden" name="pageNumber" value="@Model.PageNumber" />
                             <input type="hidden" name="pageSize" value="@Model.PageSize" />
                                 <button type="submit" class="btn-alter">Alter</button>
@@ -248,5 +180,5 @@
     </tbody>
 </table>
 
-@await Html.PartialAsync("_PaginationPartial", (Model.SortOrder, Model.PageNumber, Model.MaxPageCount, Model.PageSize, Model.Search, Model.FilterCategoryString))
+@await Html.PartialAsync("_PaginationPartial", (Model.SortOrderString, Model.PageNumber, Model.MaxPageCount, Model.PageSize, Model.Search, Model.FilterCategoryString))
 

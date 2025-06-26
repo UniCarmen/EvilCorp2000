@@ -1,0 +1,77 @@
+﻿@using BusinessLayer.Models
+
+@model ProductForSaleDTO
+
+<div class="product-card">
+
+    <h3>@Model.ProductName</h3>
+
+    @if (Model.DiscountedPrice.HasValue)
+    {
+        <div class="product-box">
+            <img src="@Model.ProductPicture" alt="@Model.ProductName" />
+            <div class="ribbon">@($"{Model.Discount.Value}%")</div>
+        </div>
+    }
+    else
+    {
+        <img src="@Model.ProductPicture" alt="@Model.ProductName" />
+    }
+
+    <p>@Model.Description</p>
+
+    <p>
+        @if (Model.Categories.Count != 1)
+        {
+            @for (int i = 0; i < Model.Categories.Count; i++)
+            {
+                @Model.Categories[i]
+                if (i < Model.Categories.Count - 1)
+                {
+                    <span>- </span>
+                }
+            }
+        }
+        else
+        {
+            @Model.Categories.First()
+        }
+    </p>
+
+    @if (Model.Rating.HasValue)
+    {
+        double rating = Model.Rating.Value;
+        var fillPercents = Enumerable.Range(0, 5).Select(i =>
+        {
+            if (i < Math.Floor(rating)) return 100;
+            if (i > rating) return 0;
+            return (int)((rating - Math.Floor(rating)) * 100);
+        }).ToList();
+
+        <div class="stars-container">
+            @for (int i = 0; i < 5; i++)
+            {
+                <span class="star-precise" style="--percent: @fillPercents[i]%">★</span>
+            }
+            <p class="stars-container-ratingNumber">(@Model.Rating.Value.ToString())</p>
+        </div>
+    }
+
+    @if (Model.DiscountedPrice.HasValue)
+    {
+        <div class="product-box">
+            <span class="price strike">@Model.Price.ToString("C")</span>
+            <span class="highlighted-price">@Model.DiscountedPrice.Value.ToString("C")</span>
+        </div>
+    }
+    else
+    {
+        <span class="price">@Model.Price.ToString("C")</span>
+    }
+
+    @*TODO zusätzich Karte mit Detailansicht + Cart Button und selbstverständlich eine Add to Cart Funktion... und einen Cart*@
+    <form method="post">
+        <input type="hidden" name="productId" value="@Model.ProductId" />
+        <button type="submit">Add to Cart</button>
+    </form>
+</div>
