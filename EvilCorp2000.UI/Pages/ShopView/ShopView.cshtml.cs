@@ -48,7 +48,7 @@ namespace EvilCorp2000.Pages
         }
 
 
-        public async Task<IActionResult> OnGet(UIGetProductsParameters parameters /*, List<CategoryDTO>categories*/)
+        public async Task<IActionResult> OnGet(UIGetProductsParameters parameters)
         {
             try
             {

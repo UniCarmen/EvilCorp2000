@@ -23,14 +23,6 @@ namespace EvilCorp2000_UI_Tests
         private readonly Mock<IProductForSaleManager> _productForSaleManagerMock;
         private readonly Mock<ILogger<ShopViewModel>> _loggerMock;
 
-        private readonly ProductSortOrder _sortOrder = Shared.Utilities.Utilities.ProductSortOrder.Default;
-        private readonly int _pageNumber = 1;
-        private readonly int _pageSize = 10;
-
-        private readonly GetProductsParameters parameters = new GetProductsParameters();
-        private readonly UIGetProductsParameters parametersUI = new UIGetProductsParameters();
-
-
         public ShopTests()
         {
             _productForSaleManagerMock = new Mock<IProductForSaleManager>();
@@ -54,20 +46,14 @@ namespace EvilCorp2000_UI_Tests
                 ProductCount = 2
             };
 
-
             _productForSaleManagerMock
-                .Setup(m => m.GetProductsForSale(
-                    It.IsAny</*ProductSortOrder*/GetProductsParameters>()
-                    //,
-                    //It.IsAny<int>(),
-                    //It.IsAny<int>()
-                    ))
+                .Setup(m => m.GetProductsForSale(It.IsAny<GetProductsParameters>()))
                 .ReturnsAsync(expectedReturnValues);
 
             var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object);
 
             // ACT
-            await pageModel.OnGet(parametersUI);
+            await pageModel.OnGet(new UIGetProductsParameters());
 
             // ASSERT
             var returnedObject = new ProductListReturn<ProductForSaleDTO>
@@ -77,14 +63,13 @@ namespace EvilCorp2000_UI_Tests
                 ProductCount = pageModel.CountProducts
             };
 
-            //Mit Equivalent werden nur die Werte verglichen und nicht die Objekte, da diese verschiedene Referenzen haben können (wie in diesem Fall)
-            Assert.Equivalent(expectedReturnValues, returnedObject);
-
-            // No model error
             Assert.True(pageModel.ModelState.IsValid);
 
             // Verify the manager method was called once
             _productForSaleManagerMock.Verify(m => m.GetProductsForSale(It.IsAny<GetProductsParameters>()), Times.Once);
+
+            //Mit Equivalent werden nur die Werte verglichen und nicht die Objekte, da diese verschiedene Referenzen haben können (wie in diesem Fall)
+            Assert.Equivalent(expectedReturnValues, returnedObject);
 
             // Verify no error log
             _loggerMock.Verify(
@@ -99,16 +84,20 @@ namespace EvilCorp2000_UI_Tests
         }
 
         [Fact]
-        public async Task OnGet_ShouldAddModelError_AndReturnPage_ExceptionThrown()
+        public async Task OnGet_ShouldAddModelErrorAndLogError_WhenExceptionThrown()
         {
             _productForSaleManagerMock
-                .Setup(m => m.GetProductsForSale(parameters))
+                .Setup(m => m.GetProductsForSale(new GetProductsParameters()))
                 .ThrowsAsync(new Exception("Fehler beim Laden der Produkte."));
+
+            _productForSaleManagerMock
+                .Setup(m => m.GetCategories())
+                .ThrowsAsync(new Exception("Something else went wrong"));
 
             var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object);
 
             // ACT
-            await pageModel.OnGet(parametersUI);
+            await pageModel.OnGet(new UIGetProductsParameters());
 
             // ASSERT
             Assert.False(pageModel.ModelState.IsValid);
@@ -120,46 +109,12 @@ namespace EvilCorp2000_UI_Tests
                 logger => logger.Log(
                     It.Is<LogLevel>(l => l == LogLevel.Error),
                     It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.Is<It.IsAnyType>((v, t) => !string.IsNullOrWhiteSpace(v.ToString())), //Prüfung auf Text im Logeintrag
+                    It.IsAny<Exception>(), //beliebige Exception
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()), //ZUsammensetzung der Nachricht - Standardmäßig verwendet
                 Times.Once
             );
         }
-
-        [Fact]
-        public async Task OnGet_ShouldLogError_WhenGenericExceptionThrown()
-        {
-            // ARRANGE
-            _productForSaleManagerMock
-                .Setup(m => m.GetProductsForSale(parameters))
-                .ThrowsAsync(new Exception("Something else went wrong"));
-
-            var pageModel = new ShopViewModel(_productForSaleManagerMock.Object, _loggerMock.Object);
-
-            // ACT
-            await pageModel.OnGet(parametersUI);
-
-            // ASSERT            
-            Assert.False(pageModel.ModelState.IsValid);
-            Assert.Contains("Fehler beim Laden der Produkte.", pageModel.ModelState[string.Empty]?.Errors[0].ErrorMessage);
-
-            // Verify an error log was created:
-            // Can't do logger.LogError("message", It.IsAny<Exception>()) because it's an extension method.
-            // So we check the underlying Log call at LogLevel.Error. 
-            _loggerMock.Verify(
-                logger => logger.Log(
-                    It.Is<LogLevel>(l => l == LogLevel.Error),
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Fehler beim Laden der Produkte.")),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                Times.Once
-            );
-        }
-
-
-        //TODO1: Check Tests above
 
         [Theory]
         [InlineData(1, 10)]

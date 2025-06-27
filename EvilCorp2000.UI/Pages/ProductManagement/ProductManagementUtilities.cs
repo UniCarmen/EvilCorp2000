@@ -61,7 +61,7 @@ namespace EvilCorp2000.Pages.ProductManagement
                 products = productListReturn.ProductList;
                 CountProducts = productListReturn.ProductCount;
                 MaxPageCount = productListReturn.MaxPageCount;
-                Categories = await _internalProductManager.GetCategories();
+                Categories = await _internalProductManager.GetCategories(); //benötigt?? habe ich oben schon
                 
             }
             catch (Exception ex) { _logger.LogError("Fehler beim Abrufen der Produkte: {0}", ex); }

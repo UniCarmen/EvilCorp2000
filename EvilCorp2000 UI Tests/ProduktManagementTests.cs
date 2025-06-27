@@ -73,10 +73,6 @@ namespace EvilCorp2000_UI_Tests
             ProductCount = 2
         };
 
-        //TODO1: evtl weg, immer neu erzeugen in den Tests
-        private readonly GetProductsParameters parameters = new GetProductsParameters();
-        private readonly UIGetProductsParameters parametersUI = new UIGetProductsParameters();
-
 
         [Fact]
         public async Task LoadDataAsync_ShouldCallGetProductsAndCategories()
@@ -95,7 +91,7 @@ namespace EvilCorp2000_UI_Tests
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object);
 
             // Act
-            await model.LoadDataAsync(parametersUI);
+            await model.LoadDataAsync(new UIGetProductsParameters());
 
             // Assert: Methoden werden aufgerufen
             productManagerMock.Verify(m => m.GetProductsForInternalUse(It.IsAny<GetProductsParameters>()), Times.Once);
@@ -188,7 +184,7 @@ namespace EvilCorp2000_UI_Tests
             var envMock = new Mock<IWebHostEnvironment>();
             var authMock = new Mock<IAuthorizationService>();
 
-            productManagerMock.Setup(m => m.GetProductsForInternalUse(parameters)).ThrowsAsync(new Exception("Database error"));
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(new GetProductsParameters())).ThrowsAsync(new Exception("Database error"));
             productManagerMock.Setup(m => m.GetCategories()).ThrowsAsync(new Exception("Database error"));
 
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object);
@@ -501,7 +497,7 @@ namespace EvilCorp2000_UI_Tests
                 
             };
 
-            productManagerMock.Setup(m => m.GetProductsForInternalUse(parameters)).ReturnsAsync(_returnValues);
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(new GetProductsParameters())).ReturnsAsync(_returnValues);
             model.ModelState.AddModelError("ProductName", "Product name is required"); // Manuelle ModelState-Fehlermeldung
             //await model.LoadDataAsync(_sortOrder.ToString(), _pageNumber, _pageSize);
 
@@ -599,7 +595,7 @@ namespace EvilCorp2000_UI_Tests
                 ProductCount = 2
             };
 
-            productManagerMock.Setup(m => m.GetProductsForInternalUse(parameters))
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(new GetProductsParameters()))
                 .ReturnsAsync(productReturnValues);
 
             productManagerMock.Setup(m => m.GetProductForInternalUse(testProduct.ProductId))
@@ -624,7 +620,7 @@ namespace EvilCorp2000_UI_Tests
 
 
             // Act
-            var result = await model.OnPostShowNewAndAlterProductModal(testProduct.ProductId, parametersUI);
+            var result = await model.OnPostShowNewAndAlterProductModal(testProduct.ProductId, new UIGetProductsParameters());
 
             // Assert
             Assert.IsType<PageResult>(result);
@@ -646,7 +642,7 @@ namespace EvilCorp2000_UI_Tests
             var model = new ProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object);
 
             // Act
-            var result = await model.OnPostShowNewAndAlterProductModal(Guid.Empty, parametersUI);
+            var result = await model.OnPostShowNewAndAlterProductModal(Guid.Empty, new UIGetProductsParameters());
 
             // Assert
             Assert.IsType<PageResult>(result);
@@ -668,7 +664,7 @@ namespace EvilCorp2000_UI_Tests
             };
 
             // Act
-            var result = await model.OnPostShowNewAndAlterProductModal(Guid.NewGuid(), parametersUI);
+            var result = await model.OnPostShowNewAndAlterProductModal(Guid.NewGuid(), new UIGetProductsParameters());
 
             // Assert
             Assert.IsType<PageResult>(result);
@@ -692,7 +688,7 @@ namespace EvilCorp2000_UI_Tests
                 Discounts = new List<DiscountDTO>()
             };
 
-            var getProductParametersOfPage2 = parametersUI;
+            var getProductParametersOfPage2 = new UIGetProductsParameters();
             getProductParametersOfPage2.PageNumber = 2;
 
             var testModel = new TestableProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object, false, false) // 👈 Beide valid
@@ -751,7 +747,7 @@ namespace EvilCorp2000_UI_Tests
                 Discounts = new List<DiscountDTO>() // Liste initialisieren!
             };
 
-            productManagerMock.Setup(m => m.GetProductsForInternalUse(parameters)).ReturnsAsync(_returnValues);
+            productManagerMock.Setup(m => m.GetProductsForInternalUse(new GetProductsParameters())).ReturnsAsync(_returnValues);
             productManagerMock.Setup(m => m.GetCategories()).ReturnsAsync(new List<CategoryDTO> { new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "Test Category" } });
 
             await testModel.LoadDataAsync(getProductParametersOfPage2);
@@ -795,7 +791,7 @@ namespace EvilCorp2000_UI_Tests
                 new CategoryDTO { CategoryId = Guid.NewGuid(), CategoryName = "TestCategory" }
             };
 
-            var getProductParametersOfPage2 = parametersUI;
+            var getProductParametersOfPage2 = new UIGetProductsParameters();
             getProductParametersOfPage2.PageNumber = 2;
 
             var testModel = new TestableProductManagementModel(productManagerMock.Object, loggerMock.Object, envMock.Object, authMock.Object, false, true) // 👈 Discount-Validation schlägt fehl

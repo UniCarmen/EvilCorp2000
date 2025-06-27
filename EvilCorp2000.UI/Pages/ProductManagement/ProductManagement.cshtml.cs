@@ -188,9 +188,11 @@ namespace EvilCorp2000.Pages.ProductManagement
         }
 
 
+        //TODO1: Wenn ich das Modal schlieﬂe komme ich irgendwie wieder auf Seite 1???
         public async Task<IActionResult> OnPostCloseModal(UIGetProductsParameters parameters)
         {
             ShowModal = false;
+
             await LoadDataAsync(parameters);
             return Page();
         }
