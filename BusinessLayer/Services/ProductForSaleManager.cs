@@ -30,7 +30,6 @@ namespace BusinessLayer.Services
             _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
-
         public async Task<List<CategoryDTO>> GetCategories()
         {
             return
@@ -40,7 +39,6 @@ namespace BusinessLayer.Services
                     "Category List")
                 .ToList();
         }
-
 
         public async Task<ProductListReturn<ProductForSaleDTO>> GetProductsForSale(GetProductsParameters parameters) 
             //optionaler Parameter zur Sortierung / Filterung
@@ -62,22 +60,6 @@ namespace BusinessLayer.Services
             };
 
             return productForSaleReturn;
-            //return await GetCurrentDiscountsForProducts(productListReturn.ProductList);
-
-
-            //TODO1: kann das weg??
-            //List<ProductForSaleDTO> productsForSale = [];
-
-            //foreach (Product product in products)
-            //{
-            //    var currentDiscount = await _discoutRepository.GetCurrentDiscountByProductId(product.ProductId);
-
-            //    var productMapper = new ProductMappings();
-
-            //    productsForSale.Add(productMapper.ProductToProductForSaleDto(product, currentDiscount));
-            //}
-
-            //return productsForSale;
         }
 
         public async Task<List<ProductForSaleDTO>> GetCurrentDiscountsForProducts (List<Product> productsWithAllDiscounts)
@@ -102,8 +84,6 @@ namespace BusinessLayer.Services
 
             return await GetCurrentDiscountsForProducts(products);
         }
-
-
 
         public async Task<ProductForSaleDTO> GetProductForSale(Guid id)
         {

@@ -150,8 +150,6 @@ namespace DataAccess.Repositories
                     _ => query.OrderBy(p => p.ProductId)
                 };
 
-                // TODO1: PAGINATION -> paging typ anlegen, damit nicht zu viele parameter?
-
                 query = query/*.OrderBy(p => p.ProductId)*/
                     .Skip((parameters.PageNumber.Value - 1) * parameters.PageSize.Value)
                     .Take(parameters.PageSize.Value);

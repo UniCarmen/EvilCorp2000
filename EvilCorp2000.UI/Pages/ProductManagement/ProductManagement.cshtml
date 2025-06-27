@@ -162,7 +162,7 @@
                         </form>
                         @if (User.Identity?.IsAuthenticated == true && User.Claims.Any(c => c.Type == "role" && (c.Value == "CEOofDoom" || c.Value == "Overseer")))
                         {
-                            @* TODO1: Warning Modal einbauen *@
+                            @* TODO: Warning Modal einbauen - aber erst PM umbauen*@
                             <form method="post" asp-page-handler="DeleteProduct">
                                 <input type="hidden" name="productId" value="@product.ProductId" />
                                     <button type="submit" class="btn-delete">Delete</button>

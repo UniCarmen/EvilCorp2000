@@ -1,13 +1,10 @@
 ﻿using DataAccess.Entities;
 using BusinessLayer.Models;
 using DataAccess.Repositories;
-using System.ComponentModel.DataAnnotations;
 using BusinessLayer.Mappings;
 using static BusinessLayer.Services.ValidationService;
 using Shared.Utilities;
-using System.Diagnostics.CodeAnalysis;
 using static Shared.Utilities.Utilities;
-using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
@@ -32,11 +29,47 @@ namespace BusinessLayer.Services
             _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
         }
 
-        //TODO1: Methoden auslagern, vieles doppelt
-
         private static bool IsCurrent(DateTime start, DateTime end) 
         {
             return (start <= DateTime.Today && end >= DateTime.Today);
+        }
+
+        private static List<Discount> GetCurrentDiscount (ICollection<Discount> discounts)
+        {
+            List<Discount> shownDiscount;
+
+            if (!discounts.IsNullOrEmpty())
+            {
+                //nur den aktuellen, den letzten oder gar keinen discount anzeigen
+                var currentDiscount = discounts.Where(d => IsCurrent(d.StartDate, d.EndDate)).ToList();
+
+                //entweder den nächsten zukünftigen
+                var nextDiscount = discounts
+                    .Select(d => (d.StartDate, d))
+                    .Where(d => d.StartDate > DateTime.Now)
+                    .OrderBy(d => d.StartDate)
+                    .Take(1)
+                    .Select(d => d.d)
+                    .ToList();
+
+                //oder den vorigen, wenn kein zukünftiger
+                var lastDiscount = discounts
+                    .Select(d => (d.EndDate, d))
+                    .Where(d => d.EndDate < DateTime.Now)
+                    .OrderByDescending(d => d.EndDate)
+                    .Take(1)
+                    .Select((d) => d.d)
+                    .ToList();
+
+                if (currentDiscount.Any()) { shownDiscount = currentDiscount; }
+                else if (nextDiscount.Any()) { shownDiscount = nextDiscount; }
+                else { shownDiscount = lastDiscount; }
+
+                return shownDiscount;
+
+            }
+
+            else { return []; }
         }
 
         public async Task<ProductListReturn<ProductManagementProductDTO>> GetProductsForInternalUse(GetProductsParameters parameters)
@@ -44,50 +77,16 @@ namespace BusinessLayer.Services
             parameters.PageNumber = (parameters.PageNumber.HasValue && parameters.PageNumber.Value > 0) ? parameters.PageNumber.Value : 1;
             parameters.PageSize = (parameters.PageSize.HasValue && parameters.PageSize.Value > 0) ? parameters.PageSize.Value : 10;
 
-
-
             var productListReturn = await _productRepository.GetAllProductsAsync(parameters);
 
             List<ProductManagementProductDTO> productsForInternalUse = [];
 
             foreach (Product product in productListReturn.ProductList)
             {
-                List<Discount> shownDiscount;
-
-                if (!product.Discounts.IsNullOrEmpty())
-                {
-                    //nur den aktuellen, den letzten oder gar keinen discount anzeigen
-                    var currentDiscount = product.Discounts.Where(d => IsCurrent(d.StartDate, d.EndDate)).ToList();
-
-                    //entweder den nächsten zukünftigen
-                    var nextDiscount = product.Discounts
-                        .Select(d => (d.StartDate, d))
-                        .Where (d  => d.StartDate > DateTime.Now)
-                        .OrderBy(d => d.StartDate)
-                        .Take(1)
-                        .Select(d => d.d)
-                        .ToList();
-
-                    //oder den vorigen, wenn kein zukünftiger
-                    var lastDiscount = product.Discounts
-                        .Select(d => (d.EndDate, d))
-                        .Where(d => d.EndDate < DateTime.Now)
-                        .OrderByDescending(d => d.EndDate)
-                        .Take(1)
-                        .Select((d) => d.d)
-                        .ToList();
-
-                    if (currentDiscount.Any()) { shownDiscount = currentDiscount; }
-                    else if (nextDiscount.Any()) { shownDiscount = nextDiscount;  }
-                    else { shownDiscount = lastDiscount; }
-
-                }
-
-                else { shownDiscount = []; }
-                
+                var shownDiscount = GetCurrentDiscount(product.Discounts);
                 
                 (List<DiscountDTO> currentDiscounts, List<CategoryDTO> categories) = 
-                    MapDiscountsAndCategoriesToDTOs(/*product.Discounts.ToList()*/shownDiscount, product.Categories.ToList());
+                    MapDiscountsAndCategoriesToDTOs(shownDiscount, product.Categories.ToList());
                 
                 productsForInternalUse.Add(_productMapper.ProductToProductManagementProductDto(product, currentDiscounts, categories));
             }
@@ -101,7 +100,6 @@ namespace BusinessLayer.Services
 
             return productManagementProductReturn;
         }
-
 
         public async Task<ProductManagementProductDTO> GetProductForInternalUse(Guid id)
         {
@@ -126,7 +124,6 @@ namespace BusinessLayer.Services
                     "Category List")
                 .ToList();
         }
-
 
         public async Task SaveProductToStore(ProductManagementProductDTO productToStore)
         {
@@ -154,7 +151,6 @@ namespace BusinessLayer.Services
           
         }
 
-
         public async Task AddDiscount(DiscountDTO discount, ProductManagementProductDTO productToStore)
         {
             discount = Utilities.ReturnValueOrThrowExceptionWhenNull(discount, "Discount is null.");
@@ -168,7 +164,6 @@ namespace BusinessLayer.Services
             
             productToStore.Discounts.Add(discount);
             await UpdateProductToStore(productToStore);
-
         }
 
         public async Task UpdateProductToStore(ProductManagementProductDTO productToStore)
@@ -198,13 +193,11 @@ namespace BusinessLayer.Services
             await _discoutRepository.UpdateDiscounts(productFromDB, currentDiscounts);
         }
 
-
         public async Task DeleteProduct (Guid productId)
         {
             productId = Utilities.ReturnValueOrThrowExceptionWhenDefault(productId, "ProductId is null.");
             await _productRepository.DeleteProduct(productId);
         }
-
 
         public async Task SaveProductPicture(Guid productId, string encodedPicture)
         {
@@ -239,7 +232,6 @@ namespace BusinessLayer.Services
 
             return (returnDiscountsDtos, returnCategorieDtos);
         }
-
 
         public (List<Discount>, List<Category>) MapDiscountsAndCategoriesToEntities(List<DiscountDTO> discounts, List<CategoryDTO> categories, Guid productId)
         {
